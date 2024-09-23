@@ -56,26 +56,45 @@
                     </execution>
                 </executions>
 			</plugin>
-		<!-- JaCoCo Plugin for Code Coverage -->
-        <plugin>
-            <groupId>org.jacoco</groupId>
-            <artifactId>jacoco-maven-plugin</artifactId>
-            <version>0.8.10</version> <!-- Make sure to use the latest version -->
-            <executions>
-                <execution>
-                    <goals>
-                        <goal>prepare-agent</goal> <!-- Adds JaCoCo as a Java agent -->
-                    </goals>
-                </execution>
-                <execution>
-                    <id>report</id>
-                    <phase>test</phase>
-                    <goals>
-                        <goal>report</goal> <!-- Generates the coverage report -->
-                    </goals>
-                </execution>
-            </executions>
-        </plugin>
+            <!-- SpotBugs Plugin for Code Coverage -->
+            <plugin>
+                <groupId>com.github.spotbugs</groupId>
+                <artifactId>spotbugs-maven-plugin</artifactId>
+                <version>4.7.3.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <effort>max</effort>
+                    <threshold>high</threshold>
+                    <xmlOutput>false</xmlOutput>
+                </configuration>
+            </plugin>
+
+		    <!-- JaCoCo Plugin for Code Coverage -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.10</version> <!-- Make sure to use the latest version -->
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>prepare-agent</goal> <!-- Adds JaCoCo as a Java agent -->
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report</goal> <!-- Generates the coverage report -->
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 </project>
