@@ -1,0 +1,69 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'  # Trigger only when pushing a version tag (e.g., v1.0.0)
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Build with Maven
+        run: mvn clean package
+
+      - name: Create .deb package
+        run: |
+          mkdir -p myapp/usr/local/bin
+          cp target/streamline-0.1.0.jar myapp/usr/local/bin/streamline
+          echo -e "Package: streamline\nVersion: ${{ github.ref_name }}\nSection: base\nPriority: optional\nArchitecture: amd64\nMaintainer: Jack Swindell <devsecinsider@gmail.com>\nDescription: Streamline music player using Invidious API" > myapp/DEBIAN/control
+          dpkg-deb --build myapp
+        shell: bash
+
+      - name: Create .tar.gz
+        run: |
+          mkdir -p streamline-$GITHUB_REF_NAME
+          cp target/streamline-0.1.0.jar streamline-$GITHUB_REF_NAME/streamline
+          tar -czvf streamline-${{ github.ref_name }}.tar.gz streamline-${{ github.ref_name }}
+        shell: bash
+
+      - name: Create PKGBUILD for Arch Linux
+        run: |
+          mkdir -p archpkg/streamline
+          cd archpkg
+          echo "pkgname=streamline" > PKGBUILD
+          echo "pkgver=${{ github.ref_name }}" >> PKGBUILD
+          echo "pkgrel=1" >> PKGBUILD
+          echo "arch=('x86_64')" >> PKGBUILD
+          echo "source=(${pkgname}-${pkgver}.tar.gz)" >> PKGBUILD
+          echo "package() { install -Dm755 \"${srcdir}/streamline-0.1.0.jar\" \"${pkgdir}/usr/local/bin/streamline\"; }" >> PKGBUILD
+          makepkg --printsrcinfo > .SRCINFO
+          cd ..
+        shell: bash
+
+      - name: Upload release assets
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: |
+            myapp.deb
+            streamline-${{ github.ref_name }}.tar.gz
+            archpkg/PKGBUILD
+          asset_name: |
+            streamline-${{ github.ref_name }}.deb
+            streamline-${{ github.ref_name }}.tar.gz
+            streamline-${{ github.ref_name }}-PKGBUILD
+          asset_content_type: |
+            application/vnd.debian.binary-package
+            application/gzip
+            text/plain
