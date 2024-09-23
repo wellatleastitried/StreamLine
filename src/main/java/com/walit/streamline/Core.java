@@ -14,7 +14,7 @@ import java.util.HashMap;
 
 public class Core {
 
-    public static HashMap<Integer, Button> buttons = new HashMap<>();
+    public static final HashMap<Integer, Button> buttons = new HashMap<>();
     public static int selectedIndex = 0;
     public static int buttonCount;
     public static int buttonWidth = 0;
