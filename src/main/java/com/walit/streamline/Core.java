@@ -31,7 +31,7 @@ public class Core {
     public final int buttonWidth;
     public final int buttonHeight;
 
-    public Core() {)
+    public Core() {}
 
     public Core(boolean startDesired) {
         if (!startDesired) return;
