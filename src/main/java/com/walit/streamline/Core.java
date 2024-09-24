@@ -86,7 +86,7 @@ public class Core {
         return button;
     }
 
-    private TerminalSize getSize(int bWidth, int bHeight) {
+    public TerminalSize getSize(int bWidth, int bHeight) {
         return new TerminalSize(bWidth, bHeight);
     }
 
