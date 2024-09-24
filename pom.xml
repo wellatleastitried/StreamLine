@@ -38,7 +38,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
-				<version>3.2.4</version>
+				<version>3.3.0</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -46,6 +46,7 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
                             <transformers>
                                 <transformer
                                     implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
@@ -56,23 +57,11 @@
                     </execution>
                 </executions>
 			</plugin>
-            <!-- SpotBugs Plugin for Code Coverage -->
+            <!-- find-sec-bugs extension -->
             <plugin>
-                <groupId>com.github.spotbugs</groupId>
-                <artifactId>spotbugs-maven-plugin</artifactId>
-                <version>4.7.3.0</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <effort>max</effort>
-                    <threshold>high</threshold>
-                    <xmlOutput>false</xmlOutput>
-                </configuration>
+                <groupId>com.h3xstream.findsecbugs</groupId>
+                <artifactId>findsecbugs-plugin</artifactId>
+                <version>1.11.0</version>
             </plugin>
 
 		    <!-- JaCoCo Plugin for Code Coverage -->
