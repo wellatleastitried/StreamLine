@@ -30,17 +30,8 @@ public class Core {
     public int buttonCount;
     public final int buttonWidth;
     public final int buttonHeight;
-
-    // DON'T USE
-    // Testing environment can't handle the TUI starting so it uses this contructor.
+    
     public Core() {
-        this.buttons = new HashMap<Integer, Button>();
-        this.buttonWidth = 10;
-        this.buttonHeight = 10;
-    }
-
-    public Core(boolean startDesired) {
-        if (!startDesired) return;
         this.buttons = new HashMap<Integer, Button>();
         DefaultTerminalFactory terminalFactory = new DefaultTerminalFactory();
         try {
@@ -58,6 +49,14 @@ public class Core {
         }
     }
 
+    // DON'T USE
+    // Testing environment can't handle the TUI starting so it uses this contructor.
+    public Core(String TESINGONLY) {
+        this.buttons = new HashMap<Integer, Button>();
+        this.buttonWidth = 10;
+        this.buttonHeight = 10;
+    }
+
     public boolean start() {
         try {
             screen.startScreen();
@@ -72,7 +71,7 @@ public class Core {
     }
 
     public static void main(String [] args) {
-        Core streamline = new Core(true);
+        Core streamline = new Core();
         if (!streamline.start()) {
             System.err.println(StreamLineMessages.FatalError.getMessage());
             System.exit(1);
