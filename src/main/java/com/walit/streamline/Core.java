@@ -31,7 +31,13 @@ public class Core {
     public final int buttonWidth;
     public final int buttonHeight;
 
-    public Core() {}
+    // DON'T USE
+    // Testing environment can't handle the TUI starting so it uses this contructor.
+    public Core() {
+        this.buttons = new HashMap<Integer, Button>();
+        this.buttonWidth = 10;
+        this.buttonHeight = 10;
+    }
 
     public Core(boolean startDesired) {
         if (!startDesired) return;
