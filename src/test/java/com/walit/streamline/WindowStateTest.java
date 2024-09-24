@@ -8,7 +8,7 @@ import org.hamcrest.MatcherAssert;
 import java.io.IOException;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.notNullValue;
 
 public class WindowStateTest {
 
@@ -21,6 +21,6 @@ public class WindowStateTest {
     
     @Test
     public void getTerminalSize() {
-        MatcherAssert.assertThat(core.getSize(10, 5), is(instanceof(TerminalSize.class)));
+        MatcherAssert.assertThat(core.getSize(10, 5), is(notNullValue()));
     }
 }
