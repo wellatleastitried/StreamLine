@@ -70,7 +70,7 @@ java -jar target/streamline-VERSION.jar
 ## Requirements
 - Java 17+
 - Terminal with support for text-based interfaces
-- Internet connection (If you intend on listening to non-downloaded songs)
+- Internet connection (If you intend to search for or listen to songs that have not been downloaded)
 ## Contributing
 Contributions are welcome! Please submit a pull request or open an issue to get started. Make sure to follow the project's code style and ensure all tests pass before submitting.
 ## License
