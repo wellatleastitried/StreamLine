@@ -50,7 +50,7 @@ streamline
 - **Help**: Access help information for using StreamLine.
 - **Quit**: Exit the application.
 ## Building From Source
-### Requirements:
+### Requirements to Build:
 - Java 17+
 - Maven
 ### Steps to Build:
