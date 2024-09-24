@@ -18,7 +18,8 @@ public class WindowStateTest {
     public void setup() {
         core = new Core("TESING");
     }
-    
+
+    // Ensure getSize is returning a valid TerminalSize
     @Test
     public void getTerminalSize() {
         MatcherAssert.assertThat(core.getSize(10, 5), is(notNullValue()));
