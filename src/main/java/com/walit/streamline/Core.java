@@ -121,6 +121,7 @@ public class Core {
         quitButton.setPreferredSize(getSize(buttonWidth, buttonHeight));
         buttons.put(buttonCount++, quitButton);
 
+        panel.addComponent(generateNewSpace());
         panel.addComponent(titleLabel);
         for (int i = 0; i < buttonCount; i++) {
             panel.addComponent(buttons.get(i));
@@ -141,6 +142,8 @@ public class Core {
         panel.setPreferredSize(new TerminalSize(40, 20));
         panel.setFillColorOverride(TextColor.ANSI.BLACK);
 
+        panel.addComponent(generateNewSpace());
+
         Label searchHelpLabel = new Label("Search help");
         searchHelpLabel.setPreferredSize(getSize(buttonWidth, buttonHeight));
         searchHelpLabel.addStyle(SGR.BOLD);
@@ -149,6 +152,20 @@ public class Core {
         Label searchHelpInfo = new Label(StreamLineMessages.SearchInformation.getMessage());
         searchHelpInfo.addStyle(SGR.BOLD);
         panel.addComponent(searchHelpInfo);
+
+        panel.addComponent(generateNewSpace());
+
+        Label likedMusicLabel = new Label("Liked music help");
+        likedMusicLabel.setPreferredSize(getSize(buttonWidth, buttonHeight));
+        likedMusicLabel.addStyle(SGR.BOLD);
+        panel.addComponent(likedMusicLabel);
+
+        Label likedMusicInfo = new Label(StreamLineMessages.LikedMusicInformation.getMessage());
+        likedMusicInfo.addStyle(SGR.BOLD);
+        panel.addComponent(likedMusicInfo);
+
+        panel.addComponent(generateNewSpace());
+        panel.addComponent(generateNewSpace());
 
         Button backButton = new Button("<- Back", () -> {
             dropWindow(helpMenu);
@@ -159,6 +176,13 @@ public class Core {
 
         window.setComponent(panel);
         return window;
+    }
+
+    public EmptySpace generateNewSpace() {
+        EmptySpace space = new EmptySpace();
+        space.setPreferredSize(getSize(buttonWidth, buttonHeight));
+        space.setVisible(false);
+        return space;
     }
 
     public void runMainWindow() {

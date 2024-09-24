@@ -82,46 +82,46 @@ public class Core {
 <span class="fc" id="L82">        return new TerminalSize(bWidth, bHeight);</span>
     }
 
+    // Create WindowFactory
     public BasicWindow createMainMenuWindow(WindowBasedTextGUI textGUI) {
-<span class="fc" id="L86">        BasicWindow window = new BasicWindow(&quot;StreamLine Music Player&quot;);</span>
+<span class="fc" id="L87">        BasicWindow window = new BasicWindow(&quot;StreamLine Music Player&quot;);</span>
 
-<span class="fc" id="L88">        window.setHints(java.util.Arrays.asList(Window.Hint.FULL_SCREEN));</span>
+<span class="fc" id="L89">        window.setHints(java.util.Arrays.asList(Window.Hint.FULL_SCREEN));</span>
 
-<span class="fc" id="L90">        Panel panel = new Panel();</span>
-<span class="fc" id="L91">        panel.setLayoutManager(new GridLayout(1));</span>
-<span class="fc" id="L92">        panel.setPreferredSize(new TerminalSize(40, 20));</span>
-<span class="fc" id="L93">        panel.setFillColorOverride(TextColor.ANSI.BLACK);</span>
+<span class="fc" id="L91">        Panel panel = new Panel();</span>
+<span class="fc" id="L92">        panel.setLayoutManager(new GridLayout(1));</span>
+<span class="fc" id="L93">        panel.setPreferredSize(new TerminalSize(40, 20));</span>
+<span class="fc" id="L94">        panel.setFillColorOverride(TextColor.ANSI.BLACK);</span>
 
         // CREATE LABELS AND BUTTONS
-<span class="fc" id="L96">        Label titleLabel = new Label(&quot;    Welcome to StreamLine    &quot;);</span>
-<span class="fc" id="L97">        titleLabel.addStyle(SGR.BOLD);</span>
+<span class="fc" id="L97">        Label titleLabel = new Label(&quot;    Welcome to StreamLine    &quot;);</span>
+<span class="fc" id="L98">        titleLabel.addStyle(SGR.BOLD);</span>
 
-<span class="pc" id="L99">        Button searchButton= new Button(&quot;Search for a song&quot;, () -&gt; System.out.println(&quot;Playing song&quot;));</span>
-<span class="fc" id="L100">        searchButton.setPreferredSize(getSize(buttonWidth, buttonHeight));</span>
-<span class="fc" id="L101">        buttons.put(buttonCount++, searchButton);</span>
+<span class="pc" id="L100">        Button searchButton= new Button(&quot;Search for a song&quot;, () -&gt; System.out.println(&quot;Playing song&quot;));</span>
+<span class="fc" id="L101">        searchButton.setPreferredSize(getSize(buttonWidth, buttonHeight));</span>
+<span class="fc" id="L102">        buttons.put(buttonCount++, searchButton);</span>
 
-<span class="pc" id="L103">        Button likedButton = new Button(&quot;View liked music&quot;, () -&gt; System.out.println(&quot;Liked songs&quot;));</span>
-<span class="fc" id="L104">        likedButton.setPreferredSize(getSize(buttonWidth, buttonHeight));</span>
-<span class="fc" id="L105">        buttons.put(buttonCount++, likedButton);</span>
+<span class="pc" id="L104">        Button likedButton = new Button(&quot;View liked music&quot;, () -&gt; System.out.println(&quot;Liked songs&quot;));</span>
+<span class="fc" id="L105">        likedButton.setPreferredSize(getSize(buttonWidth, buttonHeight));</span>
+<span class="fc" id="L106">        buttons.put(buttonCount++, likedButton);</span>
 
-<span class="pc" id="L107">        Button playlistsButton = new Button(&quot;Playlists&quot;, () -&gt; System.out.println(&quot;Playlists&quot;));</span>
-<span class="fc" id="L108">        playlistsButton.setPreferredSize(getSize(buttonWidth, buttonHeight));</span>
-<span class="fc" id="L109">        buttons.put(buttonCount++, playlistsButton);</span>
+<span class="pc" id="L108">        Button playlistsButton = new Button(&quot;Playlists&quot;, () -&gt; System.out.println(&quot;Playlists&quot;));</span>
+<span class="fc" id="L109">        playlistsButton.setPreferredSize(getSize(buttonWidth, buttonHeight));</span>
+<span class="fc" id="L110">        buttons.put(buttonCount++, playlistsButton);</span>
 
-<span class="pc" id="L111">        Button recentlyPlayedButton = new Button(&quot;Recently Played&quot;, () -&gt; System.out.println(&quot;Recently played&quot;));</span>
-<span class="fc" id="L112">        recentlyPlayedButton.setPreferredSize(getSize(buttonWidth, buttonHeight));</span>
-<span class="fc" id="L113">        buttons.put(buttonCount++, recentlyPlayedButton);</span>
+<span class="pc" id="L112">        Button recentlyPlayedButton = new Button(&quot;Recently Played&quot;, () -&gt; System.out.println(&quot;Recently played&quot;));</span>
+<span class="fc" id="L113">        recentlyPlayedButton.setPreferredSize(getSize(buttonWidth, buttonHeight));</span>
+<span class="fc" id="L114">        buttons.put(buttonCount++, recentlyPlayedButton);</span>
 
-<span class="fc" id="L115">        Button helpButton = new Button(&quot;Help&quot;, () -&gt; {</span>
-<span class="nc" id="L116">            transitionToHelpMenu(textGUI);</span>
-<span class="nc" id="L117">        });</span>
-<span class="fc" id="L118">        helpButton.setPreferredSize(getSize(buttonWidth, buttonHeight));</span>
-<span class="fc" id="L119">        buttons.put(buttonCount++, helpButton);</span>
+<span class="pc" id="L116">        Button helpButton = new Button(&quot;Help&quot;, () -&gt; transitionToHelpMenu(textGUI));</span>
+<span class="fc" id="L117">        helpButton.setPreferredSize(getSize(buttonWidth, buttonHeight));</span>
+<span class="fc" id="L118">        buttons.put(buttonCount++, helpButton);</span>
 
-<span class="fc" id="L121">        Button quitButton = new Button(&quot;Quit&quot;, window::close);</span>
-<span class="fc" id="L122">        quitButton.setPreferredSize(getSize(buttonWidth, buttonHeight));</span>
-<span class="fc" id="L123">        buttons.put(buttonCount++, quitButton);</span>
+<span class="fc" id="L120">        Button quitButton = new Button(&quot;Quit&quot;, window::close);</span>
+<span class="fc" id="L121">        quitButton.setPreferredSize(getSize(buttonWidth, buttonHeight));</span>
+<span class="fc" id="L122">        buttons.put(buttonCount++, quitButton);</span>
 
+<span class="fc" id="L124">        panel.addComponent(generateNewSpace());</span>
 <span class="fc" id="L125">        panel.addComponent(titleLabel);</span>
 <span class="fc bfc" id="L126" title="All 2 branches covered.">        for (int i = 0; i &lt; buttonCount; i++) {</span>
 <span class="fc" id="L127">            panel.addComponent(buttons.get(i));</span>
@@ -131,54 +131,78 @@ public class Core {
 <span class="fc" id="L131">        return window;</span>
     }
 
+    // Create WindowFactory
     public BasicWindow createHelpMenu(WindowBasedTextGUI textGUI) {
-<span class="fc" id="L135">        BasicWindow window = new BasicWindow(&quot;StreamLine Help Menu&quot;);</span>
+<span class="fc" id="L136">        BasicWindow window = new BasicWindow(&quot;StreamLine Help Menu&quot;);</span>
 
-<span class="fc" id="L137">        window.setHints(java.util.Arrays.asList(Window.Hint.FULL_SCREEN));</span>
+<span class="fc" id="L138">        window.setHints(java.util.Arrays.asList(Window.Hint.FULL_SCREEN));</span>
 
-<span class="fc" id="L139">        Panel panel = new Panel();</span>
-<span class="fc" id="L140">        panel.setLayoutManager(new GridLayout(1));</span>
-<span class="fc" id="L141">        panel.setPreferredSize(new TerminalSize(40, 20));</span>
-<span class="fc" id="L142">        panel.setFillColorOverride(TextColor.ANSI.BLACK);</span>
+<span class="fc" id="L140">        Panel panel = new Panel();</span>
+<span class="fc" id="L141">        panel.setLayoutManager(new GridLayout(1));</span>
+<span class="fc" id="L142">        panel.setPreferredSize(new TerminalSize(40, 20));</span>
+<span class="fc" id="L143">        panel.setFillColorOverride(TextColor.ANSI.BLACK);</span>
 
-<span class="fc" id="L144">        Label searchHelpLabel = new Label(&quot;Search help&quot;);</span>
-<span class="fc" id="L145">        searchHelpLabel.setPreferredSize(getSize(buttonWidth, buttonHeight));</span>
-<span class="fc" id="L146">        searchHelpLabel.addStyle(SGR.BOLD);</span>
-<span class="fc" id="L147">        panel.addComponent(searchHelpLabel);</span>
+<span class="fc" id="L145">        panel.addComponent(generateNewSpace());</span>
 
-<span class="fc" id="L149">        Label searchHelpInfo = new Label(StreamLineMessages.SearchInformation.getMessage());</span>
-<span class="fc" id="L150">        searchHelpInfo.addStyle(SGR.BOLD);</span>
-<span class="fc" id="L151">        panel.addComponent(searchHelpInfo);</span>
+<span class="fc" id="L147">        Label searchHelpLabel = new Label(&quot;Search help&quot;);</span>
+<span class="fc" id="L148">        searchHelpLabel.setPreferredSize(getSize(buttonWidth, buttonHeight));</span>
+<span class="fc" id="L149">        searchHelpLabel.addStyle(SGR.BOLD);</span>
+<span class="fc" id="L150">        panel.addComponent(searchHelpLabel);</span>
 
-<span class="fc" id="L153">        Button backButton = new Button(&quot;&lt;- Back&quot;, () -&gt; {</span>
-<span class="nc" id="L154">            dropWindow(helpMenu);</span>
-<span class="nc" id="L155">            runMainWindow();</span>
-<span class="nc" id="L156">        });</span>
-<span class="fc" id="L157">        backButton.setPreferredSize(getSize(buttonWidth, buttonHeight / 2));</span>
-<span class="fc" id="L158">        panel.addComponent(backButton);</span>
+<span class="fc" id="L152">        Label searchHelpInfo = new Label(StreamLineMessages.SearchInformation.getMessage());</span>
+<span class="fc" id="L153">        searchHelpInfo.addStyle(SGR.BOLD);</span>
+<span class="fc" id="L154">        panel.addComponent(searchHelpInfo);</span>
 
-<span class="fc" id="L160">        window.setComponent(panel);</span>
-<span class="fc" id="L161">        return window;</span>
+<span class="fc" id="L156">        panel.addComponent(generateNewSpace());</span>
+
+<span class="fc" id="L158">        Label likedMusicLabel = new Label(&quot;Liked music help&quot;);</span>
+<span class="fc" id="L159">        likedMusicLabel.setPreferredSize(getSize(buttonWidth, buttonHeight));</span>
+<span class="fc" id="L160">        likedMusicLabel.addStyle(SGR.BOLD);</span>
+<span class="fc" id="L161">        panel.addComponent(likedMusicLabel);</span>
+
+<span class="fc" id="L163">        Label likedMusicInfo = new Label(StreamLineMessages.LikedMusicInformation.getMessage());</span>
+<span class="fc" id="L164">        likedMusicInfo.addStyle(SGR.BOLD);</span>
+<span class="fc" id="L165">        panel.addComponent(likedMusicInfo);</span>
+
+<span class="fc" id="L167">        panel.addComponent(generateNewSpace());</span>
+<span class="fc" id="L168">        panel.addComponent(generateNewSpace());</span>
+
+<span class="fc" id="L170">        Button backButton = new Button(&quot;&lt;- Back&quot;, () -&gt; {</span>
+<span class="nc" id="L171">            dropWindow(helpMenu);</span>
+<span class="nc" id="L172">            runMainWindow();</span>
+<span class="nc" id="L173">        });</span>
+<span class="fc" id="L174">        backButton.setPreferredSize(getSize(buttonWidth, buttonHeight / 2));</span>
+<span class="fc" id="L175">        panel.addComponent(backButton);</span>
+
+<span class="fc" id="L177">        window.setComponent(panel);</span>
+<span class="fc" id="L178">        return window;</span>
+    }
+
+    public EmptySpace generateNewSpace() {
+<span class="fc" id="L182">        EmptySpace space = new EmptySpace();</span>
+<span class="fc" id="L183">        space.setPreferredSize(getSize(buttonWidth, buttonHeight));</span>
+<span class="fc" id="L184">        space.setVisible(false);</span>
+<span class="fc" id="L185">        return space;</span>
     }
 
     public void runMainWindow() {
-<span class="nc" id="L165">        mainMenu.setVisible(true);</span>
-<span class="nc" id="L166">        java.util.Collection&lt;Window&gt; openWindows = textGUI.getWindows();</span>
-<span class="nc bnc" id="L167" title="All 2 branches missed.">        if (!openWindows.contains(mainMenu)) {</span>
-<span class="nc" id="L168">            textGUI.addWindowAndWait(mainMenu);</span>
+<span class="nc" id="L189">        mainMenu.setVisible(true);</span>
+<span class="nc" id="L190">        java.util.Collection&lt;Window&gt; openWindows = textGUI.getWindows();</span>
+<span class="nc bnc" id="L191" title="All 2 branches missed.">        if (!openWindows.contains(mainMenu)) {</span>
+<span class="nc" id="L192">            textGUI.addWindowAndWait(mainMenu);</span>
         }
-<span class="nc" id="L170">    }</span>
+<span class="nc" id="L194">    }</span>
 
     public void transitionToHelpMenu(WindowBasedTextGUI textGUI) {
-<span class="nc" id="L173">        mainMenu.setVisible(false);</span>
-<span class="nc" id="L174">        java.util.Collection&lt;Window&gt; openWindows = textGUI.getWindows();</span>
-<span class="nc bnc" id="L175" title="All 2 branches missed.">        if (!openWindows.contains(helpMenu)) {</span>
-<span class="nc" id="L176">            textGUI.addWindowAndWait(helpMenu);</span>
+<span class="nc" id="L197">        mainMenu.setVisible(false);</span>
+<span class="nc" id="L198">        java.util.Collection&lt;Window&gt; openWindows = textGUI.getWindows();</span>
+<span class="nc bnc" id="L199" title="All 2 branches missed.">        if (!openWindows.contains(helpMenu)) {</span>
+<span class="nc" id="L200">            textGUI.addWindowAndWait(helpMenu);</span>
         }
-<span class="nc" id="L178">    }</span>
+<span class="nc" id="L202">    }</span>
 
     public void dropWindow(BasicWindow window) {
-<span class="nc" id="L181">        textGUI.removeWindow(window);</span>
-<span class="nc" id="L182">    }</span>
+<span class="nc" id="L205">        textGUI.removeWindow(window);</span>
+<span class="nc" id="L206">    }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>
