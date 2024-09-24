@@ -4,3 +4,4 @@ target/surefire-reports/*
 target/test-classes/*
 target/maven-status/*
 target/maven-archiver/*
+target/jacoco.exec
