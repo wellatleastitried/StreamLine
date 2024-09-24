@@ -21,6 +21,6 @@ public class WindowStateTest {
     
     @Test
     public void getTerminalSize() {
-        MatcherAssert.assertThat(core.getSize(10, 5), is(not(null)));
+        MatcherAssert.assertThat(core.getSize(10, 5), is(instanceof(TerminalSize.class)));
     }
 }
