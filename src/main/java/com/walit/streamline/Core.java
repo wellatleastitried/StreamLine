@@ -28,10 +28,13 @@ public class Core {
 
     public final HashMap<Integer, Button> buttons;
     public int buttonCount;
-    public int buttonWidth;
-    public int buttonHeight;
+    public final int buttonWidth;
+    public final int buttonHeight;
 
-    public Core() {
+    public Core() {)
+
+    public Core(boolean startDesired) {
+        if (!startDesired) return;
         this.buttons = new HashMap<Integer, Button>();
         DefaultTerminalFactory terminalFactory = new DefaultTerminalFactory();
         try {
@@ -63,7 +66,7 @@ public class Core {
     }
 
     public static void main(String [] args) {
-        Core streamline = new Core();
+        Core streamline = new Core(true);
         if (!streamline.start()) {
             System.err.println(StreamLineMessages.FatalError.getMessage());
             System.exit(1);
@@ -78,7 +81,7 @@ public class Core {
         return button;
     }
 
-    public TerminalSize getSize(int bWidth, int bHeight) {
+    private TerminalSize getSize(int bWidth, int bHeight) {
         return new TerminalSize(bWidth, bHeight);
     }
 
@@ -185,7 +188,7 @@ public class Core {
         return space;
     }
 
-    public void runMainWindow() {
+    private void runMainWindow() {
         mainMenu.setVisible(true);
         java.util.Collection<Window> openWindows = textGUI.getWindows();
         if (!openWindows.contains(mainMenu)) {
@@ -193,7 +196,7 @@ public class Core {
         }
     }
 
-    public void transitionToHelpMenu(WindowBasedTextGUI textGUI) {
+    private void transitionToHelpMenu(WindowBasedTextGUI textGUI) {
         mainMenu.setVisible(false);
         java.util.Collection<Window> openWindows = textGUI.getWindows();
         if (!openWindows.contains(helpMenu)) {
@@ -201,7 +204,7 @@ public class Core {
         }
     }
 
-    public void dropWindow(BasicWindow window) {
+    private void dropWindow(BasicWindow window) {
         textGUI.removeWindow(window);
     }
 }
