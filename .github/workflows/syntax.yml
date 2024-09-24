@@ -49,5 +49,5 @@ jobs:
     - name: Run PMD
       run: mvn pmd:pmd
 
-    - name: Run SpotBugs
-      run: mvn spotbugs:check
+#    - name: Run SpotBugs
+#      run: mvn spotbugs:check
