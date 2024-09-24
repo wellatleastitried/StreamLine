@@ -16,7 +16,7 @@ public class WindowStateTest {
 
     @Before
     public void setup() {
-        core = new Core();
+        core = new Core("TESING");
     }
     
     @Test
