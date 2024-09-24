@@ -11,7 +11,7 @@ import com.googlecode.lanterna.terminal.Terminal;
 import java.io.IOException;
 import java.util.HashMap;
 
-import com.walit.streamline.Debug.StreamLineMessages;
+import static com.walit.streamline.Debug.StreamLineMessages;
 
 public class Core {
 
@@ -30,31 +30,42 @@ public class Core {
     public int buttonCount;
     public int buttonWidth;
     public int buttonHeight;
-    
-    public Core() {
-        this.buttons = new HashMap<Integer, Button>();
-        DefaultTerminalFactory terminalFactory = new DefaultTerminalFactory();
-        try {
-            this.terminal = terminalFactory.createTerminal();
-            this.screen = new TerminalScreen(terminal);
-            this.terminalSize = screen.getTerminalSize();
-            this.buttonHeight = 2;
-            this.buttonWidth = terminalSize.getColumns() / 4;
-            this.textGUI = new MultiWindowTextGUI(screen);
-            this.mainMenu = createMainMenuWindow(textGUI);
-            this.helpMenu = createHelpMenu(textGUI);
-        } catch (IOException iE) {
-            System.err.println(StreamLineMessages.FatalError.getMessage());
-            System.exit(1);
-        }
-    }
 
-    // DON'T USE
-    // Testing environment can't handle the TUI starting so it uses this contructor.
-    public Core(String TESINGONLY) {
-        this.buttons = new HashMap<Integer, Button>();
-        this.buttonWidth = 10;
-        this.buttonHeight = 10;
+    public enum MODE {
+        AUTORUN,
+        DELAYEDRUN,
+        TESTING
+    }
+    
+    public Core(MODE mode) {
+        switch (mode) {
+            case DELAYEDRUN:
+                System.out.println("Work this out");
+                break;
+            case TESTING:
+                this.buttons = new HashMap<Integer, Button>();
+                this.buttonWidth = 10;
+                this.buttonHeight = 10;
+                break;
+            case AUTORUN:
+            case default:
+                this.buttons = new HashMap<Integer, Button>();
+                DefaultTerminalFactory terminalFactory = new DefaultTerminalFactory();
+                try {
+                    this.terminal = terminalFactory.createTerminal();
+                    this.screen = new TerminalScreen(terminal);
+                    this.terminalSize = screen.getTerminalSize();
+                    this.buttonHeight = 2;
+                    this.buttonWidth = terminalSize.getColumns() / 4;
+                    this.textGUI = new MultiWindowTextGUI(screen);
+                    this.mainMenu = createMainMenuWindow(textGUI);
+                    this.helpMenu = createHelpMenu(textGUI);
+                } catch (IOException iE) {
+                    System.err.println(FatalError.getMessage());
+                    System.exit(1);
+                }
+                break;
+        }
     }
 
     public boolean start() {
@@ -63,7 +74,7 @@ public class Core {
             runMainWindow();
             screen.stopScreen();
         } catch (IOException iE) {
-            System.err.println(StreamLineMessages.FatalError.getMessage());
+            System.err.println(FatalError.getMessage());
             System.exit(1);
             return false;
         }
@@ -73,10 +84,10 @@ public class Core {
     public static void main(String [] args) {
         Core streamline = new Core();
         if (!streamline.start()) {
-            System.err.println(StreamLineMessages.FatalError.getMessage());
+            System.err.println(FatalError.getMessage());
             System.exit(1);
         }
-        System.out.println(StreamLineMessages.Farewell.getMessage());
+        System.out.println(Farewell.getMessage());
         System.exit(0);
     }
 
