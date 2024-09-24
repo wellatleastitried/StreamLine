@@ -28,8 +28,8 @@ public class Core {
 
     public final HashMap<Integer, Button> buttons;
     public int buttonCount;
-    public final int buttonWidth;
-    public final int buttonHeight;
+    public int buttonWidth;
+    public int buttonHeight;
     
     public Core() {
         this.buttons = new HashMap<Integer, Button>();
