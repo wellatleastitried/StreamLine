@@ -2,10 +2,15 @@ package com.walit.streamline.Communicate;
 
 public enum StreamLineMessages {
 
-    FatalError("[!] A fatal error has occured while starting StreamLine, please try reloading the app."),
+    FatalStartError("[!] A fatal error has occured while starting StreamLine, please try reloading the app."),
     Farewell("[*] Thank you for using StreamLine!"),
-    SearchInformation("The search menu allows you to search for any song or artist you are interested in."),
-    LikedMusicInformation("The \"Liked music\" option allows you to view the songs you have \"liked\" over time.");
+    FatalPathError("[!] A fatal error has occured while retrieving the path of the database file, please try reloading the app."),
+    DBCreationFailure("[!] A fatal error has occured while generating the schema of the database, please try reloading the app."),
+    UnknownDBFatalError("[!] There has been an unknown fatal error while connecting to the database, please try reloading the app."),
+    DBConnectionError("[!] A fatal error has occured while trying to connect to the existing database."),
+    DBCloseError("[!] A fatal error has occured while closing the connection to the database."),
+    GetDBConnectionFailure("[!] A fatal error has occured while establishing a connection to the database."),
+    DatabaseFileCreationFailure("[!] A fatal error has occured while creating the database file, please try reloading the app.");
 
     private final String message;
 

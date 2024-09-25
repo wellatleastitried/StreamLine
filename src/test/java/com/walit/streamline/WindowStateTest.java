@@ -24,4 +24,10 @@ public class WindowStateTest {
     public void getTerminalSize() {
         MatcherAssert.assertThat(core.getSize(core.buttonWidth, core.buttonHeight), is(new TerminalSize(core.buttonWidth, core.buttonHeight)));
     }
+
+    @Test
+    public void ensureSuccessfulWindowBuilds() {
+        MatcherAssert.assertThat(core.createMainMenuWindow().getTitle(), is("StreamLine Music Player"));
+        MatcherAssert.assertThat(core.createHelpMenu().getTitle(), is("StreamLine Help Menu"));
+    }
 }

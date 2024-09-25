@@ -11,8 +11,11 @@ import com.googlecode.lanterna.terminal.Terminal;
 import java.io.IOException;
 import java.util.HashMap;
 
+import com.walit.streamline.Communicate.HelpMessages;
 import com.walit.streamline.Communicate.StreamLineMessages;
 import com.walit.streamline.Communicate.Mode;
+import com.walit.streamline.Communicate.OS;
+import com.walit.streamline.Interact.DatabaseLinker;
 
 public final class Core {
 
@@ -35,7 +38,21 @@ public final class Core {
     public int buttonWidth;
     public int buttonHeight;
 
+    public final OS whichOS;
+    // private final DatabaseLinker dbLink;
+
     public Core(Mode mode) {
+        String os = System.getProperty("os.name").toLowerCase();
+        if (os.contains("win")) {
+            whichOS = OS.WINDOWS;
+        } else if (os.contains("nix") || os.contains("nux")) {
+            whichOS = OS.LINUX;
+        } else if (os.contains("mac")) {
+            whichOS = OS.MAC;
+        } else {
+            whichOS = OS.UNKNOWN;
+        }
+        // dbLink = new DatabaseLinker(whichOS);
         switch (mode) {
             case DELAYEDRUN:
                 System.out.println("Work this out");
@@ -61,7 +78,7 @@ public final class Core {
                     this.recentlyPlayedPage = createRecentlyPlayedPage();
                     this.helpMenu = createHelpMenu();
                 } catch (IOException iE) {
-                    System.err.println(StreamLineMessages.FatalError.getMessage());
+                    System.err.println(StreamLineMessages.FatalStartError.getMessage());
                     System.exit(1);
                 }
                 break;
@@ -74,7 +91,7 @@ public final class Core {
             runMainWindow();
             screen.stopScreen();
         } catch (IOException iE) {
-            System.err.println(StreamLineMessages.FatalError.getMessage());
+            System.err.println(StreamLineMessages.FatalStartError.getMessage());
             System.exit(1);
             return false;
         }
@@ -84,7 +101,7 @@ public final class Core {
     public static void main(String [] args) {
         Core streamline = new Core(Mode.AUTORUN);
         if (!streamline.start()) {
-            System.err.println(StreamLineMessages.FatalError.getMessage());
+            System.err.println(StreamLineMessages.FatalStartError.getMessage());
             System.exit(1);
         }
         System.out.println(StreamLineMessages.Farewell.getMessage());
@@ -116,27 +133,27 @@ public final class Core {
         Label titleLabel = new Label("    Welcome to StreamLine    ");
         titleLabel.addStyle(SGR.BOLD);
 
-        Button searchButton= new Button("Search for a song", () -> transitionToSearch());
+        Button searchButton= new Button("Search for a song", () -> transitionMenus(searchPage));
         searchButton.setPreferredSize(getSize(buttonWidth, buttonHeight));
         buttons.put(buttonCount++, searchButton);
 
-        Button likedButton = new Button("View liked music", () -> transitionToLikedMusic());
+        Button likedButton = new Button("View liked music", () -> transitionMenus(likedMusicPage));
         likedButton.setPreferredSize(getSize(buttonWidth, buttonHeight));
         buttons.put(buttonCount++, likedButton);
 
-        Button playlistsButton = new Button("Playlists", () -> transitionToPlaylists());
+        Button playlistsButton = new Button("Playlists", () -> transitionMenus(playlistPage));
         playlistsButton.setPreferredSize(getSize(buttonWidth, buttonHeight));
         buttons.put(buttonCount++, playlistsButton);
 
-        Button recentlyPlayedButton = new Button("Recently Played", () -> transitionToRecentlyPlayed());
+        Button recentlyPlayedButton = new Button("Recently Played", () -> transitionMenus(recentlyPlayedPage));
         recentlyPlayedButton.setPreferredSize(getSize(buttonWidth, buttonHeight));
         buttons.put(buttonCount++, recentlyPlayedButton);
 
-        Button helpButton = new Button("Help", () -> transitionToHelpMenu());
+        Button helpButton = new Button("Help", () -> transitionMenus(helpMenu));
         helpButton.setPreferredSize(getSize(buttonWidth, buttonHeight));
         buttons.put(buttonCount++, helpButton);
 
-        Button quitButton = new Button("Quit", window::close);
+        Button quitButton = new Button("Quit", () -> shutdown());
         quitButton.setPreferredSize(getSize(buttonWidth, buttonHeight));
         buttons.put(buttonCount++, quitButton);
 
@@ -167,7 +184,7 @@ public final class Core {
         searchHelpLabel.addStyle(SGR.BOLD);
         panel.addComponent(searchHelpLabel);
 
-        Label searchHelpInfo = new Label(getString(StreamLineMessages.SearchInformation.getMessage()));
+        Label searchHelpInfo = new Label(getString(HelpMessages.SearchInformation.getMessage()));
         searchHelpInfo.addStyle(SGR.BOLD);
         panel.addComponent(searchHelpInfo);
 
@@ -178,7 +195,7 @@ public final class Core {
         likedMusicLabel.addStyle(SGR.BOLD);
         panel.addComponent(likedMusicLabel);
 
-        Label likedMusicInfo = new Label(getString(StreamLineMessages.LikedMusicInformation.getMessage()));
+        Label likedMusicInfo = new Label(getString(HelpMessages.LikedMusicInformation.getMessage()));
         likedMusicInfo.addStyle(SGR.BOLD);
         panel.addComponent(likedMusicInfo);
 
@@ -231,27 +248,11 @@ public final class Core {
         }
     }
 
-    private void transitionToSearch() {
-        System.out.println("Coming soon...");
-    }
-
-    private void transitionToLikedMusic() {
-        System.out.println("Coming soon...");
-    }
-
-    private void transitionToPlaylists() {
-        System.out.println("Coming soon...");
-    }
-
-    private void transitionToRecentlyPlayed() {
-        System.out.println("Coming soon...");
-    }
-
-    private void transitionToHelpMenu() {
+    private void transitionMenus(BasicWindow windowToTransitionTo) {
         mainMenu.setVisible(false);
         java.util.Collection<Window> openWindows = textGUI.getWindows();
-        if (!openWindows.contains(helpMenu)) {
-            textGUI.addWindowAndWait(helpMenu);
+        if (!openWindows.contains(windowToTransitionTo)) {
+            textGUI.addWindowAndWait(windowToTransitionTo);
         }
     }
 
@@ -261,5 +262,13 @@ public final class Core {
 
     public String getString(String text) {
         return "  " + text + "  ";
+    }
+
+    private void shutdown() {
+        java.util.Collection<Window> openWindows = textGUI.getWindows();
+        for (Window window : openWindows) {
+            textGUI.removeWindow(window);
+        }
+        // dbLink.close();
     }
 }
