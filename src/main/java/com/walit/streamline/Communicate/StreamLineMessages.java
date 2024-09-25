@@ -1,4 +1,4 @@
-package com.walit.streamline.Debug;
+package com.walit.streamline.Communicate;
 
 public enum StreamLineMessages {
 
