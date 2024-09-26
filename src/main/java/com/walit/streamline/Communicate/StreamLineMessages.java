@@ -13,7 +13,9 @@ public enum StreamLineMessages {
     DatabaseFileCreationFailure("[!] A fatal error has occured while creating the database file, please try reloading the app."),
     SQLFileReadError("[!] A fatal error has occured while reading premade SQL queries from configuration files."),
     CorruptedFileHashError("[!] The integrity of the sql configuration files has been corrupted, if this problem persists you may need to rebuild this project."),
-    HashingFileInputStreamError("[!] There has been an error reading the bytes from the configuration file, please try reloading the app.");
+    HashingFileInputStreamError("[!] There has been an error reading the bytes from the configuration file, please try reloading the app."),
+    HashMatchingError("[!] Error validating the integrity of the configuration files."),
+    MissingConfigurationFiles("[!] Missing configuration files! You may need to rebuild the project.");
 
     private final String message;
 
