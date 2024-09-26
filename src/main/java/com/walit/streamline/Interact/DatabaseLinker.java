@@ -8,8 +8,6 @@ import java.io.IOException;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -24,17 +22,19 @@ public class DatabaseLinker {
         this.osName = osName;
         this.PATH = setupPath(this.osName);
         this.isNewDatabase = needsNewDatabase(PATH);
-        if (!osName.equals(OS.TESTING)) {
-            try {
-                this.connection = DriverManager.getConnection("jdbc:sqlite:" + PATH);
-                if (isNewDatabase) {
-                    setupNewDatabase();
-                }
-            } catch (SQLException sE) {
-                System.err.println(StreamLineMessages.GetDBConnectionFailure.getMessage());
-                System.exit(1);
+        try {
+            this.connection = DriverManager.getConnection("jdbc:sqlite:" + PATH);
+            if (isNewDatabase) {
+                setupNewDatabase();
             }
-        } 
+        } catch (SQLException sE) {
+            System.err.println(StreamLineMessages.GetDBConnectionFailure.getMessage());
+            System.exit(1);
+        }
+    }
+
+    private Connection getConnection() {
+        return this.connection;
     }
 
     private void setupNewDatabase() {
@@ -65,18 +65,7 @@ public class DatabaseLinker {
     }
 
     public boolean needsNewDatabase(String path) {
-        File dbFile = new File(path);
-        if (dbFile.exists()) {
-            return false;
-        }
-        try {
-            dbFile.getParentFile().mkdirs();
-            dbFile.createNewFile();
-        } catch (IOException iE) {
-            System.err.println(StreamLineMessages.DatabaseFileCreationFailure.getMessage());
-            System.exit(1);
-        }
-        return true;
+        return !(new File(path).exists());
     }
 
     private String getDBCreationString() {
