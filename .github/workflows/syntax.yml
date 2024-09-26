@@ -43,11 +43,5 @@ jobs:
     - name: Generate code coverage
       run: mvn jacoco:report
 
-#    - name: Run Checkstyle
-#      run: mvn checkstyle:check
-
     - name: Run PMD
       run: mvn pmd:pmd
-
-#    - name: Run SpotBugs
-#      run: mvn spotbugs:check
