@@ -8,6 +8,7 @@ import org.junit.Test;
 import org.hamcrest.MatcherAssert;
 
 import com.walit.streamline.Communicate.OS;
+import com.walit.streamline.Utilities.StatementReader;
 
 import static org.hamcrest.CoreMatchers.is;
 
@@ -19,7 +20,7 @@ public class DatabaseTest {
 
     @Before
     public void setup() {
-        linker = new DatabaseLinker(OS.TESTING);
+        linker = new DatabaseLinker(OS.TESTING, StatementReader.readQueryFromFile("/sql/DatabaseInitialization.sql"));
         testPath1 = ".config/notTheDatabase.db";
         testPath2 = linker.PATH;
     }
