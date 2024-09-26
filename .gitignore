@@ -5,3 +5,4 @@ target/test-classes/*
 target/maven-status/*
 target/maven-archiver/*
 target/jacoco.exec
+target/classes/*

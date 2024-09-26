@@ -11,50 +11,78 @@ import com.googlecode.lanterna.terminal.Terminal;
 import java.io.IOException;
 import java.util.HashMap;
 
-import com.walit.streamline.Debug.StreamLineMessages;
+import com.walit.streamline.Communicate.HelpMessages;
+import com.walit.streamline.Communicate.StreamLineMessages;
+import com.walit.streamline.Communicate.Mode;
+import com.walit.streamline.Communicate.OS;
+import com.walit.streamline.Interact.DatabaseLinker;
 
-public class Core {
+public final class Core {
 
     private WindowBasedTextGUI textGUI;
 
     // Windows
     private BasicWindow mainMenu;
     private BasicWindow helpMenu;
+    private BasicWindow searchPage;
+    private BasicWindow recentlyPlayedPage;
+    private BasicWindow playlistPage;
+    private BasicWindow likedMusicPage;
 
     public TerminalScreen screen;
 
     private Terminal terminal;
     private TerminalSize terminalSize;
 
-    public final HashMap<Integer, Button> buttons;
     public int buttonCount;
     public int buttonWidth;
     public int buttonHeight;
-    
-    public Core() {
-        this.buttons = new HashMap<Integer, Button>();
-        DefaultTerminalFactory terminalFactory = new DefaultTerminalFactory();
-        try {
-            this.terminal = terminalFactory.createTerminal();
-            this.screen = new TerminalScreen(terminal);
-            this.terminalSize = screen.getTerminalSize();
-            this.buttonHeight = 2;
-            this.buttonWidth = terminalSize.getColumns() / 4;
-            this.textGUI = new MultiWindowTextGUI(screen);
-            this.mainMenu = createMainMenuWindow(textGUI);
-            this.helpMenu = createHelpMenu(textGUI);
-        } catch (IOException iE) {
-            System.err.println(StreamLineMessages.FatalError.getMessage());
-            System.exit(1);
-        }
-    }
 
-    // DON'T USE
-    // Testing environment can't handle the TUI starting so it uses this contructor.
-    public Core(String TESINGONLY) {
-        this.buttons = new HashMap<Integer, Button>();
-        this.buttonWidth = 10;
-        this.buttonHeight = 10;
+    public final OS whichOS;
+    // private final DatabaseLinker dbLink;
+
+    public Core(Mode mode) {
+        String os = System.getProperty("os.name").toLowerCase();
+        if (os.contains("win")) {
+            whichOS = OS.WINDOWS;
+        } else if (os.contains("nix") || os.contains("nux")) {
+            whichOS = OS.LINUX;
+        } else if (os.contains("mac")) {
+            whichOS = OS.MAC;
+        } else {
+            whichOS = OS.UNKNOWN;
+        }
+        // dbLink = new DatabaseLinker(whichOS);
+        switch (mode) {
+            case DELAYEDRUN:
+                System.out.println("Work this out");
+                break;
+            case TESTING:
+                this.buttonWidth = 10;
+                this.buttonHeight = 10;
+                break;
+            case AUTORUN:
+            default:
+                DefaultTerminalFactory terminalFactory = new DefaultTerminalFactory();
+                try {
+                    this.terminal = terminalFactory.createTerminal();
+                    this.screen = new TerminalScreen(terminal);
+                    this.terminalSize = screen.getTerminalSize();
+                    this.buttonHeight = 2;
+                    this.buttonWidth = terminalSize.getColumns() / 4;
+                    this.textGUI = new MultiWindowTextGUI(screen);
+                    this.mainMenu = createMainMenuWindow();
+                    this.searchPage = createSearchPage();
+                    this.likedMusicPage = createLikeMusicPage();
+                    this.playlistPage = createPlaylistPage();
+                    this.recentlyPlayedPage = createRecentlyPlayedPage();
+                    this.helpMenu = createHelpMenu();
+                } catch (IOException iE) {
+                    System.err.println(StreamLineMessages.FatalStartError.getMessage());
+                    System.exit(1);
+                }
+                break;
+        }
     }
 
     public boolean start() {
@@ -63,7 +91,7 @@ public class Core {
             runMainWindow();
             screen.stopScreen();
         } catch (IOException iE) {
-            System.err.println(StreamLineMessages.FatalError.getMessage());
+            System.err.println(StreamLineMessages.FatalStartError.getMessage());
             System.exit(1);
             return false;
         }
@@ -71,9 +99,9 @@ public class Core {
     }
 
     public static void main(String [] args) {
-        Core streamline = new Core();
+        Core streamline = new Core(Mode.AUTORUN);
         if (!streamline.start()) {
-            System.err.println(StreamLineMessages.FatalError.getMessage());
+            System.err.println(StreamLineMessages.FatalStartError.getMessage());
             System.exit(1);
         }
         System.out.println(StreamLineMessages.Farewell.getMessage());
@@ -90,8 +118,8 @@ public class Core {
         return new TerminalSize(bWidth, bHeight);
     }
 
-    // Create WindowFactory
-    public BasicWindow createMainMenuWindow(WindowBasedTextGUI textGUI) {
+    public BasicWindow createMainMenuWindow() {
+        final HashMap<Integer, Button> buttons = new HashMap<Integer, Button>();
         BasicWindow window = new BasicWindow("StreamLine Music Player");
 
         window.setHints(java.util.Arrays.asList(Window.Hint.FULL_SCREEN));
@@ -105,27 +133,27 @@ public class Core {
         Label titleLabel = new Label("    Welcome to StreamLine    ");
         titleLabel.addStyle(SGR.BOLD);
 
-        Button searchButton= new Button("Search for a song", () -> System.out.println("Playing song"));
+        Button searchButton= new Button("Search for a song", () -> transitionMenus(searchPage));
         searchButton.setPreferredSize(getSize(buttonWidth, buttonHeight));
         buttons.put(buttonCount++, searchButton);
 
-        Button likedButton = new Button("View liked music", () -> System.out.println("Liked songs"));
+        Button likedButton = new Button("View liked music", () -> transitionMenus(likedMusicPage));
         likedButton.setPreferredSize(getSize(buttonWidth, buttonHeight));
         buttons.put(buttonCount++, likedButton);
 
-        Button playlistsButton = new Button("Playlists", () -> System.out.println("Playlists"));
+        Button playlistsButton = new Button("Playlists", () -> transitionMenus(playlistPage));
         playlistsButton.setPreferredSize(getSize(buttonWidth, buttonHeight));
         buttons.put(buttonCount++, playlistsButton);
 
-        Button recentlyPlayedButton = new Button("Recently Played", () -> System.out.println("Recently played"));
+        Button recentlyPlayedButton = new Button("Recently Played", () -> transitionMenus(recentlyPlayedPage));
         recentlyPlayedButton.setPreferredSize(getSize(buttonWidth, buttonHeight));
         buttons.put(buttonCount++, recentlyPlayedButton);
 
-        Button helpButton = new Button("Help", () -> transitionToHelpMenu(textGUI));
+        Button helpButton = new Button("Help", () -> transitionMenus(helpMenu));
         helpButton.setPreferredSize(getSize(buttonWidth, buttonHeight));
         buttons.put(buttonCount++, helpButton);
 
-        Button quitButton = new Button("Quit", window::close);
+        Button quitButton = new Button("Quit", () -> shutdown());
         quitButton.setPreferredSize(getSize(buttonWidth, buttonHeight));
         buttons.put(buttonCount++, quitButton);
 
@@ -139,8 +167,7 @@ public class Core {
         return window;
     }
 
-    // Create WindowFactory
-    public BasicWindow createHelpMenu(WindowBasedTextGUI textGUI) {
+    public BasicWindow createHelpMenu() {
         BasicWindow window = new BasicWindow("StreamLine Help Menu");
 
         window.setHints(java.util.Arrays.asList(Window.Hint.FULL_SCREEN));
@@ -152,37 +179,57 @@ public class Core {
 
         panel.addComponent(generateNewSpace());
 
-        Label searchHelpLabel = new Label("Search help");
+        Label searchHelpLabel = new Label(getString("Search help"));
         searchHelpLabel.setPreferredSize(getSize(buttonWidth, buttonHeight));
         searchHelpLabel.addStyle(SGR.BOLD);
         panel.addComponent(searchHelpLabel);
 
-        Label searchHelpInfo = new Label(StreamLineMessages.SearchInformation.getMessage());
+        Label searchHelpInfo = new Label(getString(HelpMessages.SearchInformation.getMessage()));
         searchHelpInfo.addStyle(SGR.BOLD);
         panel.addComponent(searchHelpInfo);
 
         panel.addComponent(generateNewSpace());
 
-        Label likedMusicLabel = new Label("Liked music help");
+        Label likedMusicLabel = new Label(getString("Liked music help"));
         likedMusicLabel.setPreferredSize(getSize(buttonWidth, buttonHeight));
         likedMusicLabel.addStyle(SGR.BOLD);
         panel.addComponent(likedMusicLabel);
 
-        Label likedMusicInfo = new Label(StreamLineMessages.LikedMusicInformation.getMessage());
+        Label likedMusicInfo = new Label(getString(HelpMessages.LikedMusicInformation.getMessage()));
         likedMusicInfo.addStyle(SGR.BOLD);
         panel.addComponent(likedMusicInfo);
 
         panel.addComponent(generateNewSpace());
         panel.addComponent(generateNewSpace());
 
-        Button backButton = new Button("<- Back", () -> {
+        Button backButton = new Button("  <- Back  ", () -> {
             dropWindow(helpMenu);
             runMainWindow();
         });
-        backButton.setPreferredSize(getSize(buttonWidth, buttonHeight / 2));
+        backButton.setPreferredSize(getSize(buttonWidth / 3, buttonHeight / 2));
         panel.addComponent(backButton);
 
         window.setComponent(panel);
+        return window;
+    }
+
+    public BasicWindow createPlaylistPage() {
+        BasicWindow window = new BasicWindow("Playlists");
+        return window;
+    }
+
+    public BasicWindow createRecentlyPlayedPage() {
+        BasicWindow window = new BasicWindow("Recently Played");
+        return window;
+    }
+
+    public BasicWindow createLikeMusicPage() {
+        BasicWindow window = new BasicWindow("Liked Music");
+        return window;
+    }
+
+    public BasicWindow createSearchPage() {
+        BasicWindow window = new BasicWindow("Search");
         return window;
     }
 
@@ -201,15 +248,27 @@ public class Core {
         }
     }
 
-    private void transitionToHelpMenu(WindowBasedTextGUI textGUI) {
+    private void transitionMenus(BasicWindow windowToTransitionTo) {
         mainMenu.setVisible(false);
         java.util.Collection<Window> openWindows = textGUI.getWindows();
-        if (!openWindows.contains(helpMenu)) {
-            textGUI.addWindowAndWait(helpMenu);
+        if (!openWindows.contains(windowToTransitionTo)) {
+            textGUI.addWindowAndWait(windowToTransitionTo);
         }
     }
 
     private void dropWindow(BasicWindow window) {
         textGUI.removeWindow(window);
+    }
+
+    public String getString(String text) {
+        return "  " + text + "  ";
+    }
+
+    private void shutdown() {
+        java.util.Collection<Window> openWindows = textGUI.getWindows();
+        for (Window window : openWindows) {
+            textGUI.removeWindow(window);
+        }
+        // dbLink.close();
     }
 }
