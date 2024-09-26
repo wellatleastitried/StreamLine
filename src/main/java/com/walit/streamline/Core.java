@@ -112,11 +112,11 @@ public final class Core {
 
     public HashMap getMapOfQueries() {
         HashMap<String, String> map = new HashMap<>();
-        map.put("INITIALIZE", StatementReader.readQueryFromFile("/sql/DatabaseInitialization.sql");
-        map.put("getLikedSongs", StatementReader.readQueryFromFile("/sql/GetSongForLikedMusicScreen.sql");
-        map.put("getDownloadedSongs", StatementReader.readQueryFromFile("/sql/GetSongForDownloadedScreen.sql");
-        map.put("getRecentlyPlayedSongs", StatementReader.readQueryFromFile("/sql/GetSongForRecPlayedScreen.sql");
-        map.put("ensureRecentlyPlayedCount", StatementReader.readQueryFromFile("/sql/UpdateRecentlyPlayed.sql");
+        map.put("INITIALIZE", StatementReader.readQueryFromFile("/sql/DatabaseInitialization.sql"));
+        map.put("getLikedSongs", StatementReader.readQueryFromFile("/sql/GetSongForLikedMusicScreen.sql"));
+        map.put("getDownloadedSongs", StatementReader.readQueryFromFile("/sql/GetSongForDownloadedScreen.sql"));
+        map.put("getRecentlyPlayedSongs", StatementReader.readQueryFromFile("/sql/GetSongForRecPlayedScreen.sql"));
+        map.put("ensureRecentlyPlayedCount", StatementReader.readQueryFromFile("/sql/UpdateRecentlyPlayed.sql"));
         return map;
     }
 
