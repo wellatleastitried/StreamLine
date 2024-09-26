@@ -1,1 +1,1 @@
-SELECT * FROM Songs WHERE liked=1 ORDER BY date_added DESC;
+SELECT * FROM Songs WHERE song_id IN (SELECT song_id FROM LikedSongs ORDER BY date_liked DESC);
