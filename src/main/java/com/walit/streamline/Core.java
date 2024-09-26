@@ -16,6 +16,7 @@ import com.walit.streamline.Communicate.StreamLineMessages;
 import com.walit.streamline.Communicate.Mode;
 import com.walit.streamline.Communicate.OS;
 import com.walit.streamline.Interact.DatabaseLinker;
+import com.walit.streamline.Utilities.StatementReader;
 
 public final class Core {
 
@@ -52,7 +53,8 @@ public final class Core {
         } else {
             whichOS = OS.UNKNOWN;
         }
-        // dbLink = new DatabaseLinker(whichOS);
+        HashMap<String, String> queries = getMapOfQueries();
+        dbLink = new DatabaseLinker(whichOS, queries.get("INITIALIZE"));
         switch (mode) {
             case DELAYEDRUN:
                 System.out.println("Work this out");
@@ -106,6 +108,16 @@ public final class Core {
         }
         System.out.println(StreamLineMessages.Farewell.getMessage());
         System.exit(0);
+    }
+
+    public HashMap getMapOfQueries() {
+        HashMap<String, String> map = new HashMap<>();
+        map.put("INITIALIZE", StatementReader.readQueryFromFile("/sql/DatabaseInitialization.sql");
+        map.put("getLikedSongs", StatementReader.readQueryFromFile("/sql/GetSongForLikedMusicScreen.sql");
+        map.put("getDownloadedSongs", StatementReader.readQueryFromFile("/sql/GetSongForDownloadedScreen.sql");
+        map.put("getRecentlyPlayedSongs", StatementReader.readQueryFromFile("/sql/GetSongForRecPlayedScreen.sql");
+        map.put("ensureRecentlyPlayedCount", StatementReader.readQueryFromFile("/sql/UpdateRecentlyPlayed.sql");
+        return map;
     }
 
     public Button createButton(String text, Runnable runner) {
