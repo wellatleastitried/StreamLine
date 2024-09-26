@@ -21,10 +21,11 @@ public class DatabaseLinker {
     public DatabaseLinker(OS osName) {
         this.osName = osName;
         this.PATH = setupPath(this.osName);
+        new File(this.PATH).getParentFile().mkdirs();
         this.isNewDatabase = needsNewDatabase(PATH);
         try {
-            this.connection = DriverManager.getConnection("jdbc:sqlite:" + PATH);
-            if (isNewDatabase) {
+            this.connection = DriverManager.getConnection("jdbc:sqlite:" + this.PATH);
+            if (this.isNewDatabase) {
                 setupNewDatabase();
             }
         } catch (SQLException sE) {
