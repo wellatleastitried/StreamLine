@@ -27,7 +27,7 @@ public class StatementReader {
             }
             return true;
         }
-        return false;;
+        return false;
     }
     // pathToFile Must start with a '/' and be a relative path from the /resources directory.
     public static String readQueryFromFile(String pathToFile) {
