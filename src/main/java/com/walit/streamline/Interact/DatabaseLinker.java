@@ -18,7 +18,7 @@ public class DatabaseLinker {
     private Connection connection;
     private final boolean isNewDatabase;
 
-    public DatabaseLinker(OS osName) {
+    public DatabaseLinker(OS osName, String creationString) {
         this.osName = osName;
         this.PATH = setupPath(this.osName);
         new File(this.PATH).getParentFile().mkdirs();
@@ -26,7 +26,7 @@ public class DatabaseLinker {
         try {
             this.connection = DriverManager.getConnection("jdbc:sqlite:" + this.PATH);
             if (this.isNewDatabase) {
-                setupNewDatabase();
+                setupNewDatabase(creationString);
             }
         } catch (SQLException sE) {
             System.err.println(StreamLineMessages.GetDBConnectionFailure.getMessage());
@@ -38,12 +38,11 @@ public class DatabaseLinker {
         return this.connection;
     }
 
-    private void setupNewDatabase() {
+    private void setupNewDatabase(String query) {
         try {
-            final String creationQuery = getDBCreationString();
             final Statement statement = this.connection.createStatement();
             statement.setQueryTimeout(30);
-            statement.executeUpdate(creationQuery);
+            statement.executeUpdate(query);
         } catch (SQLException sE) {
             System.err.println(StreamLineMessages.DBCreationFailure.getMessage());
             System.exit(1);
@@ -67,19 +66,6 @@ public class DatabaseLinker {
 
     public boolean needsNewDatabase(String path) {
         return !(new File(path).exists());
-    }
-
-    private String getDBCreationString() {
-        StringBuilder sB = new StringBuilder();
-        final String createSongsTable = "CREATE TABLE IF NOT EXISTS Songs (song_id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, artist TEXT NOT NULL, url TEXT NOT NULL, downloaded INTEGER NOT NULL);";
-        final String createPlaylistTable = "CREATE TABLE IF NOT EXISTS Playlists (playlist_id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL);";
-        final String createPlaylistSongsTable = "CREATE TABLE IF NOT EXISTS PlaylistSongs (playlist_id INTEGER NOT NULL, song_id INTEGER NOT NULL, PRIMARY KEY (playlist_id, song_id), FOREIGN KEY (playlist_id) REFERENCES Playlists(playlist_id) ON DELETE CASCADE, FOREIGN KEY (song_id) REFERENCES Songs(song_id) ON DELETE CASCADE);";
-        final String createRecentlyPlayedTable = "CREATE TABLE IF NOT EXISTS RecentlyPlayed (song_id INTEGER NOT NULL, last_listen DATETIME DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (song_id) REFERENCES Songs(song_id) ON DELETE CASCADE);";
-        sB.append(createSongsTable);
-        sB.append(createPlaylistTable);
-        sB.append(createPlaylistSongsTable);
-        sB.append(createRecentlyPlayedTable);
-        return sB.toString();
     }
 
     private String setupPath(OS name) {
