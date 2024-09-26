@@ -71,10 +71,10 @@ public class DatabaseLinker {
 
     private String getDBCreationString() {
         StringBuilder sB = new StringBuilder();
-        final String createSongsTable = "CREATE TABLE IF NOT EXISTS Songs (song_id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, artist TEXT NOT NULL, url TEXT NOT NULL, downloaded BIT NOT NULL);";
+        final String createSongsTable = "CREATE TABLE IF NOT EXISTS Songs (song_id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, artist TEXT NOT NULL, url TEXT NOT NULL, downloaded INTEGER NOT NULL);";
         final String createPlaylistTable = "CREATE TABLE IF NOT EXISTS Playlists (playlist_id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL);";
         final String createPlaylistSongsTable = "CREATE TABLE IF NOT EXISTS PlaylistSongs (playlist_id INTEGER NOT NULL, song_id INTEGER NOT NULL, PRIMARY KEY (playlist_id, song_id), FOREIGN KEY (playlist_id) REFERENCES Playlists(playlist_id) ON DELETE CASCADE, FOREIGN KEY (song_id) REFERENCES Songs(song_id) ON DELETE CASCADE);";
-        final String createRecentlyPlayedTable = "CREATE TABLE IF NOT EXISTS RecentlyPlayed (song_id INTEGER NOT NULL, last_listen DATETIME DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (song_id) REFERENCES Songs(song_id) ON DELETE CASCADE);";
+        final String createRecentlyPlayedTable = "CREATE TABLE IF NOT EXISTS RecentlyPlayed (song_id INTEGER NOT NULL, last_listen DATETIME DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (song_id) REFERENCES Songs(song_id) ON DELETE CASCADE);";
         sB.append(createSongsTable);
         sB.append(createPlaylistTable);
         sB.append(createPlaylistSongsTable);
