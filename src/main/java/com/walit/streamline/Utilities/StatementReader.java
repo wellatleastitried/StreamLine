@@ -16,10 +16,23 @@ import com.walit.streamline.Communicate.StreamLineMessages;
 
 public class StatementReader {
 
+    protected static boolean validatePath(String path) {
+        InputStream resource = StatementReader.class.getResourceAsStream(path);
+        if (resource != null) {
+            try {
+                resource.close();
+            } catch (IOException iE) {
+                System.err.println("Error closing stream while testing is resource is valid.");
+            }
+            return true;
+        }
+        return false;;
+    }
     // pathToFile Must start with a '/' and be a relative path from the /resources directory.
     public static String readQueryFromFile(String pathToFile) {
         if (!validatePath(pathToFile)) {
-            
+            System.err.println(StreamLineMessages.InvalidPathForConfiguration.getMessage());
+            System.exit(1);
         }
         // Added this before I realized its completely unnecessary but this feature is here in case I have a need for it later lmfao
         /*
