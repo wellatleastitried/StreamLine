@@ -40,7 +40,7 @@ public final class Core {
     public int buttonHeight;
 
     public final OS whichOS;
-    // private final DatabaseLinker dbLink;
+    private final DatabaseLinker dbLink;
 
     public Core(Mode mode) {
         String os = System.getProperty("os.name").toLowerCase();
