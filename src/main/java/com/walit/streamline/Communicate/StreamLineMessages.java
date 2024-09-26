@@ -10,7 +10,9 @@ public enum StreamLineMessages {
     DBConnectionError("[!] A fatal error has occured while trying to connect to the existing database."),
     DBCloseError("[!] A fatal error has occured while closing the connection to the database."),
     GetDBConnectionFailure("[!] A fatal error has occured while establishing a connection to the database."),
-    DatabaseFileCreationFailure("[!] A fatal error has occured while creating the database file, please try reloading the app.");
+    DatabaseFileCreationFailure("[!] A fatal error has occured while creating the database file, please try reloading the app."),
+    SQLFileReadError("[!] A fatal error has occured while reading premade SQL queries from configuration files."),
+    CorruptedFileHashError("[!] The integrity of the sql configuration files has been corrupted, if this problem persists you may need to rebuild this project.");
 
     private final String message;
 
