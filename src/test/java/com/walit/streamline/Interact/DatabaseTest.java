@@ -40,6 +40,5 @@ public class DatabaseTest {
         linker.close();
         new File(testPath1).delete();
         new File(testPath2).delete();
-        new File("/tmp/StreamLine").delete();
     }
 }
