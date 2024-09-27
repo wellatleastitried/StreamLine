@@ -54,7 +54,7 @@ public final class Core {
             whichOS = OS.UNKNOWN;
         }
         HashMap<String, String> queries = getMapOfQueries();
-        dbLink = new DatabaseLinker(whichOS, queries.get("INITIALIZE"));
+        this.dbLink = new DatabaseLinker(whichOS, queries.get("INITIALIZE"));
         switch (mode) {
             case DELAYEDRUN:
                 System.out.println("Work this out");
@@ -110,7 +110,7 @@ public final class Core {
         System.exit(0);
     }
 
-    public HashMap getMapOfQueries() {
+    public HashMap<String, String> getMapOfQueries() {
         HashMap<String, String> map = new HashMap<>();
         map.put("INITIALIZE", StatementReader.readQueryFromFile("/sql/DatabaseInitialization.sql"));
         map.put("getLikedSongs", StatementReader.readQueryFromFile("/sql/GetSongForLikedMusicScreen.sql"));
