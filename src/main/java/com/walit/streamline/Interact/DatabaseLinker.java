@@ -34,7 +34,7 @@ public class DatabaseLinker {
         }
     }
 
-    private Connection getConnection() {
+    protected Connection getConnection() {
         return this.connection;
     }
 

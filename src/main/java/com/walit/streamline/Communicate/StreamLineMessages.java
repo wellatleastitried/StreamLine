@@ -19,7 +19,8 @@ public enum StreamLineMessages {
     InvalidPathForConfiguration("[!] The SQL configuration files are unable to be found! You may need to rebuild the project."),
     SQLQueryError("[!] Unable to execute query on the database, please try restarting the app."),
     RollbackError("[!] Unable to rollback changes to database after an error."),
-    AutoCommitRestoreFailure("[!] Failed to restore auto-commit feature to connection, please restart the app.");
+    AutoCommitRestoreFailure("[!] Failed to restore auto-commit feature to connection, please restart the app."),
+    DisableAutoCommitFailure("[!] Unable to disable auto-commit feature with connection, please restart the app.");
 
     private final String message;
 
