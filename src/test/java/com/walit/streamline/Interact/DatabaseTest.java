@@ -20,7 +20,7 @@ public class DatabaseTest {
 
     @Before
     public void setup() {
-        linker = new DatabaseLinker(OS.TESTING, StatementReader.readQueryFromFile("/sql/DatabaseInitialization.sql"));
+        linker = new DatabaseLinker(OS.TESTING, StatementReader.readQueryFromFile("/sql/init/DatabaseInitialization.sql"));
         testPath1 = ".config/notTheDatabase.db";
         testPath2 = linker.PATH;
     }

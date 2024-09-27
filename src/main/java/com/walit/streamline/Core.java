@@ -54,7 +54,7 @@ public final class Core {
             whichOS = OS.UNKNOWN;
         }
         HashMap<String, String> queries = getMapOfQueries();
-        dbLink = new DatabaseLinker(whichOS, queries.get("INITIALIZE"));
+        this.dbLink = new DatabaseLinker(whichOS, queries.get("INITIALIZE"));
         switch (mode) {
             case DELAYEDRUN:
                 System.out.println("Work this out");
@@ -110,13 +110,13 @@ public final class Core {
         System.exit(0);
     }
 
-    public HashMap getMapOfQueries() {
+    public HashMap<String, String> getMapOfQueries() {
         HashMap<String, String> map = new HashMap<>();
-        map.put("INITIALIZE", StatementReader.readQueryFromFile("/sql/DatabaseInitialization.sql"));
-        map.put("getLikedSongs", StatementReader.readQueryFromFile("/sql/GetSongForLikedMusicScreen.sql"));
-        map.put("getDownloadedSongs", StatementReader.readQueryFromFile("/sql/GetSongForDownloadedScreen.sql"));
-        map.put("getRecentlyPlayedSongs", StatementReader.readQueryFromFile("/sql/GetSongForRecPlayedScreen.sql"));
-        map.put("ensureRecentlyPlayedCount", StatementReader.readQueryFromFile("/sql/UpdateRecentlyPlayed.sql"));
+        map.put("INITIALIZE", StatementReader.readQueryFromFile("/sql/init/DatabaseInitialization.sql"));
+        map.put("getLikedSongs", StatementReader.readQueryFromFile("/sql/queries/GetSongForLikedMusicScreen.sql"));
+        map.put("getDownloadedSongs", StatementReader.readQueryFromFile("/sql/queries/GetSongForDownloadedScreen.sql"));
+        map.put("getRecentlyPlayedSongs", StatementReader.readQueryFromFile("/sql/queries/GetSongForRecPlayedScreen.sql"));
+        map.put("ensureRecentlyPlayedCount", StatementReader.readQueryFromFile("/sql/updates/UpdateRecentlyPlayed.sql"));
         return map;
     }
 
