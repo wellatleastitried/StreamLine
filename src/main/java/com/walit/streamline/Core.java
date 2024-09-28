@@ -15,6 +15,7 @@ import com.walit.streamline.Communicate.HelpMessages;
 import com.walit.streamline.Communicate.StreamLineMessages;
 import com.walit.streamline.Communicate.Mode;
 import com.walit.streamline.Communicate.OS;
+import com.walit.streamline.Logging.LogPathManager;
 import com.walit.streamline.Interact.DatabaseLinker;
 import com.walit.streamline.Utilities.StatementReader;
 
@@ -44,6 +45,7 @@ public final class Core {
 
     public Core(Mode mode) {
         String os = System.getProperty("os.name").toLowerCase();
+        System.setProperty("LOG_PATH", LogPathManager.getLogFilePath());
         if (os.contains("win")) {
             whichOS = OS.WINDOWS;
         } else if (os.contains("nix") || os.contains("nux")) {
@@ -86,6 +88,7 @@ public final class Core {
                 break;
         }
     }
+
 
     public boolean start() {
         try {

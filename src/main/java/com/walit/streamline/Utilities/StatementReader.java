@@ -57,7 +57,6 @@ public class StatementReader {
                 }
                 query.append(line).append(System.lineSeparator());
             }
-            System.err.println(query.toString());
             return query.toString().trim();
         } catch (IOException iE) {
             System.err.println(StreamLineMessages.SQLFileReadError.getMessage());
