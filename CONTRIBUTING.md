@@ -6,4 +6,4 @@ Contributions from the community are always welcome!
 
 *Please keep pull requests focused and do not change lots of different things at the same time.*
 
-If your feeling extra generous, buy me a [coffee](https://buymeacoffee.com/wellatleastitried)! :relaxed:
+If you're feeling extra generous, buy me a [coffee](https://buymeacoffee.com/wellatleastitried)! :relaxed:
