@@ -1,9 +1,6 @@
 # StreamLine 🎵
 StreamLine is a terminal-based (TUI) music player built in Java using the [Lanterna](https://github.com/mabe02/lanterna) library. It integrates with the [Invidious API](https://docs.invidious.io/) to provide a free, lightweight alternative to traditional msuic streaming platforms.
 
-## NOTICE
-This program is currently under development and is not yet functional so the below information can be disregarded at this time. If you want to help this project's timeline move forward, please feel free to submit a pull request!
-
 ## Table of Contents
 - [Features](#features)
 - [Installation](#installation)
@@ -74,7 +71,9 @@ java -jar target/streamline-VERSION.jar
 - Java 17+
 - Terminal with support for text-based interfaces
 - Internet connection (If you intend to search for or listen to songs that have not been downloaded)
+- 
 ## Contributing
-Contributions are welcome! Please submit a pull request or open an issue to get started. Make sure to follow the project's code style and ensure all tests pass before submitting.
+Contributions are welcome! Please check out [CONTRIBUTING.md](https://github.com/wellatleastitried/StreamLine/CONTRIBUTING.md) before getting started. Make sure to follow the project's code style and ensure all tests pass before submitting.
+
 ## License
 This project is licensed under the MIT license. See the [License](https://github.com/wellatleastitried/StreamLine/LICENSE) file for details.
