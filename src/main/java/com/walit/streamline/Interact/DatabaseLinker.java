@@ -34,7 +34,7 @@ public class DatabaseLinker {
         }
     }
 
-    protected Connection getConnection() {
+    public Connection getConnection() {
         return this.connection;
     }
 
@@ -71,13 +71,13 @@ public class DatabaseLinker {
     private String setupPath(OS name) {
         switch (name) {
             case WINDOWS -> {
-                return System.getProperty("user.home") + "Windows path";
+                return System.getProperty("APPDATA") + "\\StreamLine\\streamline.db";
             }
             case LINUX -> {
                 return System.getProperty("user.home") + "/.config/StreamLine/storage/streamline.db";
             }
             case MAC -> {
-                return System.getProperty("user.home") + "MAC path";
+                return System.getProperty("user.home") + "/Library/Application Support/StreamLine/streamline.db";
             }
             case TESTING -> {
                 return "/tmp/StreamLine/TEST.db";

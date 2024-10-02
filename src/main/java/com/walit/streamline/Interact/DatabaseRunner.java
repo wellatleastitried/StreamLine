@@ -1,6 +1,7 @@
 package com.walit.streamline.Interact;
 
 import com.walit.streamline.Communicate.StreamLineMessages;
+import com.walit.streamline.AudioHandle.Song;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -35,18 +36,15 @@ public final class DatabaseRunner {
         }
     }
 
-    public HashMap<Integer, HashMap<String, String>> getLikedSongs() {
-        HashMap<Integer, HashMap<String, String>> likedSongs = new HashMap<>();
+    public HashMap<Integer, Song> getLikedSongs() {
+        HashMap<Integer, Song> likedSongs = new HashMap<>();
         try {
             final Statement statement = connection.createStatement();
-            statement.setQueryTimeout(60);
+            statement.setQueryTimeout(30);
             ResultSet rs = statement.executeQuery(queryMap.get("getLikedSongs"));
             while (rs.next()) {
-                HashMap<String, String> songDetails = new HashMap<>();
-                songDetails.put("title", rs.getString("title"));
-                songDetails.put("artist", rs.getString("artist"));
-                songDetails.put("url", rs.getString("url"));
-                likedSongs.put(rs.getInt("song_id"), songDetails);
+                Song song = new Song(rs.getInt("song_id"), rs.getString("title"), rs.getString("artist"), rs.getString("url"));
+                likedSongs.put(rs.getInt("song_id"), song);
             }
         } catch (SQLException sE) {
             handleSQLException(sE);
@@ -54,18 +52,15 @@ public final class DatabaseRunner {
         return likedSongs;
     }
 
-    public HashMap<Integer, HashMap<String, String>> getDownloadedSongs() {
-        HashMap<Integer, HashMap<String, String>> downloadedSongs = new HashMap<>();
+    public HashMap<Integer, Song> getDownloadedSongs() {
+        HashMap<Integer, Song> downloadedSongs = new HashMap<>();
         try {
             final Statement statement = connection.createStatement();
-            statement.setQueryTimeout(60);
+            statement.setQueryTimeout(30);
             ResultSet rs = statement.executeQuery(queryMap.get("getDownloadedSongs"));
             while (rs.next()) {
-                HashMap<String, String> songDetails = new HashMap<>();
-                songDetails.put("title", rs.getString("title"));
-                songDetails.put("artist", rs.getString("artist"));
-                songDetails.put("url", rs.getString("url"));
-                downloadedSongs.put(rs.getInt("song_id"), songDetails);
+                Song song = new Song(rs.getInt("song_id"), rs.getString("title"), rs.getString("artist"), rs.getString("url"));
+                downloadedSongs.put(rs.getInt("song_id"), song);
             }
         } catch (SQLException sE) {
             handleSQLException(sE);
@@ -73,18 +68,15 @@ public final class DatabaseRunner {
         return downloadedSongs;
     }
     
-    public HashMap<Integer, HashMap<String, String>> getRecentlyPlayedSongs() {
-        HashMap<Integer, HashMap<String, String>> recentlyPlayedSongs = new HashMap<>();
+    public HashMap<Integer, Song> getRecentlyPlayedSongs() {
+        HashMap<Integer, Song> recentlyPlayedSongs = new HashMap<>();
         try {
             final Statement statement = connection.createStatement();
             statement.setQueryTimeout(30);
             ResultSet rs = statement.executeQuery(queryMap.get("getRecentlyPlayedSongs"));
             while (rs.next()) {
-                HashMap<String, String> songDetails = new HashMap<>();
-                songDetails.put("title", rs.getString("title"));
-                songDetails.put("artist", rs.getString("artist"));
-                songDetails.put("url", rs.getString("url"));
-                recentlyPlayedSongs.put(rs.getInt("song_id"), songDetails);
+                Song song = new Song(rs.getInt("song_id"), rs.getString("title"), rs.getString("artist"), rs.getString("url"));
+                recentlyPlayedSongs.put(rs.getInt("song_id"), song);
             }
         } catch (SQLException sE) {
             handleSQLException(sE);
@@ -92,18 +84,15 @@ public final class DatabaseRunner {
         return recentlyPlayedSongs;
     }
 
-    public HashMap<Integer, HashMap<String, String>> getSongsFromPlaylist(String playlistName) {
-        HashMap<Integer, HashMap<String, String>> songsFromPlaylist = new HashMap<>();
-        final String playlistSongsQuery = "SELECT * FROM Songs WHERE song_id IN (SELECT song_id FROM PlaylistSongs WHERE playlist_id = ?;";
+    public HashMap<Integer, Song> getSongsFromPlaylist(String playlistName) {
+        HashMap<Integer, Song> songsFromPlaylist = new HashMap<>();
+        final String playlistSongsQuery = "SELECT * FROM Songs WHERE song_id IN (SELECT song_id FROM PlaylistSongs WHERE playlist_id = ? ORDER BY data_added_to_playlist DESC);";
         try (PreparedStatement statement = connection.prepareStatement(playlistSongsQuery)) {
             statement.setString(1, playlistName);
             ResultSet rs = statement.executeQuery();
             while (rs.next()) {
-                HashMap<String, String> songDetails = new HashMap<>();
-                songDetails.put("title", rs.getString("title"));
-                songDetails.put("artist", rs.getString("artist"));
-                songDetails.put("url", rs.getString("url"));
-                songsFromPlaylist.put(rs.getInt("song_id"), songDetails);
+                Song song = new Song(rs.getInt("song_id"), rs.getString("title"), rs.getString("artist"), rs.getString("url"));
+                songsFromPlaylist.put(rs.getInt("song_id"), song);
             }
         } catch (SQLException sE) {
             handleSQLException(sE);
@@ -111,12 +100,12 @@ public final class DatabaseRunner {
         return songsFromPlaylist;
     }
 
-    public void likeSong(String title, String artist, String url) {
+    public void likeSong(Song song) {
         try {
             connection.setAutoCommit(false);
-            int songId = getSongId(title, artist);
+            int songId = getSongId(song.getSongName(), song.getSongArtist());
             if (songId == -1) {
-                songId = insertSongIntoSongs(title, artist, url);
+                songId = insertSongIntoSongs(song);
             }
             insertSongIntoSpecificTable("LikedSongs", songId);
             connection.commit();
@@ -127,14 +116,14 @@ public final class DatabaseRunner {
         }
     }
 
-    public void downloadSong(String title, String artist, String url) {
+    public void downloadSong(Song song) {
         try {
             connection.setAutoCommit(false);
-            int songId = getSongId(title, artist);
+            int songId = getSongId(song.getSongName(), song.getSongArtist());
             if (songId == -1) {
-                songId = insertSongIntoSongs(title, artist, url);
+                songId = insertSongIntoSongs(song);
             }
-            download(title, artist, url);
+            download(song);
             insertSongIntoSpecificTable("DownloadedSongs", songId);
             connection.commit();
         } catch (SQLException sE) {
@@ -144,7 +133,7 @@ public final class DatabaseRunner {
         }
     }
 
-    private void download(String title, String artist, String url) {
+    private void download(Song song) {
         // Convert video to mp3 and download
     }
 
@@ -162,12 +151,12 @@ public final class DatabaseRunner {
         return -1;
     }
 
-    private int insertSongIntoSongs(String title, String artist, String url) throws SQLException {
+    private int insertSongIntoSongs(Song song) throws SQLException {
         final String insertIntoSongs = "INSERT INTO Songs (title, artist, url) VALUES(?, ?, ?);";
         try (PreparedStatement insertSongStatement = connection.prepareStatement(insertIntoSongs)) {
-            insertSongStatement.setString(1, title);
-            insertSongStatement.setString(2, artist);
-            insertSongStatement.setString(3, url);
+            insertSongStatement.setString(1, song.getSongName());
+            insertSongStatement.setString(2, song.getSongArtist());
+            insertSongStatement.setString(3, song.getSongLink());
             insertSongStatement.executeUpdate();
             try (ResultSet generatedKeys = insertSongStatement.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
@@ -176,6 +165,16 @@ public final class DatabaseRunner {
                     throw new SQLException("Failed to insert song, no ID was generated.");
                 }
             }
+        }
+    }
+
+    public void clearCachedSongs() {
+        try {
+            final Statement statement = connection.createStatement();
+            statement.setQueryTimeout(30);
+            statement.executeUpdate(queryMap.get("CLEAR_CACHE"));
+        } catch (SQLException sE) {
+            handleSQLException(sE);
         }
     }
 
