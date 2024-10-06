@@ -18,7 +18,6 @@ public class Song {
         this.isLiked = false;
         this.isDownloaded = false;
         this.isRecentlyPlayed = false;
-
     }
 
     public Song(int songId, String title, String artist, String url, boolean isLiked, boolean isDownloaded, boolean isRecentlyPlayed) {

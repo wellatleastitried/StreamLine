@@ -18,15 +18,15 @@ public class DatabaseLinker {
     private Connection connection;
     private final boolean isNewDatabase;
 
-    public DatabaseLinker(OS osName, String creationString) {
+    public DatabaseLinker(OS osName, String tableCreation) {
         this.osName = osName;
         this.PATH = setupPath(this.osName);
-        new File(this.PATH).getParentFile().mkdirs();
+        new File(PATH).getParentFile().mkdirs();
         this.isNewDatabase = needsNewDatabase(PATH);
         try {
-            this.connection = DriverManager.getConnection("jdbc:sqlite:" + this.PATH);
+            this.connection = DriverManager.getConnection("jdbc:sqlite:" + PATH);
             if (this.isNewDatabase) {
-                setupNewDatabase(creationString);
+                setupNewDatabase(tableCreation);
             }
         } catch (SQLException sE) {
             System.err.println(StreamLineMessages.GetDBConnectionFailure.getMessage());
@@ -38,11 +38,11 @@ public class DatabaseLinker {
         return this.connection;
     }
 
-    private void setupNewDatabase(String query) {
+    private void setupNewDatabase(String tables) {
         try {
             final Statement statement = this.connection.createStatement();
             statement.setQueryTimeout(30);
-            statement.executeUpdate(query);
+            statement.executeUpdate(tables);
         } catch (SQLException sE) {
             System.err.println(StreamLineMessages.DBCreationFailure.getMessage());
             System.exit(1);
@@ -52,7 +52,7 @@ public class DatabaseLinker {
         }
     }
 
-    public boolean close() {
+    public boolean shutdown() {
         try {
             if (connection != null) {
                 connection.close();

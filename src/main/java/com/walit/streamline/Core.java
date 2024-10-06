@@ -11,6 +11,7 @@ import com.googlecode.lanterna.terminal.Terminal;
 import java.io.IOException;
 import java.util.HashMap;
 
+import com.walit.streamline.AudioHandle.CacheManager;
 import com.walit.streamline.Communicate.HelpMessages;
 import com.walit.streamline.Communicate.StreamLineMessages;
 import com.walit.streamline.Communicate.Mode;
@@ -46,6 +47,9 @@ public final class Core {
     private final DatabaseLinker dbLink;
     private HashMap<String, String> queries;
 
+    private boolean songIsPlaying;
+    private final String CACHE_DIRECTORY;
+
     public Core(Mode mode) {
         String os = System.getProperty("os.name").toLowerCase();
         System.setProperty("LOG_PATH", LogPathManager.getLogFilePath());
@@ -58,8 +62,10 @@ public final class Core {
         } else {
             whichOS = OS.UNKNOWN;
         }
+        this.CACHE_DIRECTORY = getCacheDirectory();
         this.queries = getMapOfQueries();
-        this.dbLink = new DatabaseLinker(whichOS, queries.get("INITIALIZE"));
+        this.dbLink = new DatabaseLinker(whichOS, queries.get("INITIALIZE_TABLES"));
+        this.songIsPlaying = false;
         switch (mode) {
             case DELAYEDRUN:
                 System.out.println("Work this out");
@@ -91,6 +97,23 @@ public final class Core {
                 }
                 break;
         }
+        clearExpiredCacheOnStartup();
+    }
+
+    protected String getCacheDirectory() {
+        switch (whichOS) {
+            case WINDOWS:
+                return "%LOCALAPPDATA\\StreamLine\\Cache\\";
+            case MAC:
+                return String.format("%s/Library/Caches/com.streamline/", System.getProperty("user.home"));
+            case LINUX:
+            default:
+                return String.format("%s/.cache/StreamLine/", System.getProperty("user.home"));
+        }
+    }
+
+    private void clearExpiredCacheOnStartup() {
+        CacheManager.clearExpiredCacheOnStartup(CACHE_DIRECTORY);
     }
 
     public boolean start() {
@@ -118,7 +141,7 @@ public final class Core {
 
     public HashMap<String, String> getMapOfQueries() {
         HashMap<String, String> map = new HashMap<>();
-        map.put("INITIALIZE", StatementReader.readQueryFromFile("/sql/init/DatabaseInitialization.sql"));
+        map.put("INITIALIZE_TABLES", StatementReader.readQueryFromFile("/sql/init/DatabaseInitialization.sql"));
         map.put("CLEAR_CACHE", StatementReader.readQueryFromFile("/sql/updates/ClearCachedSongs.sql"));
         map.put("getLikedSongs", StatementReader.readQueryFromFile("/sql/queries/GetSongForLikedMusicScreen.sql"));
         map.put("getDownloadedSongs", StatementReader.readQueryFromFile("/sql/queries/GetSongForDownloadedScreen.sql"));
@@ -257,7 +280,7 @@ public final class Core {
         panel.addComponent(generateNewSpace());
 
         Button backButton = new Button("  <- Back  ", () -> {
-            dropWindow(helpMenu);
+            dropWindow(settingsMenu);
             runMainWindow();
         });
         backButton.setPreferredSize(getSize(buttonWidth / 3, buttonHeight / 2));
@@ -309,8 +332,16 @@ public final class Core {
         }
     }
 
+    private void playQueue() {
+        songIsPlaying = true;
+        // Something like this...
+        // CompletableFuture.runAsync(() -> new AudioPlayer(songQueue));
+        songIsPlaying = false;
+    }
+
     private void clearCache() {
-        new DatabaseRunner(dbLink.getConnection(), queries).clearCachedSongs();
+        // Call com.walit.streamline.AudioHandle.CacheManager
+        new DatabaseRunner(dbLink.getConnection(), queries).clearCachedSongs(CACHE_DIRECTORY);
     }
 
     private void dropWindow(BasicWindow window) {
@@ -326,6 +357,6 @@ public final class Core {
         for (Window window : openWindows) {
             textGUI.removeWindow(window);
         }
-        dbLink.close();
+        dbLink.shutdown();
     }
 }

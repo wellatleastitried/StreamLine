@@ -7,9 +7,11 @@ import java.util.PriorityQueue;
 public class AudioPlayer implements Runnable {
 
     public Queue<Song> songsToPlay;
+    public Queue<Song> shuffledSongsToPlay;
 
     public AudioPlayer() {
         songsToPlay = new PriorityQueue<Song>();
+        shuffledSongsToPlay = new PriorityQueue<Song>();
     }
 
     public AudioPlayer(HashMap<Integer, Song> queriedSongs) {
