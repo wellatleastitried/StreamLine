@@ -9,6 +9,8 @@ public class Song {
     private boolean isLiked;
     private boolean isDownloaded;
     private boolean isRecentlyPlayed;
+    private String downloadPath;
+    private String fileHash;
 
     public Song(int songId, String title, String artist, String url) {
         this.songId = songId;
@@ -18,9 +20,11 @@ public class Song {
         this.isLiked = false;
         this.isDownloaded = false;
         this.isRecentlyPlayed = false;
+        this.downloadPath = null;
+        this.fileHash = null;
     }
 
-    public Song(int songId, String title, String artist, String url, boolean isLiked, boolean isDownloaded, boolean isRecentlyPlayed) {
+    public Song(int songId, String title, String artist, String url, boolean isLiked, boolean isDownloaded, boolean isRecentlyPlayed, String downloadPath, String fileHash) {
         this.songId = songId;
         this.title = title;
         this.artist = artist;
@@ -28,6 +32,8 @@ public class Song {
         this.isLiked = isLiked;
         this.isDownloaded = isDownloaded;
         this.isRecentlyPlayed = isRecentlyPlayed;
+        this.downloadPath = downloadPath;
+        this.fileHash = fileHash;
     }
 
     public void setSongId(int songId) {
@@ -84,5 +90,13 @@ public class Song {
 
     public boolean isSongRecentlyPlayed() {
         return isRecentlyPlayed;
+    }
+
+    public String getDownloadPath() {
+        return downloadPath;
+    }
+
+    public String getFileHash() {
+        return fileHash;
     }
 }

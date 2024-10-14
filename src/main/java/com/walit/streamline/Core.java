@@ -11,15 +11,15 @@ import com.googlecode.lanterna.terminal.Terminal;
 import java.io.IOException;
 import java.util.HashMap;
 
-import com.walit.streamline.AudioHandle.CacheManager;
+import com.walit.streamline.Utilities.CacheManager;
 import com.walit.streamline.Communicate.HelpMessages;
 import com.walit.streamline.Communicate.StreamLineMessages;
 import com.walit.streamline.Communicate.Mode;
 import com.walit.streamline.Communicate.OS;
-import com.walit.streamline.Logging.LogPathManager;
 import com.walit.streamline.Interact.DatabaseLinker;
 import com.walit.streamline.Interact.DatabaseRunner;
 import com.walit.streamline.Utilities.StatementReader;
+import com.walit.streamline.Utilities.RetrievedStorage;
 
 public final class Core {
 
@@ -31,6 +31,7 @@ public final class Core {
     private BasicWindow helpMenu;
     private BasicWindow searchPage;
     private BasicWindow recentlyPlayedPage;
+    private BasicWindow downloadedPage;
     private BasicWindow playlistPage;
     private BasicWindow likedMusicPage;
 
@@ -45,14 +46,14 @@ public final class Core {
 
     public final OS whichOS;
     private final DatabaseLinker dbLink;
+    private final DatabaseRunner dbRunner;
     private HashMap<String, String> queries;
 
-    private boolean songIsPlaying;
+    private volatile boolean songIsPlaying = false;
     private final String CACHE_DIRECTORY;
 
     public Core(Mode mode) {
         String os = System.getProperty("os.name").toLowerCase();
-        System.setProperty("LOG_PATH", LogPathManager.getLogFilePath());
         if (os.contains("win")) {
             whichOS = OS.WINDOWS;
         } else if (os.contains("nix") || os.contains("nux")) {
@@ -65,6 +66,7 @@ public final class Core {
         this.CACHE_DIRECTORY = getCacheDirectory();
         this.queries = getMapOfQueries();
         this.dbLink = new DatabaseLinker(whichOS, queries.get("INITIALIZE_TABLES"));
+        this.dbRunner = new DatabaseRunner(dbLink.getConnection(), queries);
         this.songIsPlaying = false;
         switch (mode) {
             case DELAYEDRUN:
@@ -89,6 +91,7 @@ public final class Core {
                     this.likedMusicPage = createLikeMusicPage();
                     this.playlistPage = createPlaylistPage();
                     this.recentlyPlayedPage = createRecentlyPlayedPage();
+                    this.downloadedPage = createDownloadedMusicPage();
                     this.helpMenu = createHelpMenu();
                     this.settingsMenu = createSettingsMenu();
                 } catch (IOException iE) {
@@ -191,6 +194,11 @@ public final class Core {
         recentlyPlayedButton.setPreferredSize(getSize(buttonWidth, buttonHeight));
         buttons.put(buttonCount++, recentlyPlayedButton);
 
+
+        Button downloadedPageButton = new Button("Downloaded Music", () -> transitionMenus(downloadedPage));
+        downloadedPageButton.setPreferredSize(getSize(buttonWidth, buttonHeight));
+        buttons.put(buttonCount++, downloadedPageButton);
+
         Button helpButton = new Button("Help", () -> transitionMenus(helpMenu));
         helpButton.setPreferredSize(getSize(buttonWidth, buttonHeight));
         buttons.put(buttonCount++, helpButton);
@@ -290,17 +298,26 @@ public final class Core {
         return window;
     }
     public BasicWindow createPlaylistPage() {
+        RetrievedStorage songs = dbRunner.getRecentlyPlayedSongs();
         BasicWindow window = new BasicWindow("Playlists");
         return window;
     }
 
     public BasicWindow createRecentlyPlayedPage() {
+        RetrievedStorage songs = dbRunner.getRecentlyPlayedSongs();
         BasicWindow window = new BasicWindow("Recently Played");
         return window;
     }
 
     public BasicWindow createLikeMusicPage() {
+        RetrievedStorage songs = dbRunner.getRecentlyPlayedSongs();
         BasicWindow window = new BasicWindow("Liked Music");
+        return window;
+    }
+
+    public BasicWindow createDownloadedMusicPage() {
+        RetrievedStorage songs = dbRunner.getDownloadedSongs();
+        BasicWindow window = new BasicWindow("Downloaded Music");
         return window;
     }
 

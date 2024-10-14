@@ -3,6 +3,8 @@ package com.walit.streamline.Utilities;
 import com.walit.streamline.AudioHandle.Song;
 import java.util.HashMap;
 
+// One-to-One map, where the key or value can be used to get its corresponding link
+
 public class RetrievedStorage {
 
     private final HashMap<Integer, Song> indexToSong;
@@ -14,6 +16,11 @@ public class RetrievedStorage {
     }
 
     public void add(int index, Song song) {
+        indexToSong.put(index, song);
+        songToIndex.put(song, index);
+    }
+
+    public void add(Song song, int index) {
         indexToSong.put(index, song);
         songToIndex.put(song, index);
     }
@@ -34,5 +41,12 @@ public class RetrievedStorage {
 
     public Song getSongFromIndex(int index) {
         return indexToSong.get(index);
+    }
+
+    public int size() {
+        if (indexToSong.size() == songToIndex.size()) {
+            return indexToSong.size();
+        }
+        return -1;
     }
 }

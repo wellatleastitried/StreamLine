@@ -2,7 +2,7 @@ package com.walit.streamline.Interact;
 
 import com.walit.streamline.Communicate.StreamLineMessages;
 import com.walit.streamline.AudioHandle.Song;
-import com.walit.streamline.AudioHandle.StoredSong;
+import com.walit.streamline.Utilities.RetrievedStorage;
 
 import java.io.File;
 import java.sql.Connection;
@@ -11,6 +11,17 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.IOException;
+import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Scanner;
 
 public final class DatabaseRunner {
 
@@ -28,15 +39,17 @@ public final class DatabaseRunner {
         }
     }
 
-    public HashMap<Integer, Song> getLikedSongs() {
-        HashMap<Integer, Song> likedSongs = new HashMap<>();
+    public RetrievedStorage getLikedSongs() {
+        RetrievedStorage likedSongs = new RetrievedStorage();
         try {
             final Statement statement = connection.createStatement();
             statement.setQueryTimeout(30);
             ResultSet rs = statement.executeQuery(queryMap.get("getLikedSongs"));
+            int index = 0;
             while (rs.next()) {
                 Song song = new Song(rs.getInt("song_id"), rs.getString("title"), rs.getString("artist"), rs.getString("url"));
-                likedSongs.put(rs.getInt("song_id"), song);
+                song.setSongLikeStatus(true);
+                likedSongs.add(++index, song);
             }
         } catch (SQLException sE) {
             handleSQLException(sE);
@@ -44,15 +57,16 @@ public final class DatabaseRunner {
         return likedSongs;
     }
 
-    public HashMap<Integer, Song> getDownloadedSongs() {
-        HashMap<Integer, Song> downloadedSongs = new HashMap<>();
+    public RetrievedStorage getDownloadedSongs() {
+        RetrievedStorage downloadedSongs = new RetrievedStorage();
         try {
             final Statement statement = connection.createStatement();
             statement.setQueryTimeout(30);
             ResultSet rs = statement.executeQuery(queryMap.get("getDownloadedSongs"));
+            int index = 0;
             while (rs.next()) {
                 Song song = new Song(rs.getInt("song_id"), rs.getString("title"), rs.getString("artist"), rs.getString("url"));
-                downloadedSongs.put(rs.getInt("song_id"), song);
+                downloadedSongs.add(++index, song);
             }
         } catch (SQLException sE) {
             handleSQLException(sE);
@@ -60,15 +74,17 @@ public final class DatabaseRunner {
         return downloadedSongs;
     }
     
-    public HashMap<Integer, Song> getRecentlyPlayedSongs() {
-        HashMap<Integer, Song> recentlyPlayedSongs = new HashMap<>();
+    public RetrievedStorage getRecentlyPlayedSongs() {
+        RetrievedStorage recentlyPlayedSongs= new RetrievedStorage();
         try {
             final Statement statement = connection.createStatement();
             statement.setQueryTimeout(30);
             ResultSet rs = statement.executeQuery(queryMap.get("getRecentlyPlayedSongs"));
+            int index = 0;
             while (rs.next()) {
                 Song song = new Song(rs.getInt("song_id"), rs.getString("title"), rs.getString("artist"), rs.getString("url"));
-                recentlyPlayedSongs.put(rs.getInt("song_id"), song);
+                song.setSongRecentlyPlayedStatus(true);
+                recentlyPlayedSongs.add(++index, song);
             }
         } catch (SQLException sE) {
             handleSQLException(sE);
@@ -76,15 +92,16 @@ public final class DatabaseRunner {
         return recentlyPlayedSongs;
     }
 
-    public HashMap<Integer, Song> getSongsFromPlaylist(String playlistName) {
-        HashMap<Integer, Song> songsFromPlaylist = new HashMap<>();
+    public RetrievedStorage getSongsFromPlaylist(String playlistName) {
+        RetrievedStorage songsFromPlaylist = new RetrievedStorage();
         final String playlistSongsQuery = "SELECT * FROM Songs WHERE song_id IN (SELECT song_id FROM PlaylistSongs WHERE playlist_id = ? ORDER BY data_added_to_playlist DESC);";
         try (PreparedStatement statement = connection.prepareStatement(playlistSongsQuery)) {
             statement.setString(1, playlistName);
             ResultSet rs = statement.executeQuery();
+            int index = 0;
             while (rs.next()) {
                 Song song = new Song(rs.getInt("song_id"), rs.getString("title"), rs.getString("artist"), rs.getString("url"));
-                songsFromPlaylist.put(rs.getInt("song_id"), song);
+                songsFromPlaylist.add(++index, song);
             }
         } catch (SQLException sE) {
             handleSQLException(sE);
@@ -115,8 +132,8 @@ public final class DatabaseRunner {
             if (songId == -1) {
                 songId = insertSongIntoSongs(song);
             }
-            StoredSong storedSong = download(song);
-            insertSongIntoDownloadTable(songId, storedSong.getFileLocation(), storedSong.getFileHash());
+            Song storedSong = download(song);
+            insertSongIntoDownloadTable(songId, storedSong.getDownloadPath(), storedSong.getFileHash());
             connection.commit();
         } catch (SQLException sE) {
             handleSQLException(sE);
@@ -141,9 +158,35 @@ public final class DatabaseRunner {
         }
     }
 
-    private StoredSong download(Song song) {
+    private Song download(Song song) {
         // Convert video to mp3 and download
-        return new StoredSong(song.getSongId(), song.getSongName(), song.getSongArtist(), song.getSongLink(), "", "");
+        String filePath = "";
+        String fileHash = generateHashFromFile(filePath);
+        return new Song(song.getSongId(), song.getSongName(), song.getSongArtist(), song.getSongLink(), song.isSongLiked(), true, song.isSongRecentlyPlayed(), filePath, fileHash); 
+    }
+
+    private String generateHashFromFile(String path) {
+        try (FileInputStream fS = new FileInputStream(new File(path))) {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] byteArray = new byte[1024];
+            int byteCount;
+            while ((byteCount = fS.read(byteArray)) != -1) {
+                digest.update(byteArray, 0, byteCount);
+            }
+            byte[] bytes = digest.digest();
+            StringBuilder hexStringOfHash = new StringBuilder(new BigInteger(1, bytes).toString(16));
+            while (hexStringOfHash.length() < 64) {
+                hexStringOfHash.insert(0, '0');
+            }
+            return hexStringOfHash.toString();
+        } catch (NoSuchAlgorithmException nA) {
+            System.err.println("There is a typo in the name of the hashing algorithm being used.");
+            System.exit(1);
+        } catch (IOException iE) {
+            System.err.println(StreamLineMessages.HashingFileInputStreamError.getMessage());
+            System.exit(1);
+        }
+        return null;
     }
 
     private int getSongId(String title, String artist) throws SQLException {
