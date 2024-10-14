@@ -20,7 +20,11 @@ public enum StreamLineMessages {
     SQLQueryError("[!] Unable to execute query on the database, please try restarting the app."),
     RollbackError("[!] Unable to rollback changes to database after an error."),
     AutoCommitRestoreFailure("[!] Failed to restore auto-commit feature to connection, please restart the app."),
-    DisableAutoCommitFailure("[!] Unable to disable auto-commit feature with connection, please restart the app.");
+    DisableAutoCommitFailure("[!] Unable to disable auto-commit feature with connection, please restart the app."),
+    CacheDirectoryCleanupFailure("[*] Error trying to clean cached songs."),
+    AudioFileFormatError("[!] Error resolving file format, please try again."),
+    AudioFetchFailure("[!] Error while fetching audio, please try again."),
+    IOException("[!] IOException encountered during song playback, please try again.");
 
     private final String message;
 

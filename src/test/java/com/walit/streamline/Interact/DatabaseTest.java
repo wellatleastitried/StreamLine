@@ -33,12 +33,12 @@ public class DatabaseTest {
 
     @Test
     public void closeTest() {
-        MatcherAssert.assertThat(linker.close(), is(true));
+        MatcherAssert.assertThat(linker.shutdown(), is(true));
     }
 
     @After
     public void shutdown() {
-        linker.close();
+        linker.shutdown();
         new File(testPath1).delete();
         new File(testPath2).delete();
     }

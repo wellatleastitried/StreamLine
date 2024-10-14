@@ -1,9 +1,9 @@
 package com.walit.streamline.Utilities;
 
 import java.io.BufferedReader;
-import java.io.File;
+// import java.io.File;
 // import java.io.FileInputStream;
-import java.io.FileReader;
+// import java.io.FileReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.IOException;
@@ -49,12 +49,7 @@ public class StatementReader {
             // Read the file and return the string of its contents (minus the first warning line)
             StringBuilder query = new StringBuilder();
             String line;
-            boolean hasSkippedWarningLine = false;
             while ((line = bR.readLine()) != null) {
-                if (!hasSkippedWarningLine) {
-                    hasSkippedWarningLine = true;
-                    continue;
-                }
                 query.append(line).append(System.lineSeparator());
             }
             return query.toString().trim();
