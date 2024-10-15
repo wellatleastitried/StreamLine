@@ -14,7 +14,7 @@ public final class CacheManager {
         }
         File cacheDirectory = new File(dirName);
         File[] cachedSongs = cacheDirectory.listFiles();
-        if (cachedSongs.length == 0) {
+        if (cachedSongs == null || cachedSongs.length == 0) {
             System.err.println("Cache directory is empty, nothing to clear.");
             return;
         }
