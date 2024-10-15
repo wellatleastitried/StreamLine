@@ -2,11 +2,13 @@ package com.walit.streamline.Utilities;
 
 import com.walit.streamline.Communicate.StreamLineMessages;
 
+import java.io.File;
+
 public final class CacheManager {
 
     public static void clearExpiredCacheOnStartup(String dirName) {
         System.out.println("Clearing cache...");
-        if (cacheDirectory == null || cacheDirectory.isEmpty()) {
+        if (dirName == null || dirName.isEmpty()) {
             System.err.println(StreamLineMessages.CacheDirectoryCleanupFailure.getMessage());
             return;
         }
