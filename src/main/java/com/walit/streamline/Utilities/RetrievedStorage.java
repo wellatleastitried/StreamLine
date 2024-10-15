@@ -26,11 +26,13 @@ public class RetrievedStorage {
     }
 
     public boolean remove(int index) {
-        return songToIndex.remove(indexToSong.get(index)) && indexToSong.remove(index);
+        Song song = indexToSong.get(index);
+        return songToIndex.remove(song, index) && indexToSong.remove(index, song);
     }
 
     public boolean remove (Song song) {
-        return indexToSong.remove(songToIndex.get(song)) && songToIndex.remove(song);
+        int index = songToIndex.get(song);
+        return indexToSong.remove(index, song) && songToIndex.remove(song, index);
     }
 
     public int getIndexFromSong(Song song) {
