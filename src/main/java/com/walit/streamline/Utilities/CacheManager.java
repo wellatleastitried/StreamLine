@@ -4,13 +4,23 @@ import com.walit.streamline.Communicate.StreamLineMessages;
 
 public final class CacheManager {
 
-    private static String cacheDirectory;
-
-    public static void clearExpiredCacheOnStartup(String dir) {
+    public static void clearExpiredCacheOnStartup(String dirName) {
+        System.out.println("Clearing cache...");
         if (cacheDirectory == null || cacheDirectory.isEmpty()) {
             System.err.println(StreamLineMessages.CacheDirectoryCleanupFailure.getMessage());
             return;
         }
-        System.out.println("Clearing cache");
+        File cacheDirectory = new File(dirName);
+        File[] cachedSongs = cacheDirectory.listFiles();
+        if (cachedSongs.length == 0) {
+            System.err.println("Cache directory is empty, nothing to clear.");
+            return;
+        }
+        for (File song : cachedSongs) {
+            if (song.isFile()) {
+                song.delete();
+            }
+        }
+        System.out.println("Cache has been cleared.");
     }
 }
