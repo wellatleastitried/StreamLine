@@ -1,5 +1,8 @@
 package com.walit.streamline.Communicate;
 
+/**
+ * Messages that will be displayed on the help menu of the program during runtime.
+ */
 public enum HelpMessages {
 
     SearchInformation("The search menu allows you to search for any song or artist you are interested in."),

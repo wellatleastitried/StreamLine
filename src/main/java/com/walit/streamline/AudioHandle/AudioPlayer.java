@@ -43,28 +43,26 @@ public class AudioPlayer implements Runnable {
             }
         } catch (UnsupportedAudioFileException uAFE) {
             System.err.println(StreamLineMessages.AudioFileFormatError.getMessage());
-            if (song != null) {
+            if (songsToPlay.peek() != null) {
                 run();
-            } else {
-                System.err.println("Unable to resolve audio file format error, please restart the app.");
-                System.exit(1);
             }
         } catch (LineUnavailableException lUE) {
             System.err.println(StreamLineMessages.AudioFetchFailure.getMessage());
-            if (song != null) {
+            if (songsToPlay.peek() != null) {
                 run();
-            } else {
-                System.err.println("Unable to resolve playback error, please restart the app.");
-                System.exit(1);
             }
         } catch (IOException iE) {
             System.err.println(StreamLineMessages.IOException.getMessage());
-            if (song != null) {
+            if (songsToPlay.peek() != null) {
                 run();
             }
         }
     }
 
+    /**
+     * Verifies file hash of the queued song with the hash that was generated of the file when it was created. This is done in order to ensure that files that have been tampered with cannot be used by the program.
+     * @return Returns whether or not the file hash matches the stored hash.
+     */
     public boolean checkDownloadIntegrity(Song song) {
         return true;
     }

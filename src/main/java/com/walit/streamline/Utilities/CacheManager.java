@@ -6,6 +6,9 @@ import java.io.File;
 
 public final class CacheManager {
 
+    /**
+     * Check the cache directory for any files that were downloaded and delete them to clear up disk space.
+     */
     public static void clearExpiredCacheOnStartup(String dirName) {
         System.out.println("Clearing cache...");
         if (dirName == null || dirName.isEmpty()) {

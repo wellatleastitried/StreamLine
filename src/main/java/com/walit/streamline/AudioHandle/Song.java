@@ -12,6 +12,9 @@ public class Song {
     private String downloadPath;
     private String fileHash;
 
+    /**
+     * Constructor for songs that are being fetched quickly.
+     */
     public Song(int songId, String title, String artist, String url) {
         this.songId = songId;
         this.title = title;
@@ -24,6 +27,9 @@ public class Song {
         this.fileHash = null;
     }
 
+    /**
+     * Constructor for songs that need more context, such as their respective file path and hash.
+     */
     public Song(int songId, String title, String artist, String url, boolean isLiked, boolean isDownloaded, boolean isRecentlyPlayed, String downloadPath, String fileHash) {
         this.songId = songId;
         this.title = title;

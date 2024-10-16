@@ -4,7 +4,6 @@ import com.walit.streamline.Communicate.StreamLineMessages;
 import com.walit.streamline.Communicate.OS;
 
 import java.io.File;
-import java.io.IOException;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -34,6 +33,10 @@ public class DatabaseLinker {
         }
     }
 
+    /**
+     * Allows com.walit.streamline.Interact.DatabaseRunner to fetch the existing connection so that it does not have to create its own.
+     * @return The established connection to the database.
+     */
     public Connection getConnection() {
         return this.connection;
     }
@@ -64,6 +67,9 @@ public class DatabaseLinker {
         return true;
     }
 
+    /**
+     * Checks if the database exists and, if it doesn't, returns false so that a new one can be created.
+     */
     public boolean needsNewDatabase(String path) {
         return !(new File(path).exists());
     }

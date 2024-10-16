@@ -1,5 +1,8 @@
 package com.walit.streamline.Communicate;
 
+/**
+ * Error messages to be used throughout the program as needed.
+ */
 public enum StreamLineMessages {
 
     FatalStartError("[!] A fatal error has occured while starting StreamLine, please try reloading the app."),
