@@ -14,7 +14,6 @@ import java.util.HashMap;
 import com.walit.streamline.Utilities.CacheManager;
 import com.walit.streamline.Communicate.HelpMessages;
 import com.walit.streamline.Communicate.StreamLineMessages;
-import com.walit.streamline.Communicate.Mode;
 import com.walit.streamline.Communicate.OS;
 import com.walit.streamline.Interact.DatabaseLinker;
 import com.walit.streamline.Interact.DatabaseRunner;
@@ -51,6 +50,12 @@ public final class Core {
 
     private volatile boolean songIsPlaying = false;
     private final String CACHE_DIRECTORY;
+
+    public enum Mode {
+        AUTORUN, // DEFAULT BEHAVIOR
+        DELAYEDRUN,
+        TESTING
+    }
 
     public Core(Mode mode) {
         String os = System.getProperty("os.name").toLowerCase();
@@ -125,8 +130,6 @@ public final class Core {
             runMainWindow();
             screen.stopScreen();
         } catch (IOException iE) {
-            System.err.println(StreamLineMessages.FatalStartError.getMessage());
-            System.exit(1);
             return false;
         }
         return true;
@@ -142,6 +145,10 @@ public final class Core {
         System.exit(0);
     }
 
+    /**
+     * Reaches out to the SQL files in the resources folder that house the queries needed at runtime.
+     * @return Map containing the full queries with a key for easy access
+     */
     public HashMap<String, String> getMapOfQueries() {
         HashMap<String, String> map = new HashMap<>();
         map.put("INITIALIZE_TABLES", StatementReader.readQueryFromFile("/sql/init/DatabaseInitialization.sql"));
