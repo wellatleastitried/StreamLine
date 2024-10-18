@@ -10,6 +10,7 @@ import com.googlecode.lanterna.terminal.Terminal;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.concurrent.CompletableFuture;
 
 import com.walit.streamline.Utilities.CacheManager;
 import com.walit.streamline.Communicate.HelpMessages;
@@ -19,6 +20,8 @@ import com.walit.streamline.Interact.DatabaseLinker;
 import com.walit.streamline.Interact.DatabaseRunner;
 import com.walit.streamline.Utilities.StatementReader;
 import com.walit.streamline.Utilities.RetrievedStorage;
+import com.walit.streamline.AudioHandle.AudioPlayer;
+import com.walit.streamline.AudioHandle.Song;
 
 public final class Core {
 
@@ -48,7 +51,6 @@ public final class Core {
     private final DatabaseRunner dbRunner;
     private HashMap<String, String> queries;
 
-    private volatile boolean songIsPlaying = false;
     private final String CACHE_DIRECTORY;
 
     public enum Mode {
@@ -58,6 +60,10 @@ public final class Core {
     }
 
     public Core(Mode mode) {
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            System.err.println("Shutting down...");
+            shutdown();
+        }));
         String os = System.getProperty("os.name").toLowerCase();
         if (os.contains("win")) {
             whichOS = OS.WINDOWS;
@@ -72,7 +78,6 @@ public final class Core {
         this.queries = getMapOfQueries();
         this.dbLink = new DatabaseLinker(whichOS, queries.get("INITIALIZE_TABLES"));
         this.dbRunner = new DatabaseRunner(dbLink.getConnection(), queries);
-        this.songIsPlaying = false;
         switch (mode) {
             case DELAYEDRUN:
                 System.out.println("Work this out");
@@ -356,15 +361,15 @@ public final class Core {
         }
     }
 
-    private void playQueue() {
-        songIsPlaying = true;
+    private void playQueue(HashMap<Integer, Song> songQueue) {
         // Something like this...
-        // CompletableFuture.runAsync(() -> new AudioPlayer(songQueue));
-        songIsPlaying = false;
+        AudioPlayer audioPlayer = new AudioPlayer(songQueue);
+        // CompletableFuture.runAsync(() -> audioPlayer);
     }
 
     private void clearCache() {
         // Call com.walit.streamline.AudioHandle.CacheManager
+        CacheManager.clearCache(CACHE_DIRECTORY);
         new DatabaseRunner(dbLink.getConnection(), queries).clearCachedSongs(CACHE_DIRECTORY);
     }
 

@@ -9,7 +9,7 @@ public final class CacheManager {
     /**
      * Check the cache directory for any files that were downloaded and delete them to clear up disk space.
      */
-    public static void clearExpiredCacheOnStartup(String dirName) {
+    public static void clearCache(String dirName) {
         System.out.println("Clearing cache...");
         if (dirName == null || dirName.isEmpty()) {
             System.err.println(StreamLineMessages.CacheDirectoryCleanupFailure.getMessage());
@@ -28,4 +28,6 @@ public final class CacheManager {
         }
         System.out.println("Cache has been cleared.");
     }
+
+    public static void clearExpiredCacheOnStartup(String dirName) {}
 }
