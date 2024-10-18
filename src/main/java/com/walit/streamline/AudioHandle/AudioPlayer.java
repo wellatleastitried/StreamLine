@@ -27,6 +27,13 @@ public class AudioPlayer implements Runnable {
         }
     }
 
+    public void fillQueue(HashMap<Integer, Song> queriedSongs) {
+        songsToPlay = new PriorityQueue<Song>();
+        for (int i = 1; i <= queriedSongs.size(); i++) {
+            songsToPlay.add(queriedSongs.get(i));
+        }
+    }
+
     @Override
     public void run() {
         // Start playing songs
@@ -82,5 +89,21 @@ public class AudioPlayer implements Runnable {
         audioLine.drain();
         audioLine.close();
         audioInputStream.close();
+    }
+
+    private void pause() {
+    }
+
+    private void resume() {
+    }
+
+    private void skipSong() {
+    }
+
+    private void previousSong() {
+    }
+
+    private void shutdown() {
+        // Kill the running thread
     }
 }
