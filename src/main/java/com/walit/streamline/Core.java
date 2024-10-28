@@ -10,18 +10,19 @@ import com.googlecode.lanterna.terminal.Terminal;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.concurrent.CompletableFuture;
+// import java.util.concurrent.CompletableFuture;
 
 import com.walit.streamline.Utilities.CacheManager;
-import com.walit.streamline.Communicate.HelpMessages;
-import com.walit.streamline.Communicate.StreamLineMessages;
-import com.walit.streamline.Communicate.OS;
+import com.walit.streamline.Utilities.Internal.HelpMessages;
+import com.walit.streamline.Utilities.Internal.StreamLineMessages;
+import com.walit.streamline.Utilities.Internal.OS;
 import com.walit.streamline.Interact.DatabaseLinker;
 import com.walit.streamline.Interact.DatabaseRunner;
 import com.walit.streamline.Utilities.StatementReader;
 import com.walit.streamline.Utilities.RetrievedStorage;
 import com.walit.streamline.AudioHandle.AudioPlayer;
 import com.walit.streamline.AudioHandle.Song;
+import com.walit.streamline.Communicate.InvidiousHandle;
 
 public final class Core {
 
@@ -60,10 +61,12 @@ public final class Core {
     }
 
     public Core(Mode mode) {
+        /*
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             System.err.println("Shutting down...");
             shutdown();
         }));
+        */
         String os = System.getProperty("os.name").toLowerCase();
         if (os.contains("win")) {
             whichOS = OS.WINDOWS;
@@ -74,19 +77,26 @@ public final class Core {
         } else {
             whichOS = OS.UNKNOWN;
         }
+        /*
+        Logger logger = whatever
+        switch (whichOS) {
+            case OS.WINDOWS -> logger path = windows temp log
+            case OS.MAC -> logger path = mac temp log
+            default -> logger path = /tmp/streamline.log;
+        */
         this.CACHE_DIRECTORY = getCacheDirectory();
         this.queries = getMapOfQueries();
         this.dbLink = new DatabaseLinker(whichOS, queries.get("INITIALIZE_TABLES"));
         this.dbRunner = new DatabaseRunner(dbLink.getConnection(), queries);
         switch (mode) {
-            case DELAYEDRUN:
+            case DELAYEDRUN: // Web interface
                 System.out.println("Work this out");
                 break;
-            case TESTING:
+            case TESTING: // headless testing
                 this.buttonWidth = 10;
                 this.buttonHeight = 10;
                 break;
-            case AUTORUN:
+            case AUTORUN: // TUI
             default:
                 DefaultTerminalFactory terminalFactory = new DefaultTerminalFactory();
                 try {
@@ -125,10 +135,6 @@ public final class Core {
         }
     }
 
-    private void clearExpiredCacheOnStartup() {
-        CacheManager.clearExpiredCacheOnStartup(CACHE_DIRECTORY);
-    }
-
     public boolean start() {
         try {
             screen.startScreen();
@@ -158,6 +164,8 @@ public final class Core {
         HashMap<String, String> map = new HashMap<>();
         map.put("INITIALIZE_TABLES", StatementReader.readQueryFromFile("/sql/init/DatabaseInitialization.sql"));
         map.put("CLEAR_CACHE", StatementReader.readQueryFromFile("/sql/updates/ClearCachedSongs.sql"));
+        map.put("CLEAR_EXPIRED_CACHE", StatementReader.readQueryFromFile("/sql/updates/ClearExpiredCache.sql"));
+        map.put("GET_EXPIRED_CACHE", StatementReader.readQueryFromFile("/sql/queries/GetExpiredCache.sql"));
         map.put("getLikedSongs", StatementReader.readQueryFromFile("/sql/queries/GetSongForLikedMusicScreen.sql"));
         map.put("getDownloadedSongs", StatementReader.readQueryFromFile("/sql/queries/GetSongForDownloadedScreen.sql"));
         map.put("getRecentlyPlayedSongs", StatementReader.readQueryFromFile("/sql/queries/GetSongForRecPlayedScreen.sql"));
@@ -335,7 +343,51 @@ public final class Core {
 
     public BasicWindow createSearchPage() {
         BasicWindow window = new BasicWindow("Search");
+        
+        window.setHints(java.util.Arrays.asList(Window.Hint.FULL_SCREEN));
+
+        Panel panel = new Panel();
+        panel.setLayoutManager(new GridLayout(1));
+        panel.setPreferredSize(new TerminalSize(40, 20));
+        panel.setFillColorOverride(TextColor.ANSI.BLACK);
+
+        panel.addComponent(generateNewSpace());
+
+        Label searchLabel = new Label(getString("Search:"));
+        searchLabel.addStyle(SGR.BOLD);
+        panel.addComponent(searchLabel);
+
+        TextBox searchBar = new TextBox(new TerminalSize(terminalSize.getColumns() / 2, 1));
+        panel.addComponent(searchBar);
+
+        panel.addComponent(generateNewSpace());
+
+        // This is the box that will store the search results in the form of <button button> where the first button contains the song information, and the second contains options on what to do with the song
+        Panel resultsBox = new Panel();
+        resultsBox.setLayoutManager(new GridLayout(/*2*/1));
+        resultsBox.setPreferredSize(new TerminalSize(terminalSize.getColumns(), terminalSize.getRows() - panel.getSize().getRows() - 15));
+        resultsBox.setFillColorOverride(TextColor.ANSI.BLACK_BRIGHT);
+        Label statsResponse = new Label(getString(testStatsCall()));
+        statsResponse.addStyle(SGR.BOLD);
+        resultsBox.addComponent(statsResponse);
+
+        panel.addComponent(resultsBox);
+
+        Button backButton = new Button("  <- Back  ", () -> {
+            dropWindow(searchPage);
+            runMainWindow();
+        });
+        backButton.setPreferredSize(getSize(buttonWidth / 3, buttonHeight / 2));
+        panel.addComponent(backButton);
+
+        window.setComponent(panel);
+
         return window;
+    }
+
+    public String testStatsCall() {
+        InvidiousHandle handle = InvidiousHandle.getInstance();
+        return handle.retrieveStats();
     }
 
     public EmptySpace generateNewSpace() {
@@ -368,9 +420,13 @@ public final class Core {
     }
 
     private void clearCache() {
-        // Call com.walit.streamline.AudioHandle.CacheManager
         CacheManager.clearCache(CACHE_DIRECTORY);
-        new DatabaseRunner(dbLink.getConnection(), queries).clearCachedSongs(CACHE_DIRECTORY);
+        dbRunner.clearCachedSongs();
+    }
+
+    private void clearExpiredCacheOnStartup() {
+        CacheManager.clearExpiredCacheOnStartup(CACHE_DIRECTORY, dbRunner.getExpiredCache());
+        dbRunner.clearExpiredCache();
     }
 
     private void dropWindow(BasicWindow window) {
@@ -387,5 +443,6 @@ public final class Core {
             textGUI.removeWindow(window);
         }
         dbLink.shutdown();
+        System.exit(0);
     }
 }

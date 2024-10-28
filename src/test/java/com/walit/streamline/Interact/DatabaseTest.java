@@ -7,7 +7,7 @@ import org.junit.After;
 import org.junit.Test;
 import org.hamcrest.MatcherAssert;
 
-import com.walit.streamline.Communicate.OS;
+import com.walit.streamline.Utilities.Internal.OS;
 import com.walit.streamline.Utilities.StatementReader;
 
 import static org.hamcrest.CoreMatchers.is;

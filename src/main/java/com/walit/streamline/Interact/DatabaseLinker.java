@@ -1,7 +1,7 @@
 package com.walit.streamline.Interact;
 
-import com.walit.streamline.Communicate.StreamLineMessages;
-import com.walit.streamline.Communicate.OS;
+import com.walit.streamline.Utilities.Internal.StreamLineMessages;
+import com.walit.streamline.Utilities.Internal.OS;
 
 import java.io.File;
 

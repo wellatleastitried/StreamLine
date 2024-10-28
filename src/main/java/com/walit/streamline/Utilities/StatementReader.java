@@ -6,7 +6,7 @@ import java.io.InputStreamReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-import com.walit.streamline.Communicate.StreamLineMessages;
+import com.walit.streamline.Utilities.Internal.StreamLineMessages;
 
 public class StatementReader {
 

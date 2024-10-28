@@ -8,7 +8,7 @@ import java.util.PriorityQueue;
 import javax.sound.sampled.*;
 import javax.sound.sampled.LineUnavailableException;
 
-import com.walit.streamline.Communicate.StreamLineMessages;
+import com.walit.streamline.Utilities.Internal.StreamLineMessages;
 
 public class AudioPlayer implements Runnable {
 

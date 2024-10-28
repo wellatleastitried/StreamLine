@@ -64,4 +64,8 @@ public class RetrievedStorage {
     public boolean contains(int index) {
         return indexToSong.containsKey(index) && songToIndex.containsValue(index);
     }
+
+    public Song[] getArrayOfSongs() {
+        return indexToSong.values().toArray(new Song[0]);
+    }
 }
