@@ -38,8 +38,30 @@ public class InvidiousHandle {
         return "";
     }
 
+    public String retriveSearchResults(String searchTerm) {
+        StringBuilder result = new StringBuilder();
+        BufferedReader reader;
+        HttpURLConnection connection;
+        try {
+            connection = (HttpURLConnection) new URL(invidiousHost + "api/v1/search").openConnection();
+            if (connection.getResponseCode() >= 400) {
+                reader = new BufferedReader(new InputStreamReader(connection.getErrorStream()));
+            } else {
+                reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            }
+            String line;
+            while ((line = reader.readLine()) != null) {
+                result.append(line);
+            }
+            return result.toString();
+        } catch (Exception e) {
+            System.err.println(StreamLineMessages.UnableToCallAPIError.getMessage());
+            return null;
+        }
+    }
+
     /**
-     * Primarily being used as a test function to ensure the proper handling and execution of API calls.
+     * Being used as a test function to ensure the proper handling and execution of API calls.
      */
     public String retrieveStats() {
         StringBuilder result = new StringBuilder();

@@ -9,7 +9,13 @@ import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
 import com.googlecode.lanterna.terminal.Terminal;
 
 import java.io.IOException;
+import java.io.File;
+import java.io.FileWriter;
 import java.util.HashMap;
+import java.util.logging.FileHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.logging.XMLFormatter;
 // import java.util.concurrent.CompletableFuture;
 
 import com.walit.streamline.Utilities.CacheManager;
@@ -25,6 +31,8 @@ import com.walit.streamline.AudioHandle.Song;
 import com.walit.streamline.Communicate.InvidiousHandle;
 
 public final class Core {
+
+    private final Logger logger;
 
     private WindowBasedTextGUI textGUI;
 
@@ -63,7 +71,7 @@ public final class Core {
     public Core(Mode mode) {
         /*
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            System.err.println("Shutting down...");
+            logger.log(Level.WARNING, "Shutting down...");
             shutdown();
         }));
         */
@@ -77,20 +85,15 @@ public final class Core {
         } else {
             whichOS = OS.UNKNOWN;
         }
-        /*
-        Logger logger = whatever
-        switch (whichOS) {
-            case OS.WINDOWS -> logger path = windows temp log
-            case OS.MAC -> logger path = mac temp log
-            default -> logger path = /tmp/streamline.log;
-        */
+        logger = Logger.getLogger("Streamline"); 
+        initializeLogger();
         this.CACHE_DIRECTORY = getCacheDirectory();
-        this.queries = getMapOfQueries();
+        this.queries = Core.getMapOfQueries();
         this.dbLink = new DatabaseLinker(whichOS, queries.get("INITIALIZE_TABLES"));
-        this.dbRunner = new DatabaseRunner(dbLink.getConnection(), queries);
+        this.dbRunner = new DatabaseRunner(dbLink.getConnection(), queries, logger);
         switch (mode) {
-            case DELAYEDRUN: // Web interface
-                System.out.println("Work this out");
+            case DELAYEDRUN: // Web interface initialization
+                clearExpiredCacheOnStartup();
                 break;
             case TESTING: // headless testing
                 this.buttonWidth = 10;
@@ -114,13 +117,39 @@ public final class Core {
                     this.downloadedPage = createDownloadedMusicPage();
                     this.helpMenu = createHelpMenu();
                     this.settingsMenu = createSettingsMenu();
+                    clearExpiredCacheOnStartup();
                 } catch (IOException iE) {
-                    System.err.println(StreamLineMessages.FatalStartError.getMessage());
+                    logger.log(Level.SEVERE, StreamLineMessages.FatalStartError.getMessage());
                     System.exit(1);
                 }
                 break;
         }
-        clearExpiredCacheOnStartup();
+    }
+
+    private void initializeLogger() {
+        String logFilePath = switch (whichOS) {
+            case WINDOWS -> "%temp%\\Streamline\\streamline.log";
+            case MAC -> "/tmp/Streamline/streamline.log";
+            default -> "/tmp/Streamline/streamline.log";
+        };
+        File logFile = new File(logFilePath);
+        FileHandler fileHandle;
+        try {
+            if (logFile.exists() && logFile.isFile()) {
+                new FileWriter(logFile, false).close();
+            }
+            fileHandle = new FileHandler(logFile.getPath(), true);
+            while (logger.getHandlers().length > 0) {
+                logger.removeHandler(logger.getHandlers()[0]);
+            }
+            logger.addHandler(fileHandle);
+            fileHandle.setLevel(Level.INFO);
+            XMLFormatter xF = new XMLFormatter();
+            fileHandle.setFormatter(xF);
+            logger.log(Level.INFO, "Log initialized.");
+        } catch (IOException iE) {
+            logger.log(Level.WARNING, "Could not setup logging for program.");
+        }
     }
 
     protected String getCacheDirectory() {
@@ -160,16 +189,25 @@ public final class Core {
      * Reaches out to the SQL files in the resources folder that house the queries needed at runtime.
      * @return Map containing the full queries with a key for easy access
      */
-    public HashMap<String, String> getMapOfQueries() {
+    public static HashMap<String, String> getMapOfQueries() {
         HashMap<String, String> map = new HashMap<>();
-        map.put("INITIALIZE_TABLES", StatementReader.readQueryFromFile("/sql/init/DatabaseInitialization.sql"));
-        map.put("CLEAR_CACHE", StatementReader.readQueryFromFile("/sql/updates/ClearCachedSongs.sql"));
-        map.put("CLEAR_EXPIRED_CACHE", StatementReader.readQueryFromFile("/sql/updates/ClearExpiredCache.sql"));
-        map.put("GET_EXPIRED_CACHE", StatementReader.readQueryFromFile("/sql/queries/GetExpiredCache.sql"));
-        map.put("getLikedSongs", StatementReader.readQueryFromFile("/sql/queries/GetSongForLikedMusicScreen.sql"));
-        map.put("getDownloadedSongs", StatementReader.readQueryFromFile("/sql/queries/GetSongForDownloadedScreen.sql"));
-        map.put("getRecentlyPlayedSongs", StatementReader.readQueryFromFile("/sql/queries/GetSongForRecPlayedScreen.sql"));
-        map.put("ensureRecentlyPlayedCount", StatementReader.readQueryFromFile("/sql/updates/UpdateRecentlyPlayed.sql"));
+        try {
+            map.put("INITIALIZE_TABLES", StatementReader.readQueryFromFile("/sql/init/DatabaseInitialization.sql"));
+            map.put("CLEAR_CACHE", StatementReader.readQueryFromFile("/sql/updates/ClearCachedSongs.sql"));
+            map.put("CLEAR_EXPIRED_CACHE", StatementReader.readQueryFromFile("/sql/updates/ClearExpiredCache.sql"));
+            map.put("GET_EXPIRED_CACHE", StatementReader.readQueryFromFile("/sql/queries/GetExpiredCache.sql"));
+            map.put("getLikedSongs", StatementReader.readQueryFromFile("/sql/queries/GetSongForLikedMusicScreen.sql"));
+            map.put("getDownloadedSongs", StatementReader.readQueryFromFile("/sql/queries/GetSongForDownloadedScreen.sql"));
+            map.put("getRecentlyPlayedSongs", StatementReader.readQueryFromFile("/sql/queries/GetSongForRecPlayedScreen.sql"));
+            map.put("ensureRecentlyPlayedCount", StatementReader.readQueryFromFile("/sql/updates/UpdateRecentlyPlayed.sql"));
+        } catch (IOException iE) {
+            System.err.println(StreamLineMessages.SQLFileReadError.getMessage());
+            System.exit(1);
+        } catch (Exception e) {
+            System.err.println(StreamLineMessages.MissingConfigurationFiles.getMessage());
+            System.exit(1);
+        }
+        assert(!map.isEmpty());
         return map;
     }
 
@@ -357,6 +395,7 @@ public final class Core {
         searchLabel.addStyle(SGR.BOLD);
         panel.addComponent(searchLabel);
 
+        // TODO: Add a listener for when the user presses enter.
         TextBox searchBar = new TextBox(new TerminalSize(terminalSize.getColumns() / 2, 1));
         panel.addComponent(searchBar);
 
@@ -367,6 +406,7 @@ public final class Core {
         resultsBox.setLayoutManager(new GridLayout(/*2*/1));
         resultsBox.setPreferredSize(new TerminalSize(terminalSize.getColumns(), terminalSize.getRows() - panel.getSize().getRows() - 15));
         resultsBox.setFillColorOverride(TextColor.ANSI.BLACK_BRIGHT);
+        // Making sure that the api responses can be turned into the proper object for the TUI
         Label statsResponse = new Label(getString(testStatsCall()));
         statsResponse.addStyle(SGR.BOLD);
         resultsBox.addComponent(statsResponse);
@@ -385,6 +425,7 @@ public final class Core {
         return window;
     }
 
+    // Temporary function for getting TUI figured out
     public String testStatsCall() {
         InvidiousHandle handle = InvidiousHandle.getInstance();
         return handle.retrieveStats();

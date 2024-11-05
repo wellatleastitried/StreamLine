@@ -11,6 +11,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
+import java.util.logging.*;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -21,14 +22,16 @@ public final class DatabaseRunner {
 
     private final Connection connection;
     private final HashMap<String, String> queryMap;
+    private final Logger logger;
 
-    public DatabaseRunner(Connection connection, HashMap<String, String> queryMap) {
+    public DatabaseRunner(Connection connection, HashMap<String, String> queryMap, Logger logger) {
         this.connection = connection;
         this.queryMap = queryMap;
+        this.logger = logger;
         try {
             this.connection.setAutoCommit(false);
         } catch (SQLException sE) {
-            System.err.println(StreamLineMessages.DisableAutoCommitFailure.getMessage());
+            logger.log(Level.SEVERE, StreamLineMessages.DisableAutoCommitFailure.getMessage());
             System.exit(1);
         }
     }
@@ -158,9 +161,13 @@ public final class DatabaseRunner {
         }
     }
 
+    /**
+     * This function is called when a song is liked. The other functions (such as insertSongIntoLikedSongs()) are for internal use as they do not provide verification of the existence of the song in other tables on their own.
+     */
     public void likeSong(Song song) {
         try {
             connection.setAutoCommit(false);
+            // TODO: NEED TO CHECK LIKEDSONGS TABLE AS WELL
             int songId = getSongId(song.getSongName(), song.getSongArtist());
             if (songId == -1) {
                 songId = insertSongIntoSongs(song);
@@ -224,7 +231,7 @@ public final class DatabaseRunner {
         ); 
     }
 
-    private String generateHashFromFile(String path) {
+    protected String generateHashFromFile(String path) {
         try (FileInputStream fS = new FileInputStream(new File(path))) {
             final MessageDigest digest = MessageDigest.getInstance("SHA-256");
             final byte[] byteArray = new byte[1024];
@@ -239,10 +246,10 @@ public final class DatabaseRunner {
             }
             return hexStringOfHash.toString();
         } catch (NoSuchAlgorithmException nA) {
-            System.err.println("There is a typo in the name of the hashing algorithm being used.");
+            logger.log(Level.WARNING, "There is a typo in the name of the hashing algorithm being used.");
             System.exit(1);
         } catch (IOException iE) {
-            System.err.println(StreamLineMessages.HashingFileInputStreamError.getMessage());
+            logger.log(Level.WARNING, StreamLineMessages.HashingFileInputStreamError.getMessage());
             System.exit(1);
         }
         return null;
@@ -262,7 +269,7 @@ public final class DatabaseRunner {
         return -1;
     }
 
-    private int insertSongIntoSongs(Song song) throws SQLException {
+    protected int insertSongIntoSongs(Song song) throws SQLException {
         final String insertIntoSongs = "INSERT OR IGNORE INTO Songs (title, artist, url) VALUES(?, ?, ?);";
         try (final PreparedStatement insertSongStatement = connection.prepareStatement(insertIntoSongs)) {
             insertSongStatement.setString(1, song.getSongName());
@@ -288,7 +295,7 @@ public final class DatabaseRunner {
         }
     }
 
-    private void insertSongIntoRecentlyPlayed(int songId) throws SQLException {
+    protected void insertSongIntoRecentlyPlayed(int songId) throws SQLException {
         final String insertIntoRecentlyPlayed = "INSERT INTO RecentlyPlayed (song_id, last_listen) VALUES (?, CURRENT_TIMESTAMP);";
         try (final PreparedStatement insertStatement = connection.prepareStatement(insertIntoRecentlyPlayed)) {
             insertStatement.setInt(1, songId);
@@ -296,7 +303,7 @@ public final class DatabaseRunner {
         }
     }
 
-    private void insertSongIntoDownloadTable(int songId, String filePath, String fileHash) throws SQLException {
+    protected void insertSongIntoDownloadTable(int songId, String filePath, String fileHash) throws SQLException {
         final String insertIntoLikedSongs = "INSERT INTO DownloadedSongs (song_id, date_downloaded, file_path, file_hash) VALUES (?, CURRENT_TIMESTAMP, ?, ?);";
         try (final PreparedStatement insertSongStatement = connection.prepareStatement(insertIntoLikedSongs)) {
             insertSongStatement.setInt(1, songId);
@@ -306,7 +313,7 @@ public final class DatabaseRunner {
         }
     }
 
-    private void insertSongIntoLikedTable(int songId) throws SQLException {
+    protected void insertSongIntoLikedTable(int songId) throws SQLException {
         final String insertIntoLikedSongs = "INSERT INTO LikedSongs (song_id, date_liked) VALUES (?, CURRENT_TIMESTAMP);";
         try (final PreparedStatement insertSongStatement = connection.prepareStatement(insertIntoLikedSongs)) {
             insertSongStatement.setInt(1, songId);
@@ -315,11 +322,11 @@ public final class DatabaseRunner {
     }
 
     private void handleSQLException(SQLException sE) {
-        System.err.println(StreamLineMessages.SQLQueryError.getMessage());
+        logger.log(Level.WARNING, StreamLineMessages.SQLQueryError.getMessage());
         try {
             connection.rollback();
         } catch (SQLException rollbackException) {
-            System.err.println(StreamLineMessages.RollbackError.getMessage());
+            logger.log(Level.SEVERE, StreamLineMessages.RollbackError.getMessage());
             System.exit(1);
         }
     }
@@ -328,7 +335,7 @@ public final class DatabaseRunner {
         try {
             connection.setAutoCommit(true);
         } catch (SQLException sE) {
-            System.err.println(StreamLineMessages.AutoCommitRestoreFailure.getMessage());
+            logger.log(Level.SEVERE, StreamLineMessages.AutoCommitRestoreFailure.getMessage());
             System.exit(1);
         }
     }
