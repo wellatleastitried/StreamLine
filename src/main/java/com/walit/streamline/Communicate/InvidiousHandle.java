@@ -86,9 +86,4 @@ public class InvidiousHandle {
             return null;
         }
     }
-
-    public static void main(String[] args) {
-        InvidiousHandle handle = InvidiousHandle.getInstance();
-        System.out.println(handle.retrieveStats());
-    }
 }

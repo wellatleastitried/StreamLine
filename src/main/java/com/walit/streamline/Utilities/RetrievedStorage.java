@@ -50,6 +50,11 @@ public class RetrievedStorage {
         return indexToSong.get(index);
     }
 
+    public void clear() {
+        indexToSong.clear();
+        songToIndex.clear();
+    }
+
     public int size() {
         if (indexToSong.size() == songToIndex.size()) {
             return indexToSong.size();

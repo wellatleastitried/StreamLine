@@ -63,8 +63,8 @@ public final class Core {
     private final String CACHE_DIRECTORY;
 
     public enum Mode {
-        AUTORUN, // DEFAULT BEHAVIOR
-        DELAYEDRUN,
+        TERMINAL, // DEFAULT BEHAVIOR
+        HEADLESS,
         TESTING
     }
 
@@ -83,7 +83,7 @@ public final class Core {
         } else if (os.contains("mac")) {
             whichOS = OS.MAC;
         } else {
-            whichOS = OS.UNKNOWN;
+            whichOS = OS.UNKNOWN; // If the OS is unknown, attempt running with Linux configuration.
         }
         logger = Logger.getLogger("Streamline"); 
         initializeLogger();
@@ -92,14 +92,14 @@ public final class Core {
         this.dbLink = new DatabaseLinker(whichOS, queries.get("INITIALIZE_TABLES"));
         this.dbRunner = new DatabaseRunner(dbLink.getConnection(), queries, logger);
         switch (mode) {
-            case DELAYEDRUN: // Web interface initialization
+            case HEADLESS: // Web interface initialization
                 clearExpiredCacheOnStartup();
                 break;
             case TESTING: // headless testing
                 this.buttonWidth = 10;
                 this.buttonHeight = 10;
                 break;
-            case AUTORUN: // TUI
+            case TERMINAL: // TUI
             default:
                 DefaultTerminalFactory terminalFactory = new DefaultTerminalFactory();
                 try {
@@ -176,7 +176,7 @@ public final class Core {
     }
 
     public static void main(String [] args) {
-        Core streamline = new Core(Mode.AUTORUN);
+        Core streamline = new Core(Mode.TERMINAL);
         if (!streamline.start()) {
             System.err.println(StreamLineMessages.FatalStartError.getMessage());
             System.exit(1);
@@ -454,7 +454,7 @@ public final class Core {
         }
     }
 
-    private void playQueue(HashMap<Integer, Song> songQueue) {
+    private void playQueue(RetrievedStorage songQueue) {
         // Something like this...
         AudioPlayer audioPlayer = new AudioPlayer(songQueue);
         // CompletableFuture.runAsync(() -> audioPlayer);

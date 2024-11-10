@@ -2,13 +2,13 @@ package com.walit.streamline.AudioHandle;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Queue;
 import java.util.PriorityQueue;
 import javax.sound.sampled.*;
 import javax.sound.sampled.LineUnavailableException;
 
 import com.walit.streamline.Utilities.Internal.StreamLineMessages;
+import com.walit.streamline.Utilities.RetrievedStorage;
 
 public class AudioPlayer implements Runnable {
 
@@ -20,17 +20,17 @@ public class AudioPlayer implements Runnable {
         shuffledSongsToPlay = new PriorityQueue<Song>();
     }
 
-    public AudioPlayer(HashMap<Integer, Song> queriedSongs) {
+    public AudioPlayer(RetrievedStorage queriedSongs) {
         songsToPlay = new PriorityQueue<Song>();
         for (int i = 1; i <= queriedSongs.size(); i++) {
-            songsToPlay.add(queriedSongs.get(i));
+            songsToPlay.add(queriedSongs.getSongFromIndex(i));
         }
     }
 
-    public void fillQueue(HashMap<Integer, Song> queriedSongs) {
+    public void fillQueue(RetrievedStorage queriedSongs) {
         songsToPlay = new PriorityQueue<Song>();
         for (int i = 1; i <= queriedSongs.size(); i++) {
-            songsToPlay.add(queriedSongs.get(i));
+            songsToPlay.add(queriedSongs.getSongFromIndex(i));
         }
     }
 
