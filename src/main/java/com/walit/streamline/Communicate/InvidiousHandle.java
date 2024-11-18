@@ -1,12 +1,17 @@
 package com.walit.streamline.Communicate;
 
-import com.walit.streamline.Communicate.ResponseParser;
 import com.walit.streamline.Utilities.Internal.StreamLineMessages;
 
 import java.io.InputStreamReader;
 import java.io.BufferedReader;
+
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
+
+import java.nio.charset.StandardCharsets;
+
+import java.util.List;
 
 public class InvidiousHandle {
 
@@ -38,12 +43,21 @@ public class InvidiousHandle {
         return "";
     }
 
-    public String retriveSearchResults(String searchTerm) {
+    private String getHostname() {
+        return invidiousHost;
+    }
+
+    public String urlEncodeString(String base) {
+        return URLEncoder.encode(base, StandardCharsets.UTF_8);
+    }
+
+    public List<SearchResult> retrieveSearchResults(String searchTerm) {
         StringBuilder result = new StringBuilder();
         BufferedReader reader;
         HttpURLConnection connection;
+        searchTerm = urlEncodeString(searchTerm);
         try {
-            connection = (HttpURLConnection) new URL(invidiousHost + "api/v1/search").openConnection();
+            connection = (HttpURLConnection) new URL(invidiousHost + "api/v1/search?q=" + searchTerm).openConnection();
             if (connection.getResponseCode() >= 400) {
                 reader = new BufferedReader(new InputStreamReader(connection.getErrorStream()));
             } else {
@@ -53,7 +67,12 @@ public class InvidiousHandle {
             while ((line = reader.readLine()) != null) {
                 result.append(line);
             }
-            return result.toString();
+            List<SearchResult> searchResults = ResponseParser.listFromSearchResponse(result.toString());
+            if (searchResults != null) {
+                return searchResults;
+            } else {
+                return null;
+            }
         } catch (Exception e) {
             System.err.println(StreamLineMessages.UnableToCallAPIError.getMessage());
             return null;

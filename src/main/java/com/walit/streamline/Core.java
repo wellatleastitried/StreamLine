@@ -127,12 +127,17 @@ public final class Core {
     }
 
     private void initializeLogger() {
-        String logFilePath = switch (whichOS) {
-            case WINDOWS -> "%temp%\\Streamline\\streamline.log";
-            case MAC -> "/tmp/Streamline/streamline.log";
-            default -> "/tmp/Streamline/streamline.log";
+        String logFileDir = switch (whichOS) {
+            case WINDOWS -> "%temp%\\Streamline\\";
+            default -> "/tmp/StreamLine/";
         };
-        File logFile = new File(logFilePath);
+        String fileName = "streamline.log";
+        File logFile = new File(logFileDir);
+        if (!logFile.mkdirs()) {
+            System.err.println("Unable to create tmp directory for log file.");
+            return;
+        }
+        logFile = new File(logFileDir + fileName);
         FileHandler fileHandle;
         try {
             if (logFile.exists() && logFile.isFile()) {
@@ -148,6 +153,7 @@ public final class Core {
             fileHandle.setFormatter(xF);
             logger.log(Level.INFO, "Log initialized.");
         } catch (IOException iE) {
+            iE.printStackTrace();
             logger.log(Level.WARNING, "Could not setup logging for program.");
         }
     }
