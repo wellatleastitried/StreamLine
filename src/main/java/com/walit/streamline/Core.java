@@ -58,6 +58,7 @@ public final class Core {
     public final OS whichOS;
     private final DatabaseLinker dbLink;
     private final DatabaseRunner dbRunner;
+    private final InvidiousHandle apiHandle;
     private HashMap<String, String> queries;
 
     private final String CACHE_DIRECTORY;
@@ -91,6 +92,7 @@ public final class Core {
         this.queries = Core.getMapOfQueries();
         this.dbLink = new DatabaseLinker(whichOS, queries.get("INITIALIZE_TABLES"));
         this.dbRunner = new DatabaseRunner(dbLink.getConnection(), queries, logger);
+        this.apiHandle = InvidiousHandle.getInstance();
         switch (mode) {
             case HEADLESS: // Web interface initialization
                 clearExpiredCacheOnStartup();
@@ -217,10 +219,30 @@ public final class Core {
         return map;
     }
 
-    public Button createButton(String text, Runnable runner) {
+    public Label createLabelWithSize(String text) {
+        return createLabelWithSize(text, buttonWidth, buttonHeight);
+    }
+
+    public Label createLabelWithSize(String text, int width, int height) {
+        Label label = createLabel(text);
+        label.setPreferredSize(getSize(width, height));
+        return label;
+    }
+
+    public Label createLabel(String text) {
+        Label label = new Label(getString(text));
+        label.addStyle(SGR.BOLD);
+        return label;
+    }
+
+    public Button createButton(String text, Runnable runner, int width, int height) {
         Button button = new Button(text, runner);
-        button.setPreferredSize(getSize(buttonWidth, buttonHeight));
+        button.setPreferredSize(getSize(width, height));
         return button;
+    }
+
+    public Button createButton(String text, Runnable runner) {
+        return createButton(text, runner, buttonWidth, buttonHeight);
     }
 
     public TerminalSize getSize(int bWidth, int bHeight) {
@@ -239,40 +261,30 @@ public final class Core {
         panel.setFillColorOverride(TextColor.ANSI.BLACK);
 
         // CREATE LABELS AND BUTTONS
-        Label titleLabel = new Label("    Welcome to StreamLine    ");
-        titleLabel.addStyle(SGR.BOLD);
+        Label titleLabel = createLabel("    Welcome to StreamLine    ");
 
-        Button searchButton= new Button("Search for a song", () -> transitionMenus(searchPage));
-        searchButton.setPreferredSize(getSize(buttonWidth, buttonHeight));
+        Button searchButton = createButton("Search for a song", () -> transitionMenus(searchPage));
         buttons.put(buttonCount++, searchButton);
 
-        Button likedButton = new Button("View liked music", () -> transitionMenus(likedMusicPage));
-        likedButton.setPreferredSize(getSize(buttonWidth, buttonHeight));
+        Button likedButton = createButton("View liked music", () -> transitionMenus(likedMusicPage));
         buttons.put(buttonCount++, likedButton);
 
-        Button playlistsButton = new Button("Playlists", () -> transitionMenus(playlistPage));
-        playlistsButton.setPreferredSize(getSize(buttonWidth, buttonHeight));
+        Button playlistsButton = createButton("Playlists", () -> transitionMenus(playlistPage));
         buttons.put(buttonCount++, playlistsButton);
 
-        Button recentlyPlayedButton = new Button("Recently Played", () -> transitionMenus(recentlyPlayedPage));
-        recentlyPlayedButton.setPreferredSize(getSize(buttonWidth, buttonHeight));
+        Button recentlyPlayedButton = createButton("Recently Played", () -> transitionMenus(recentlyPlayedPage));
         buttons.put(buttonCount++, recentlyPlayedButton);
 
-
-        Button downloadedPageButton = new Button("Downloaded Music", () -> transitionMenus(downloadedPage));
-        downloadedPageButton.setPreferredSize(getSize(buttonWidth, buttonHeight));
+        Button downloadedPageButton = createButton("Downloaded Music", () -> transitionMenus(downloadedPage));
         buttons.put(buttonCount++, downloadedPageButton);
 
-        Button helpButton = new Button("Help", () -> transitionMenus(helpMenu));
-        helpButton.setPreferredSize(getSize(buttonWidth, buttonHeight));
+        Button helpButton = createButton("Help", () -> transitionMenus(helpMenu));
         buttons.put(buttonCount++, helpButton);
 
-        Button settingsButton = new Button("Settings", () -> transitionMenus(settingsMenu));
-        settingsButton.setPreferredSize(getSize(buttonWidth, buttonHeight));
+        Button settingsButton = createButton("Settings", () -> transitionMenus(settingsMenu));
         buttons.put(buttonCount++, settingsButton);
 
-        Button quitButton = new Button("Quit", () -> shutdown());
-        quitButton.setPreferredSize(getSize(buttonWidth, buttonHeight));
+        Button quitButton = createButton("Quit", () -> shutdown());
         buttons.put(buttonCount++, quitButton);
 
         panel.addComponent(generateNewSpace());
@@ -297,34 +309,27 @@ public final class Core {
 
         panel.addComponent(generateNewSpace());
 
-        Label searchHelpLabel = new Label(getString("Search help"));
-        searchHelpLabel.setPreferredSize(getSize(buttonWidth, buttonHeight));
-        searchHelpLabel.addStyle(SGR.BOLD);
+        Label searchHelpLabel = createLabelWithSize("Search help");
         panel.addComponent(searchHelpLabel);
 
-        Label searchHelpInfo = new Label(getString(HelpMessages.SearchInformation.getMessage()));
-        searchHelpInfo.addStyle(SGR.BOLD);
+        Label searchHelpInfo = createLabel(HelpMessages.SearchInformation.getMessage());
         panel.addComponent(searchHelpInfo);
 
         panel.addComponent(generateNewSpace());
 
-        Label likedMusicLabel = new Label(getString("Liked music help"));
-        likedMusicLabel.setPreferredSize(getSize(buttonWidth, buttonHeight));
-        likedMusicLabel.addStyle(SGR.BOLD);
+        Label likedMusicLabel = createLabelWithSize("Liked music help");
         panel.addComponent(likedMusicLabel);
 
-        Label likedMusicInfo = new Label(getString(HelpMessages.LikedMusicInformation.getMessage()));
-        likedMusicInfo.addStyle(SGR.BOLD);
+        Label likedMusicInfo = createLabel(getString(HelpMessages.LikedMusicInformation.getMessage()));
         panel.addComponent(likedMusicInfo);
 
         panel.addComponent(generateNewSpace());
         panel.addComponent(generateNewSpace());
 
-        Button backButton = new Button("  <- Back  ", () -> {
+        Button backButton = createButton("  <- Back  ", () -> {
             dropWindow(helpMenu);
             runMainWindow();
-        });
-        backButton.setPreferredSize(getSize(buttonWidth / 3, buttonHeight / 2));
+        }, buttonWidth / 3, buttonHeight / 2);
         panel.addComponent(backButton);
 
         window.setComponent(panel);
@@ -343,19 +348,17 @@ public final class Core {
 
         panel.addComponent(generateNewSpace());
 
-        Button clearCacheButton = new Button(getString("Clear cache"), () -> {
+        Button clearCacheButton = createButton(getString("Clear cache"), () -> {
             clearCache();
         });
-        clearCacheButton.setPreferredSize(getSize(buttonWidth, buttonHeight));
         panel.addComponent(clearCacheButton);
 
         panel.addComponent(generateNewSpace());
 
-        Button backButton = new Button("  <- Back  ", () -> {
+        Button backButton = createButton("  <- Back  ", () -> {
             dropWindow(settingsMenu);
             runMainWindow();
-        });
-        backButton.setPreferredSize(getSize(buttonWidth / 3, buttonHeight / 2));
+        }, buttonWidth / 3, buttonHeight / 2);
         panel.addComponent(backButton);
 
         window.setComponent(panel);
@@ -397,11 +400,10 @@ public final class Core {
 
         panel.addComponent(generateNewSpace());
 
-        Label searchLabel = new Label(getString("Search:"));
-        searchLabel.addStyle(SGR.BOLD);
+        Label searchLabel = createLabel(getString("Search:"));
         panel.addComponent(searchLabel);
 
-        // TODO: Add a listener for when the user presses enter.
+        // TODO: Add a listener for when the user presses enter and the searchBar is focused.
         TextBox searchBar = new TextBox(new TerminalSize(terminalSize.getColumns() / 2, 1));
         panel.addComponent(searchBar);
 
@@ -413,17 +415,15 @@ public final class Core {
         resultsBox.setPreferredSize(new TerminalSize(terminalSize.getColumns(), terminalSize.getRows() - panel.getSize().getRows() - 15));
         resultsBox.setFillColorOverride(TextColor.ANSI.BLACK_BRIGHT);
         // Making sure that the api responses can be turned into the proper object for the TUI
-        Label statsResponse = new Label(getString(testStatsCall()));
-        statsResponse.addStyle(SGR.BOLD);
+        Label statsResponse = createLabel(testStatsCall());
         resultsBox.addComponent(statsResponse);
 
         panel.addComponent(resultsBox);
 
-        Button backButton = new Button("  <- Back  ", () -> {
+        Button backButton = createButton("  <- Back  ", () -> {
             dropWindow(searchPage);
             runMainWindow();
-        });
-        backButton.setPreferredSize(getSize(buttonWidth / 3, buttonHeight / 2));
+        }, buttonWidth / 3, buttonHeight / 2);
         panel.addComponent(backButton);
 
         window.setComponent(panel);

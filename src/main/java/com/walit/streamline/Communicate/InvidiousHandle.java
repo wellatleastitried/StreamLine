@@ -55,7 +55,7 @@ public class InvidiousHandle {
         StringBuilder result = new StringBuilder();
         BufferedReader reader;
         HttpURLConnection connection;
-        searchTerm = urlEncodeString(searchTerm);
+        searchTerm = urlEncodeString(searchTerm.trim());
         try {
             connection = (HttpURLConnection) new URL(invidiousHost + "api/v1/search?q=" + searchTerm).openConnection();
             if (connection.getResponseCode() >= 400) {
