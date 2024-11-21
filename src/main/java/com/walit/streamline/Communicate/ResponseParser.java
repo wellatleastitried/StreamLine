@@ -17,9 +17,9 @@ public class ResponseParser {
                     new TypeReference<List<SearchResult>>() {}
                     );
             for (SearchResult result : searchResults) {
-                if (result instanceof VideoResult) {
-                    VideoResult video = (VideoResult) result;
-                    System.out.println("Video ID: " + video.videoId);
+                if (result instanceof VideoSearchResult) {
+                    VideoSearchResult video = (VideoSearchResult) result;
+                    System.out.println("Video ID: " + video.getVideoId());
                 }
             }
 
@@ -29,5 +29,9 @@ public class ResponseParser {
             System.err.println(StreamLineMessages.JsonParsingException.getMessage());
             return null;
         }
+    }
+
+    // TODO: Have this return a List<String>??? with the url, title, artist, videoId, etc
+    public static void getVideoProperties(String jsonResponse) {
     }
 }

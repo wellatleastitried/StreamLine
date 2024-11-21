@@ -16,7 +16,7 @@ public class DataStructureTest {
     @Before
     public void addElements() {
         for (int i = 0; i < 20; i++) {
-            structure.add(i, new Song(i + 1, "title", "artist", "url"));
+            structure.add(i, new Song(i + 1, "title", "artist", "url", String.valueOf(i)));
         }
         MatcherAssert.assertThat(structure.size(), is(20));
     }

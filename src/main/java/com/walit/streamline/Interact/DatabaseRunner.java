@@ -45,10 +45,11 @@ public final class DatabaseRunner {
             int index = 0;
             while (rs.next()) {
                 final Song song = new Song(
-                        rs.getInt("song_id"),
+                        rs.getInt("id"),
                         rs.getString("title"),
                         rs.getString("artist"),
-                        rs.getString("url")
+                        rs.getString("url"),
+                        rs.getString("videoId")
                 );
                 song.setSongLikeStatus(true);
                 likedSongs.add(++index, song);
@@ -68,10 +69,11 @@ public final class DatabaseRunner {
             int index = 0;
             while (rs.next()) {
                 final Song song = new Song(
-                        rs.getInt("song_id"),
+                        rs.getInt("id"),
                         rs.getString("title"),
                         rs.getString("artist"),
-                        rs.getString("url")
+                        rs.getString("url"),
+                        rs.getString("videoId")
                 );
                 downloadedSongs.add(++index, song);
             }
@@ -90,10 +92,11 @@ public final class DatabaseRunner {
             int index = 0;
             while (rs.next()) {
                 final Song song = new Song(
-                        rs.getInt("song_id"),
+                        rs.getInt("id"),
                         rs.getString("title"),
                         rs.getString("artist"),
-                        rs.getString("url")
+                        rs.getString("url"),
+                        rs.getString("videoId")
                 );
                 song.setSongRecentlyPlayedStatus(true);
                 recentlyPlayedSongs.add(++index, song);
@@ -113,10 +116,11 @@ public final class DatabaseRunner {
             int index = 0;
             while (rs.next()) {
                 final Song song = new Song(
-                        rs.getInt("song_id"),
+                        rs.getInt("id"),
                         rs.getString("title"),
                         rs.getString("artist"),
-                        rs.getString("url")
+                        rs.getString("url"),
+                        rs.getString("videoId")
                 );
                 songsFromPlaylist.add(++index, song);
             }
@@ -134,10 +138,11 @@ public final class DatabaseRunner {
             int index = 0;
             while (rs.next()) {
                 final Song song = new Song(
-                        rs.getInt("song_id"),
+                        rs.getInt("id"),
                         rs.getString("title"),
                         rs.getString("artist"),
                         rs.getString("url"),
+                        rs.getString("videoId"),
                         false,
                         true,
                         false,
@@ -223,6 +228,7 @@ public final class DatabaseRunner {
                 song.getSongName(),
                 song.getSongArtist(),
                 song.getSongLink(),
+                song.getSongVideoId(),
                 song.isSongLiked(),
                 true,
                 song.isSongRecentlyPlayed(),
@@ -256,7 +262,7 @@ public final class DatabaseRunner {
     }
 
     private int getSongId(String title, String artist) throws SQLException {
-        final String checkIfSongExists = "SELECT song_id FROM Songs WHERE title = ? AND artist = ?;";
+        final String checkIfSongExists = "SELECT id FROM Songs WHERE title = ? AND artist = ?;";
         try (PreparedStatement checkSong = connection.prepareStatement(checkIfSongExists)) {
             checkSong.setString(1, title);
             checkSong.setString(2, artist);
@@ -270,12 +276,14 @@ public final class DatabaseRunner {
     }
 
     protected int insertSongIntoSongs(Song song) throws SQLException {
-        final String insertIntoSongs = "INSERT OR IGNORE INTO Songs (title, artist, url) VALUES(?, ?, ?);";
+        final String insertIntoSongs = "INSERT OR IGNORE INTO Songs (title, artist, url, videoId) VALUES(?, ?, ?, ?);";
         try (final PreparedStatement insertSongStatement = connection.prepareStatement(insertIntoSongs)) {
             insertSongStatement.setString(1, song.getSongName());
             insertSongStatement.setString(2, song.getSongArtist());
             insertSongStatement.setString(3, song.getSongLink());
+            insertSongStatement.setString(4, song.getSongVideoId());
             insertSongStatement.executeUpdate();
+
             try (final ResultSet generatedKeys = insertSongStatement.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
                     return generatedKeys.getInt(1);
@@ -326,6 +334,7 @@ public final class DatabaseRunner {
         try {
             connection.rollback();
         } catch (SQLException rollbackException) {
+            System.err.println(connection); // So the connection is NOT null
             logger.log(Level.SEVERE, StreamLineMessages.RollbackError.getMessage());
             System.exit(1);
         }

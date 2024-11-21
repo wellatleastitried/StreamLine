@@ -10,10 +10,18 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
     visible = true
 )
 @JsonSubTypes({
-    @JsonSubTypes.Type(value = VideoResult.class, name = "video"),
-    @JsonSubTypes.Type(value = PlaylistResult.class, name = "playlist"),
-    @JsonSubTypes.Type(value = ChannelResult.class, name = "channel")
+    @JsonSubTypes.Type(value = VideoSearchResult.class, name = "video"),
+    @JsonSubTypes.Type(value = PlaylistSearchResult.class, name = "playlist"),
+    @JsonSubTypes.Type(value = ChannelSearchResult.class, name = "channel")
 })
 public abstract class SearchResult {
     public String type;
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
 }

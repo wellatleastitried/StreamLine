@@ -32,6 +32,7 @@ public class DatabaseTest {
         try {
             linker = new DatabaseLinker(OS.TESTING, StatementReader.readQueryFromFile("/sql/init/DatabaseInitialization.sql"));
         } catch (Exception e) {
+            System.err.println("[!] Could not initialize test db.");
             throw new RuntimeException("[!] Could not initialize test db.");
         }
         testPath1 = ".config/notTheDatabase.db";
@@ -43,33 +44,33 @@ public class DatabaseTest {
 
     @Test
     public void databaseExistenceCheck() {
-        MatcherAssert.assertThat(linker.needsNewDatabase(testPath1), is(true));
-        MatcherAssert.assertThat(linker.needsNewDatabase(testPath2), is(false));
+        MatcherAssert.assertThat(linker.isDatabaseSetupAtPath(testPath1), is(true));
+        MatcherAssert.assertThat(linker.isDatabaseSetupAtPath(testPath2), is(false));
     }
 
     @Test
-    public void runInsert() {
-        Song song = new Song(1, "SongName", "SongArtist", "URL");
+    public void simulateLikingSong() {
+        Song song = new Song(1, "SongName", "SongArtist", "URL", "VideoId");
         try {
             runner.likeSong(song);
         } catch (Exception e) {
-            throw new RuntimeException("Failed INSERT statement on Songs in TEST!");
+            System.err.println("[!] Failed INSERT statement on Songs in TEST!");
+            throw new RuntimeException("[!] Failed INSERT statement on Songs in TEST!");
         }
         RetrievedStorage result = runner.getLikedSongs();
         System.out.println("Number of results from database: " + result.size());
+        MatcherAssert.assertThat(result.size(), is(1));
         if (result.size() != 1) {
-            throw new RuntimeException("Incorrect number of results from table in SELECT!");
+            System.err.println("[!] Incorrect number of results from table in SELECT!");
+            throw new RuntimeException("[!] Incorrect number of results from table in SELECT!");
         }
-    }
-
-    @Test
-    public void closeTest() {
-        MatcherAssert.assertThat(linker.shutdown(), is(true));
     }
 
     @After
     public void shutdown() {
-        linker.shutdown();
+        if (!linker.shutdown()) {
+            throw new RuntimeException("[!] Could not properly close database linker.");
+        }
         new File(testPath1).delete();
         new File(testPath2).delete();
     }

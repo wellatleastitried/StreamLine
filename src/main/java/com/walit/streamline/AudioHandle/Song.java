@@ -6,6 +6,7 @@ public class Song {
     private String title;
     private String artist;
     private String url;
+    private String videoId;
     private boolean isLiked;
     private boolean isDownloaded;
     private boolean isRecentlyPlayed;
@@ -15,11 +16,12 @@ public class Song {
     /**
      * Constructor for songs that are being fetched quickly.
      */
-    public Song(int songId, String title, String artist, String url) {
+    public Song(int songId, String title, String artist, String url, String videoId) {
         this.songId = songId;
         this.title = title;
         this.artist = artist;
         this.url = url;
+        this.videoId = videoId;
         this.isLiked = false;
         this.isDownloaded = false;
         this.isRecentlyPlayed = false;
@@ -30,7 +32,7 @@ public class Song {
     /**
      * Constructor for songs that need more context, such as their respective file path and hash.
      */
-    public Song(int songId, String title, String artist, String url, boolean isLiked, boolean isDownloaded, boolean isRecentlyPlayed, String downloadPath, String fileHash) {
+    public Song(int songId, String title, String artist, String url, String videoId, boolean isLiked, boolean isDownloaded, boolean isRecentlyPlayed, String downloadPath, String fileHash) {
         this.songId = songId;
         this.title = title;
         this.artist = artist;
@@ -56,6 +58,10 @@ public class Song {
 
     public void setSongLink(String url) {
         this.url = url;
+    }
+
+    public void setSongVideoId(String videoId) {
+        this.videoId = videoId;
     }
 
     public void setSongLikeStatus(boolean isLiked) {
@@ -84,6 +90,10 @@ public class Song {
 
     public String getSongLink() {
         return url;
+    }
+
+    public String getSongVideoId() {
+        return videoId;
     }
 
     public boolean isSongLiked() {

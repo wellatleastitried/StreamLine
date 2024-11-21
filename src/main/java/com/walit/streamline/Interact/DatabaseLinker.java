@@ -21,7 +21,7 @@ public class DatabaseLinker {
         this.osName = osName;
         this.PATH = setupPath(this.osName);
         new File(PATH).getParentFile().mkdirs();
-        this.isNewDatabase = needsNewDatabase(PATH);
+        this.isNewDatabase = isDatabaseSetupAtPath(PATH);
         try {
             this.connection = DriverManager.getConnection("jdbc:sqlite:" + PATH);
             if (this.isNewDatabase) {
@@ -68,9 +68,9 @@ public class DatabaseLinker {
     }
 
     /**
-     * Checks if the database exists and, if it doesn't, returns false so that a new one can be created.
+     * Returns whether the database has already been setup at the path provided.
      */
-    public boolean needsNewDatabase(String path) {
+    public boolean isDatabaseSetupAtPath(String path) {
         return !(new File(path).exists());
     }
 

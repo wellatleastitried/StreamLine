@@ -18,12 +18,10 @@ public class InvidiousHandle {
     public static InvidiousHandle instance;
 
     public final String key;
-    private final String invidiousHost = "https://inv.nadeko.net/";
-    private final ResponseParser parser; // Might just be public tools I can use instead of writing my own
+    private final String invidiousHost = "https://inv.nadeko.net/"; // This could change, also allow for self-hosting
 
     public InvidiousHandle(String key) {
         this.key = key;
-        this.parser = new ResponseParser();
     }
 
     /**
@@ -43,6 +41,7 @@ public class InvidiousHandle {
         return "";
     }
 
+    // TODO: Delete this if not used
     private String getHostname() {
         return invidiousHost;
     }
