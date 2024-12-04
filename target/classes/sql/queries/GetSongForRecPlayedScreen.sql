@@ -1,1 +1,1 @@
-SELECT * FROM Songs WHERE id IN (SELECT song_id FROM RecentlyPlayed ORDER BY last_listen DESC);
+SELECT Songs.* FROM Songs JOIN RecentlyPlayed ON Songs.id = RecentlyPlayed.song_id ORDER BY RecentlyPlayed.last_listen DESC;

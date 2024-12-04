@@ -3,6 +3,8 @@ package com.walit.streamline;
 import com.googlecode.lanterna.SGR;
 import com.googlecode.lanterna.TerminalSize;
 import com.googlecode.lanterna.TextColor;
+import com.googlecode.lanterna.input.KeyStroke;
+import com.googlecode.lanterna.input.KeyType;
 import com.googlecode.lanterna.gui2.*;
 import com.googlecode.lanterna.screen.TerminalScreen;
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
@@ -327,8 +329,10 @@ public final class Core {
         panel.addComponent(generateNewSpace());
 
         Button backButton = createButton("  <- Back  ", () -> {
-            dropWindow(helpMenu);
-            runMainWindow();
+            textGUI.getGUIThread().invokeLater(() -> {
+                dropWindow(helpMenu);
+                runMainWindow();
+            });
         }, buttonWidth / 3, buttonHeight / 2);
         panel.addComponent(backButton);
 
@@ -356,8 +360,10 @@ public final class Core {
         panel.addComponent(generateNewSpace());
 
         Button backButton = createButton("  <- Back  ", () -> {
-            dropWindow(settingsMenu);
-            runMainWindow();
+            textGUI.getGUIThread().invokeLater(() -> {
+                dropWindow(settingsMenu);
+                runMainWindow();
+            });
         }, buttonWidth / 3, buttonHeight / 2);
         panel.addComponent(backButton);
 
@@ -390,21 +396,37 @@ public final class Core {
 
     public BasicWindow createSearchPage() {
         BasicWindow window = new BasicWindow("Search");
-        
+
         window.setHints(java.util.Arrays.asList(Window.Hint.FULL_SCREEN));
 
         Panel panel = new Panel();
         panel.setLayoutManager(new GridLayout(1));
-        panel.setPreferredSize(new TerminalSize(40, 20));
-        panel.setFillColorOverride(TextColor.ANSI.BLACK);
+        panel.setPreferredSize(new TerminalSize(40, 20)); panel.setFillColorOverride(TextColor.ANSI.BLACK);
 
         panel.addComponent(generateNewSpace());
 
         Label searchLabel = createLabel(getString("Search:"));
         panel.addComponent(searchLabel);
 
-        // TODO: Add a listener for when the user presses enter and the searchBar is focused.
-        TextBox searchBar = new TextBox(new TerminalSize(terminalSize.getColumns() / 2, 1));
+        TextBox searchBar = new TextBox(new TerminalSize(terminalSize.getColumns() / 2, 1)) {
+            @Override
+            public synchronized Result handleKeyStroke(KeyStroke keyStroke) {
+                if (keyStroke.getKeyType() == KeyType.Enter) {
+                    // TODO: Change to display the results from the search (a row for each song within the "resultsBox"
+                    textGUI.getGUIThread().invokeLater(() -> {
+                        System.out.println("Enter pressed!"); // TODO: Change this to display the results
+                        try {
+                            textGUI.getScreen().refresh();
+                        } catch (IOException iE) {
+                            logger.log(Level.SEVERE, StreamLineMessages.RedrawError.getMessage());
+                            handleKeyStroke(keyStroke);
+                        }
+                    });
+                    return Result.HANDLED;
+                }
+                return super.handleKeyStroke(keyStroke);
+            }
+        };
         panel.addComponent(searchBar);
 
         panel.addComponent(generateNewSpace());
@@ -414,6 +436,7 @@ public final class Core {
         resultsBox.setLayoutManager(new GridLayout(/*2*/1));
         resultsBox.setPreferredSize(new TerminalSize(terminalSize.getColumns(), terminalSize.getRows() - panel.getSize().getRows() - 15));
         resultsBox.setFillColorOverride(TextColor.ANSI.BLACK_BRIGHT);
+
         // Making sure that the api responses can be turned into the proper object for the TUI
         Label statsResponse = createLabel(testStatsCall());
         resultsBox.addComponent(statsResponse);
@@ -421,8 +444,10 @@ public final class Core {
         panel.addComponent(resultsBox);
 
         Button backButton = createButton("  <- Back  ", () -> {
-            dropWindow(searchPage);
-            runMainWindow();
+            textGUI.getGUIThread().invokeLater(() -> {
+                dropWindow(searchPage);
+                runMainWindow();
+            });
         }, buttonWidth / 3, buttonHeight / 2);
         panel.addComponent(backButton);
 
@@ -463,6 +488,7 @@ public final class Core {
     private void playQueue(RetrievedStorage songQueue) {
         // Something like this...
         AudioPlayer audioPlayer = new AudioPlayer(songQueue);
+        // TODO: This may not need to be an async call as the GUI actions will be on the GUI event thread so the main thread should be free
         // CompletableFuture.runAsync(() -> audioPlayer);
     }
 

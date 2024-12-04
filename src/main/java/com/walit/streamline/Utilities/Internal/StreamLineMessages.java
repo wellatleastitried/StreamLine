@@ -29,7 +29,8 @@ public enum StreamLineMessages {
     AudioFetchFailure("[!] Error while fetching audio, please try again."),
     IOException("[!] IOException encountered during song playback, please try again."),
     UnableToCallAPIError("[!] Unable to connect to Invidous API at this time, please try again later."),
-    JsonParsingException("[!] Unable to parse JSON response from API, please try again later.");
+    JsonParsingException("[!] Unable to parse JSON response from API, please try again later."),
+    RedrawError("[!] Error while redrawing screen, please restart the app.");
 
     private final String message;
 

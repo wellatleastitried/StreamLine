@@ -40,10 +40,15 @@ public class ApiTest {
 
     @Test
     public void checkCanGetVideoId() {
-        System.out.println("\n\nTHE VIDEO ID IS:");
-        List<SearchResult> response = handle.retrieveSearchResults("Give Cold");
-        MatcherAssert.assertThat(response, is(notNullValue()));
-        MatcherAssert.assertThat(response, not(response.isEmpty()));
+        System.out.println("\n\nRESULTING VIDEO IDs ARE:");
+        handle.retrieveSearchResults("Give Cold").thenAccept(searchResults -> {
+            MatcherAssert.assertThat(searchResults, is(notNullValue()));
+            if (searchResults != null) {
+                // TODO: The result will need to be cast to a VideoResult from a SearchResult
+                searchResults.forEach(result -> System.out.println(((VideoSearchResult) result).getTitle()));
+            }
+            MatcherAssert.assertThat(searchResults, not(searchResults.isEmpty()));
+        });
         System.out.println("\n");
     }
 

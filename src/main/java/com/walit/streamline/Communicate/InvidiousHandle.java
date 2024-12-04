@@ -11,6 +11,7 @@ import java.net.URLEncoder;
 
 import java.nio.charset.StandardCharsets;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.List;
 
 public class InvidiousHandle {
@@ -50,32 +51,35 @@ public class InvidiousHandle {
         return URLEncoder.encode(base, StandardCharsets.UTF_8);
     }
 
-    public List<SearchResult> retrieveSearchResults(String searchTerm) {
-        StringBuilder result = new StringBuilder();
-        BufferedReader reader;
-        HttpURLConnection connection;
-        searchTerm = urlEncodeString(searchTerm.trim());
-        try {
-            connection = (HttpURLConnection) new URL(invidiousHost + "api/v1/search?q=" + searchTerm).openConnection();
-            if (connection.getResponseCode() >= 400) {
-                reader = new BufferedReader(new InputStreamReader(connection.getErrorStream()));
-            } else {
-                reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-            }
-            String line;
-            while ((line = reader.readLine()) != null) {
-                result.append(line);
-            }
-            List<SearchResult> searchResults = ResponseParser.listFromSearchResponse(result.toString());
-            if (searchResults != null) {
-                return searchResults;
-            } else {
+    // TODO: Make this async
+    public CompletableFuture<List<SearchResult>> retrieveSearchResults(String term) {
+        final String searchTerm = urlEncodeString(term.trim());
+        return CompletableFuture.supplyAsync(() -> {
+            StringBuilder result = new StringBuilder();
+            BufferedReader reader;
+            HttpURLConnection connection;
+            try {
+                connection = (HttpURLConnection) new URL(invidiousHost + "api/v1/search?q=" + searchTerm).openConnection();
+                if (connection.getResponseCode() >= 400) {
+                    reader = new BufferedReader(new InputStreamReader(connection.getErrorStream()));
+                } else {
+                    reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                }
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    result.append(line);
+                }
+                List<SearchResult> searchResults = ResponseParser.listFromSearchResponse(result.toString());
+                if (searchResults != null) {
+                    return searchResults;
+                } else {
+                    return null;
+                }
+            } catch (Exception e) {
+                System.err.println(StreamLineMessages.UnableToCallAPIError.getMessage());
                 return null;
             }
-        } catch (Exception e) {
-            System.err.println(StreamLineMessages.UnableToCallAPIError.getMessage());
-            return null;
-        }
+        });
     }
 
     /**
