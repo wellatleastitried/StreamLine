@@ -3,27 +3,39 @@ package com.walit.streamline;
 import com.googlecode.lanterna.SGR;
 import com.googlecode.lanterna.TerminalSize;
 import com.googlecode.lanterna.TextColor;
+import com.googlecode.lanterna.input.KeyStroke;
+import com.googlecode.lanterna.input.KeyType;
 import com.googlecode.lanterna.gui2.*;
 import com.googlecode.lanterna.screen.TerminalScreen;
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
 import com.googlecode.lanterna.terminal.Terminal;
 
 import java.io.IOException;
+import java.io.File;
+import java.io.FileWriter;
 import java.util.HashMap;
-import java.util.concurrent.CompletableFuture;
+import java.util.logging.FileHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.logging.XMLFormatter;
+// import java.util.concurrent.CompletableFuture;
 
 import com.walit.streamline.Utilities.CacheManager;
-import com.walit.streamline.Communicate.HelpMessages;
-import com.walit.streamline.Communicate.StreamLineMessages;
-import com.walit.streamline.Communicate.OS;
+import com.walit.streamline.Utilities.Internal.HelpMessages;
+import com.walit.streamline.Utilities.Internal.Mode;
+import com.walit.streamline.Utilities.Internal.StreamLineMessages;
+import com.walit.streamline.Utilities.Internal.OS;
 import com.walit.streamline.Interact.DatabaseLinker;
 import com.walit.streamline.Interact.DatabaseRunner;
 import com.walit.streamline.Utilities.StatementReader;
 import com.walit.streamline.Utilities.RetrievedStorage;
-import com.walit.streamline.AudioHandle.AudioPlayer;
-import com.walit.streamline.AudioHandle.Song;
+import com.walit.streamline.Audio.AudioPlayer;
+import com.walit.streamline.Audio.Song;
+import com.walit.streamline.Communicate.InvidiousHandle;
 
 public final class Core {
+
+    private final Logger logger;
 
     private WindowBasedTextGUI textGUI;
 
@@ -49,21 +61,19 @@ public final class Core {
     public final OS whichOS;
     private final DatabaseLinker dbLink;
     private final DatabaseRunner dbRunner;
+    private final InvidiousHandle apiHandle;
     private HashMap<String, String> queries;
 
     private final String CACHE_DIRECTORY;
 
-    public enum Mode {
-        AUTORUN, // DEFAULT BEHAVIOR
-        DELAYEDRUN,
-        TESTING
-    }
 
     public Core(Mode mode) {
+        /*
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            System.err.println("Shutting down...");
+            logger.log(Level.WARNING, "Shutting down...");
             shutdown();
         }));
+        */
         String os = System.getProperty("os.name").toLowerCase();
         if (os.contains("win")) {
             whichOS = OS.WINDOWS;
@@ -72,21 +82,24 @@ public final class Core {
         } else if (os.contains("mac")) {
             whichOS = OS.MAC;
         } else {
-            whichOS = OS.UNKNOWN;
+            whichOS = OS.UNKNOWN; // If the OS is unknown, attempt running with Linux configuration.
         }
+        logger = Logger.getLogger("Streamline"); 
+        initializeLogger();
         this.CACHE_DIRECTORY = getCacheDirectory();
-        this.queries = getMapOfQueries();
+        this.queries = Core.getMapOfQueries();
         this.dbLink = new DatabaseLinker(whichOS, queries.get("INITIALIZE_TABLES"));
-        this.dbRunner = new DatabaseRunner(dbLink.getConnection(), queries);
+        this.dbRunner = new DatabaseRunner(dbLink.getConnection(), queries, logger);
+        this.apiHandle = InvidiousHandle.getInstance();
         switch (mode) {
-            case DELAYEDRUN:
-                System.out.println("Work this out");
+            case HEADLESS: // Web interface initialization
+                clearExpiredCacheOnStartup();
                 break;
-            case TESTING:
+            case TESTING: // headless testing
                 this.buttonWidth = 10;
                 this.buttonHeight = 10;
                 break;
-            case AUTORUN:
+            case TERMINAL: // TUI
             default:
                 DefaultTerminalFactory terminalFactory = new DefaultTerminalFactory();
                 try {
@@ -104,13 +117,45 @@ public final class Core {
                     this.downloadedPage = createDownloadedMusicPage();
                     this.helpMenu = createHelpMenu();
                     this.settingsMenu = createSettingsMenu();
+                    clearExpiredCacheOnStartup();
                 } catch (IOException iE) {
-                    System.err.println(StreamLineMessages.FatalStartError.getMessage());
+                    logger.log(Level.SEVERE, StreamLineMessages.FatalStartError.getMessage());
                     System.exit(1);
                 }
                 break;
         }
-        clearExpiredCacheOnStartup();
+    }
+
+    private void initializeLogger() {
+        String logFileDir = switch (whichOS) {
+            case WINDOWS -> "%temp%\\Streamline\\";
+            default -> "/tmp/StreamLine/";
+        };
+        String fileName = "streamline.log";
+        File logFile = new File(logFileDir);
+        if (!logFile.mkdirs()) {
+            System.err.println("Unable to create tmp directory for log file.");
+            return;
+        }
+        logFile = new File(logFileDir + fileName);
+        FileHandler fileHandle;
+        try {
+            if (logFile.exists() && logFile.isFile()) {
+                new FileWriter(logFile, false).close();
+            }
+            fileHandle = new FileHandler(logFile.getPath(), true);
+            while (logger.getHandlers().length > 0) {
+                logger.removeHandler(logger.getHandlers()[0]);
+            }
+            logger.addHandler(fileHandle);
+            fileHandle.setLevel(Level.INFO);
+            XMLFormatter xF = new XMLFormatter();
+            fileHandle.setFormatter(xF);
+            logger.log(Level.INFO, "Log initialized.");
+        } catch (IOException iE) {
+            iE.printStackTrace();
+            logger.log(Level.WARNING, "Could not setup logging for program.");
+        }
     }
 
     protected String getCacheDirectory() {
@@ -125,10 +170,6 @@ public final class Core {
         }
     }
 
-    private void clearExpiredCacheOnStartup() {
-        CacheManager.clearExpiredCacheOnStartup(CACHE_DIRECTORY);
-    }
-
     public boolean start() {
         try {
             screen.startScreen();
@@ -139,36 +180,57 @@ public final class Core {
         }
         return true;
     }
-
-    public static void main(String [] args) {
-        Core streamline = new Core(Mode.AUTORUN);
-        if (!streamline.start()) {
-            System.err.println(StreamLineMessages.FatalStartError.getMessage());
-            System.exit(1);
-        }
-        System.out.println(StreamLineMessages.Farewell.getMessage());
-        System.exit(0);
-    }
-
+    
     /**
      * Reaches out to the SQL files in the resources folder that house the queries needed at runtime.
      * @return Map containing the full queries with a key for easy access
      */
-    public HashMap<String, String> getMapOfQueries() {
+    public static HashMap<String, String> getMapOfQueries() {
         HashMap<String, String> map = new HashMap<>();
-        map.put("INITIALIZE_TABLES", StatementReader.readQueryFromFile("/sql/init/DatabaseInitialization.sql"));
-        map.put("CLEAR_CACHE", StatementReader.readQueryFromFile("/sql/updates/ClearCachedSongs.sql"));
-        map.put("getLikedSongs", StatementReader.readQueryFromFile("/sql/queries/GetSongForLikedMusicScreen.sql"));
-        map.put("getDownloadedSongs", StatementReader.readQueryFromFile("/sql/queries/GetSongForDownloadedScreen.sql"));
-        map.put("getRecentlyPlayedSongs", StatementReader.readQueryFromFile("/sql/queries/GetSongForRecPlayedScreen.sql"));
-        map.put("ensureRecentlyPlayedCount", StatementReader.readQueryFromFile("/sql/updates/UpdateRecentlyPlayed.sql"));
+        try {
+            map.put("INITIALIZE_TABLES", StatementReader.readQueryFromFile("/sql/init/DatabaseInitialization.sql"));
+            map.put("CLEAR_CACHE", StatementReader.readQueryFromFile("/sql/updates/ClearCachedSongs.sql"));
+            map.put("CLEAR_EXPIRED_CACHE", StatementReader.readQueryFromFile("/sql/updates/ClearExpiredCache.sql"));
+            map.put("GET_EXPIRED_CACHE", StatementReader.readQueryFromFile("/sql/queries/GetExpiredCache.sql"));
+            map.put("getLikedSongs", StatementReader.readQueryFromFile("/sql/queries/GetSongForLikedMusicScreen.sql"));
+            map.put("getDownloadedSongs", StatementReader.readQueryFromFile("/sql/queries/GetSongForDownloadedScreen.sql"));
+            map.put("getRecentlyPlayedSongs", StatementReader.readQueryFromFile("/sql/queries/GetSongForRecPlayedScreen.sql"));
+            map.put("ensureRecentlyPlayedCount", StatementReader.readQueryFromFile("/sql/updates/UpdateRecentlyPlayed.sql"));
+        } catch (IOException iE) {
+            System.err.println(StreamLineMessages.SQLFileReadError.getMessage());
+            System.exit(1);
+        } catch (Exception e) {
+            System.err.println(StreamLineMessages.MissingConfigurationFiles.getMessage());
+            System.exit(1);
+        }
+        assert(!map.isEmpty());
         return map;
     }
 
-    public Button createButton(String text, Runnable runner) {
+    public Label createLabelWithSize(String text) {
+        return createLabelWithSize(text, buttonWidth, buttonHeight);
+    }
+
+    public Label createLabelWithSize(String text, int width, int height) {
+        Label label = createLabel(text);
+        label.setPreferredSize(getSize(width, height));
+        return label;
+    }
+
+    public Label createLabel(String text) {
+        Label label = new Label(getString(text));
+        label.addStyle(SGR.BOLD);
+        return label;
+    }
+
+    public Button createButton(String text, Runnable runner, int width, int height) {
         Button button = new Button(text, runner);
-        button.setPreferredSize(getSize(buttonWidth, buttonHeight));
+        button.setPreferredSize(getSize(width, height));
         return button;
+    }
+
+    public Button createButton(String text, Runnable runner) {
+        return createButton(text, runner, buttonWidth, buttonHeight);
     }
 
     public TerminalSize getSize(int bWidth, int bHeight) {
@@ -187,40 +249,30 @@ public final class Core {
         panel.setFillColorOverride(TextColor.ANSI.BLACK);
 
         // CREATE LABELS AND BUTTONS
-        Label titleLabel = new Label("    Welcome to StreamLine    ");
-        titleLabel.addStyle(SGR.BOLD);
+        Label titleLabel = createLabel("    Welcome to StreamLine    ");
 
-        Button searchButton= new Button("Search for a song", () -> transitionMenus(searchPage));
-        searchButton.setPreferredSize(getSize(buttonWidth, buttonHeight));
+        Button searchButton = createButton("Search for a song", () -> transitionMenus(searchPage));
         buttons.put(buttonCount++, searchButton);
 
-        Button likedButton = new Button("View liked music", () -> transitionMenus(likedMusicPage));
-        likedButton.setPreferredSize(getSize(buttonWidth, buttonHeight));
+        Button likedButton = createButton("View liked music", () -> transitionMenus(likedMusicPage));
         buttons.put(buttonCount++, likedButton);
 
-        Button playlistsButton = new Button("Playlists", () -> transitionMenus(playlistPage));
-        playlistsButton.setPreferredSize(getSize(buttonWidth, buttonHeight));
+        Button playlistsButton = createButton("Playlists", () -> transitionMenus(playlistPage));
         buttons.put(buttonCount++, playlistsButton);
 
-        Button recentlyPlayedButton = new Button("Recently Played", () -> transitionMenus(recentlyPlayedPage));
-        recentlyPlayedButton.setPreferredSize(getSize(buttonWidth, buttonHeight));
+        Button recentlyPlayedButton = createButton("Recently Played", () -> transitionMenus(recentlyPlayedPage));
         buttons.put(buttonCount++, recentlyPlayedButton);
 
-
-        Button downloadedPageButton = new Button("Downloaded Music", () -> transitionMenus(downloadedPage));
-        downloadedPageButton.setPreferredSize(getSize(buttonWidth, buttonHeight));
+        Button downloadedPageButton = createButton("Downloaded Music", () -> transitionMenus(downloadedPage));
         buttons.put(buttonCount++, downloadedPageButton);
 
-        Button helpButton = new Button("Help", () -> transitionMenus(helpMenu));
-        helpButton.setPreferredSize(getSize(buttonWidth, buttonHeight));
+        Button helpButton = createButton("Help", () -> transitionMenus(helpMenu));
         buttons.put(buttonCount++, helpButton);
 
-        Button settingsButton = new Button("Settings", () -> transitionMenus(settingsMenu));
-        settingsButton.setPreferredSize(getSize(buttonWidth, buttonHeight));
+        Button settingsButton = createButton("Settings", () -> transitionMenus(settingsMenu));
         buttons.put(buttonCount++, settingsButton);
 
-        Button quitButton = new Button("Quit", () -> shutdown());
-        quitButton.setPreferredSize(getSize(buttonWidth, buttonHeight));
+        Button quitButton = createButton("Quit", () -> shutdown());
         buttons.put(buttonCount++, quitButton);
 
         panel.addComponent(generateNewSpace());
@@ -245,34 +297,29 @@ public final class Core {
 
         panel.addComponent(generateNewSpace());
 
-        Label searchHelpLabel = new Label(getString("Search help"));
-        searchHelpLabel.setPreferredSize(getSize(buttonWidth, buttonHeight));
-        searchHelpLabel.addStyle(SGR.BOLD);
+        Label searchHelpLabel = createLabelWithSize("Search help");
         panel.addComponent(searchHelpLabel);
 
-        Label searchHelpInfo = new Label(getString(HelpMessages.SearchInformation.getMessage()));
-        searchHelpInfo.addStyle(SGR.BOLD);
+        Label searchHelpInfo = createLabel(HelpMessages.SearchInformation.getMessage());
         panel.addComponent(searchHelpInfo);
 
         panel.addComponent(generateNewSpace());
 
-        Label likedMusicLabel = new Label(getString("Liked music help"));
-        likedMusicLabel.setPreferredSize(getSize(buttonWidth, buttonHeight));
-        likedMusicLabel.addStyle(SGR.BOLD);
+        Label likedMusicLabel = createLabelWithSize("Liked music help");
         panel.addComponent(likedMusicLabel);
 
-        Label likedMusicInfo = new Label(getString(HelpMessages.LikedMusicInformation.getMessage()));
-        likedMusicInfo.addStyle(SGR.BOLD);
+        Label likedMusicInfo = createLabel(getString(HelpMessages.LikedMusicInformation.getMessage()));
         panel.addComponent(likedMusicInfo);
 
         panel.addComponent(generateNewSpace());
         panel.addComponent(generateNewSpace());
 
-        Button backButton = new Button("  <- Back  ", () -> {
-            dropWindow(helpMenu);
-            runMainWindow();
-        });
-        backButton.setPreferredSize(getSize(buttonWidth / 3, buttonHeight / 2));
+        Button backButton = createButton("  <- Back  ", () -> {
+            textGUI.getGUIThread().invokeLater(() -> {
+                dropWindow(helpMenu);
+                runMainWindow();
+            });
+        }, buttonWidth / 3, buttonHeight / 2);
         panel.addComponent(backButton);
 
         window.setComponent(panel);
@@ -291,19 +338,19 @@ public final class Core {
 
         panel.addComponent(generateNewSpace());
 
-        Button clearCacheButton = new Button(getString("Clear cache"), () -> {
+        Button clearCacheButton = createButton(getString("Clear cache"), () -> {
             clearCache();
         });
-        clearCacheButton.setPreferredSize(getSize(buttonWidth, buttonHeight));
         panel.addComponent(clearCacheButton);
 
         panel.addComponent(generateNewSpace());
 
-        Button backButton = new Button("  <- Back  ", () -> {
-            dropWindow(settingsMenu);
-            runMainWindow();
-        });
-        backButton.setPreferredSize(getSize(buttonWidth / 3, buttonHeight / 2));
+        Button backButton = createButton("  <- Back  ", () -> {
+            textGUI.getGUIThread().invokeLater(() -> {
+                dropWindow(settingsMenu);
+                runMainWindow();
+            });
+        }, buttonWidth / 3, buttonHeight / 2);
         panel.addComponent(backButton);
 
         window.setComponent(panel);
@@ -335,7 +382,70 @@ public final class Core {
 
     public BasicWindow createSearchPage() {
         BasicWindow window = new BasicWindow("Search");
+
+        window.setHints(java.util.Arrays.asList(Window.Hint.FULL_SCREEN));
+
+        Panel panel = new Panel();
+        panel.setLayoutManager(new GridLayout(1));
+        panel.setPreferredSize(new TerminalSize(40, 20)); panel.setFillColorOverride(TextColor.ANSI.BLACK);
+
+        panel.addComponent(generateNewSpace());
+
+        Label searchLabel = createLabel(getString("Search:"));
+        panel.addComponent(searchLabel);
+
+        TextBox searchBar = new TextBox(new TerminalSize(terminalSize.getColumns() / 2, 1)) {
+            @Override
+            public synchronized Result handleKeyStroke(KeyStroke keyStroke) {
+                if (keyStroke.getKeyType() == KeyType.Enter) {
+                    // TODO: Change to display the results from the search (a row for each song within the "resultsBox"
+                    textGUI.getGUIThread().invokeLater(() -> {
+                        System.out.println("Enter pressed!"); // TODO: Change this to display the results
+                        try {
+                            textGUI.getScreen().refresh();
+                        } catch (IOException iE) {
+                            logger.log(Level.SEVERE, StreamLineMessages.RedrawError.getMessage());
+                            handleKeyStroke(keyStroke);
+                        }
+                    });
+                    return Result.HANDLED;
+                }
+                return super.handleKeyStroke(keyStroke);
+            }
+        };
+        panel.addComponent(searchBar);
+
+        panel.addComponent(generateNewSpace());
+
+        // This is the box that will store the search results in the form of <button button> where the first button contains the song information, and the second contains options on what to do with the song
+        Panel resultsBox = new Panel();
+        resultsBox.setLayoutManager(new GridLayout(/*2*/1));
+        resultsBox.setPreferredSize(new TerminalSize(terminalSize.getColumns(), terminalSize.getRows() - panel.getSize().getRows() - 15));
+        resultsBox.setFillColorOverride(TextColor.ANSI.BLACK_BRIGHT);
+
+        // Making sure that the api responses can be turned into the proper object for the TUI
+        Label statsResponse = createLabel(testStatsCall());
+        resultsBox.addComponent(statsResponse);
+
+        panel.addComponent(resultsBox);
+
+        Button backButton = createButton("  <- Back  ", () -> {
+            textGUI.getGUIThread().invokeLater(() -> {
+                dropWindow(searchPage);
+                runMainWindow();
+            });
+        }, buttonWidth / 3, buttonHeight / 2);
+        panel.addComponent(backButton);
+
+        window.setComponent(panel);
+
         return window;
+    }
+
+    // Temporary function for getting TUI figured out
+    public String testStatsCall() {
+        InvidiousHandle handle = InvidiousHandle.getInstance();
+        return handle.retrieveStats();
     }
 
     public EmptySpace generateNewSpace() {
@@ -361,16 +471,21 @@ public final class Core {
         }
     }
 
-    private void playQueue(HashMap<Integer, Song> songQueue) {
+    private void playQueue(RetrievedStorage songQueue) {
         // Something like this...
         AudioPlayer audioPlayer = new AudioPlayer(songQueue);
+        // TODO: This may not need to be an async call as the GUI actions will be on the GUI event thread so the main thread should be free
         // CompletableFuture.runAsync(() -> audioPlayer);
     }
 
     private void clearCache() {
-        // Call com.walit.streamline.AudioHandle.CacheManager
         CacheManager.clearCache(CACHE_DIRECTORY);
-        new DatabaseRunner(dbLink.getConnection(), queries).clearCachedSongs(CACHE_DIRECTORY);
+        dbRunner.clearCachedSongs();
+    }
+
+    private void clearExpiredCacheOnStartup() {
+        CacheManager.clearExpiredCacheOnStartup(CACHE_DIRECTORY, dbRunner.getExpiredCache());
+        dbRunner.clearExpiredCache();
     }
 
     private void dropWindow(BasicWindow window) {
@@ -387,5 +502,6 @@ public final class Core {
             textGUI.removeWindow(window);
         }
         dbLink.shutdown();
+        System.exit(0);
     }
 }

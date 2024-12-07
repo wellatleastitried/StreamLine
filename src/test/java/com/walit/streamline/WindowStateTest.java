@@ -1,5 +1,7 @@
 package com.walit.streamline;
 
+import com.walit.streamline.Utilities.Internal.Mode;
+
 import com.googlecode.lanterna.TerminalSize;
 
 import org.junit.Before;
@@ -14,7 +16,7 @@ public class WindowStateTest {
 
     @Before
     public void setup() {
-        core = new Core(Core.Mode.TESTING);
+        core = new Core(Mode.TESTING);
     }
 
     // Ensure getSize is returning a valid TerminalSize

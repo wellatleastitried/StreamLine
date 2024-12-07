@@ -1,6 +1,6 @@
 package com.walit.streamline.Utilities;
 
-import com.walit.streamline.AudioHandle.Song;
+import com.walit.streamline.Audio.Song;
 import java.util.HashMap;
 
 /**
@@ -50,6 +50,11 @@ public class RetrievedStorage {
         return indexToSong.get(index);
     }
 
+    public void clear() {
+        indexToSong.clear();
+        songToIndex.clear();
+    }
+
     public int size() {
         if (indexToSong.size() == songToIndex.size()) {
             return indexToSong.size();
@@ -63,5 +68,9 @@ public class RetrievedStorage {
 
     public boolean contains(int index) {
         return indexToSong.containsKey(index) && songToIndex.containsValue(index);
+    }
+
+    public Song[] getArrayOfSongs() {
+        return indexToSong.values().toArray(new Song[0]);
     }
 }

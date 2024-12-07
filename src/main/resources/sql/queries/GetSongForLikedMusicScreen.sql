@@ -1,1 +1,1 @@
-SELECT * FROM Songs WHERE song_id IN (SELECT song_id FROM LikedSongs ORDER BY date_liked DESC);
+SELECT Songs.* FROM Songs JOIN LikedSongs ON Songs.id = LikedSongs.song_id ORDER BY LikedSongs.date_liked DESC;
