@@ -1,6 +1,6 @@
 package com.walit.streamline.Utilities;
 
-import com.walit.streamline.AudioHandle.Song;
+import com.walit.streamline.Audio.Song;
 import com.walit.streamline.Utilities.Internal.StreamLineMessages;
 
 import java.io.File;

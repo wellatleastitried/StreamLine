@@ -22,14 +22,15 @@ import java.util.logging.XMLFormatter;
 
 import com.walit.streamline.Utilities.CacheManager;
 import com.walit.streamline.Utilities.Internal.HelpMessages;
+import com.walit.streamline.Utilities.Internal.Mode;
 import com.walit.streamline.Utilities.Internal.StreamLineMessages;
 import com.walit.streamline.Utilities.Internal.OS;
 import com.walit.streamline.Interact.DatabaseLinker;
 import com.walit.streamline.Interact.DatabaseRunner;
 import com.walit.streamline.Utilities.StatementReader;
 import com.walit.streamline.Utilities.RetrievedStorage;
-import com.walit.streamline.AudioHandle.AudioPlayer;
-import com.walit.streamline.AudioHandle.Song;
+import com.walit.streamline.Audio.AudioPlayer;
+import com.walit.streamline.Audio.Song;
 import com.walit.streamline.Communicate.InvidiousHandle;
 
 public final class Core {
@@ -65,11 +66,6 @@ public final class Core {
 
     private final String CACHE_DIRECTORY;
 
-    public enum Mode {
-        TERMINAL, // DEFAULT BEHAVIOR
-        HEADLESS,
-        TESTING
-    }
 
     public Core(Mode mode) {
         /*
@@ -184,17 +180,7 @@ public final class Core {
         }
         return true;
     }
-
-    public static void main(String [] args) {
-        Core streamline = new Core(Mode.TERMINAL);
-        if (!streamline.start()) {
-            System.err.println(StreamLineMessages.FatalStartError.getMessage());
-            System.exit(1);
-        }
-        System.out.println(StreamLineMessages.Farewell.getMessage());
-        System.exit(0);
-    }
-
+    
     /**
      * Reaches out to the SQL files in the resources folder that house the queries needed at runtime.
      * @return Map containing the full queries with a key for easy access

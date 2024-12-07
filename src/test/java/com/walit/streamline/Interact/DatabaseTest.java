@@ -11,7 +11,7 @@ import java.util.HashMap;
 
 import com.walit.streamline.Utilities.Internal.OS;
 import com.walit.streamline.Utilities.StatementReader;
-import com.walit.streamline.AudioHandle.Song;
+import com.walit.streamline.Audio.Song;
 import com.walit.streamline.Core;
 import com.walit.streamline.Utilities.RetrievedStorage;
 

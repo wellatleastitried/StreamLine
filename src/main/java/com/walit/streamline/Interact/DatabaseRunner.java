@@ -1,7 +1,7 @@
 package com.walit.streamline.Interact;
 
 import com.walit.streamline.Utilities.Internal.StreamLineMessages;
-import com.walit.streamline.AudioHandle.Song;
+import com.walit.streamline.Audio.Song;
 import com.walit.streamline.Utilities.RetrievedStorage;
 
 import java.io.File;

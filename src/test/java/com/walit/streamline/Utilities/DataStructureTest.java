@@ -5,7 +5,7 @@ import org.junit.After;
 import org.junit.Test;
 import org.hamcrest.MatcherAssert;
 
-import com.walit.streamline.AudioHandle.Song;
+import com.walit.streamline.Audio.Song;
 
 import static org.hamcrest.CoreMatchers.is;
 

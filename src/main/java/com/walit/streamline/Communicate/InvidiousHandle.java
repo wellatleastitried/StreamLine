@@ -1,6 +1,7 @@
 package com.walit.streamline.Communicate;
 
 import com.walit.streamline.Utilities.Internal.StreamLineMessages;
+import com.walit.streamline.Audio.Song;
 
 import java.io.InputStreamReader;
 import java.io.BufferedReader;
@@ -51,8 +52,7 @@ public class InvidiousHandle {
         return URLEncoder.encode(base, StandardCharsets.UTF_8);
     }
 
-    // TODO: Make this async
-    public CompletableFuture<List<SearchResult>> retrieveSearchResults(String term) {
+    public CompletableFuture<List<Song>> retrieveSearchResults(String term) {
         final String searchTerm = urlEncodeString(term.trim());
         return CompletableFuture.supplyAsync(() -> {
             StringBuilder result = new StringBuilder();
@@ -69,7 +69,7 @@ public class InvidiousHandle {
                 while ((line = reader.readLine()) != null) {
                     result.append(line);
                 }
-                List<SearchResult> searchResults = ResponseParser.listFromSearchResponse(result.toString());
+                List<Song> searchResults = ResponseParser.listFromSearchResponse(result.toString());
                 if (searchResults != null) {
                     return searchResults;
                 } else {

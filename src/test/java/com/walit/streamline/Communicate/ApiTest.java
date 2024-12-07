@@ -8,6 +8,8 @@ import java.util.List;
 
 import static org.hamcrest.CoreMatchers.*;
 
+import com.walit.streamline.Audio.Song;
+
 public class ApiTest {
 
     InvidiousHandle handle;
@@ -40,15 +42,16 @@ public class ApiTest {
 
     @Test
     public void checkCanGetVideoId() {
+        String searchTerm = "Give Cold";
         System.out.println("\n\nRESULTING VIDEO IDs ARE:");
-        handle.retrieveSearchResults("Give Cold").thenAccept(searchResults -> {
+        handle.retrieveSearchResults(searchTerm).thenAccept(searchResults -> {
             MatcherAssert.assertThat(searchResults, is(notNullValue()));
             if (searchResults != null) {
-                // TODO: The result will need to be cast to a VideoResult from a SearchResult
-                searchResults.forEach(result -> System.out.println(((VideoSearchResult) result).getTitle()));
+                System.out.println("\n\nNumber of results from searching \"" + searchTerm + "\":" + searchResults.size());
+                searchResults.forEach(result -> System.out.println(result.getSongVideoId()));
             }
             MatcherAssert.assertThat(searchResults, not(searchResults.isEmpty()));
-        });
+        }).join();
         System.out.println("\n");
     }
 
