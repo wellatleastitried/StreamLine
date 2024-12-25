@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.File;
 import java.io.FileWriter;
 import java.util.HashMap;
+import java.util.Scanner;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -98,6 +99,16 @@ public final class Core {
             case TESTING: // headless testing
                 this.buttonWidth = 10;
                 this.buttonHeight = 10;
+                break;
+            case CACHE_MANAGEMENT: // Allow for clearing the cache without starting the full application
+                Scanner scanner = new Scanner(System.in);
+                System.out.print("Would you like to:\n1) Clear all existing cache\n2) Clear expired cache\nEnter a 1 or 2 to choose: ");
+                String response = scanner.nextLine();
+                if (response.trim().equals("1")) {
+                    clearCache();
+                } else if (response.trim().equals("2")) {
+                    clearExpiredCacheOnStartup();
+                }
                 break;
             case TERMINAL: // TUI
             default:

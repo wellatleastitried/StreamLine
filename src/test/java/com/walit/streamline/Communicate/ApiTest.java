@@ -45,12 +45,13 @@ public class ApiTest {
         String searchTerm = "Give Cold";
         System.out.println("\n\nRESULTING VIDEO IDs ARE:");
         handle.retrieveSearchResults(searchTerm).thenAccept(searchResults -> {
-            MatcherAssert.assertThat(searchResults, is(notNullValue()));
             if (searchResults != null) {
                 System.out.println("\n\nNumber of results from searching \"" + searchTerm + "\":" + searchResults.size());
                 searchResults.forEach(result -> System.out.println(result.getSongVideoId()));
+                MatcherAssert.assertThat(searchResults, not(searchResults.isEmpty()));
+            } else {
+                System.out.println("Unable to reach the API at this time.");
             }
-            MatcherAssert.assertThat(searchResults, not(searchResults.isEmpty()));
         }).join();
         System.out.println("\n");
     }

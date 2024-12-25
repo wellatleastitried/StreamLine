@@ -5,7 +5,6 @@ import com.walit.streamline.Utilities.Internal.StreamLineMessages;
 
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.ParseException;
@@ -26,30 +25,32 @@ public class Driver {
         options.addOption("q", "quiet", true, "Headless start with ability to access the application at http://localhost:PORT");
         options.addOption("p", "play", true, "Play a single song (e.g., --play=\"songname\") and start headless with CLI commands available");
         options.addOption("d", "delete", true, "Removes all of the song names given from the database and/or the filesystem (e.g., --delete=\"song1,song2\"");
-        options.addOption("cc", "clear-cache", false, "Clears all of the existing cache from the filesystem (Clearing up storage space)");
-        options.addOption("cec", "clear-expired-cache", false, "Clears cache that has been unused on the filesystem for more than 15 days");
+        options.addOption("cm", "cache-manager", false, "Choose whether to clear all cache or only expired cache and then exit");
 
         CommandLine commandLine;
 
         try {
             commandLine = new DefaultParser().parse(options, args);
-            if (commandLine.hasOption("help")) {
+            if (args.length < 1) {
+                Core streamline = new Core(Mode.TERMINAL);
+                if (!streamline.start()) {
+                    System.err.println(StreamLineMessages.FatalStartError.getMessage());
+                    System.exit(1);
+                }
+            } else if (commandLine.hasOption("help")) {
                 printHelpCli(options);
                 System.exit(1);
             } else if (commandLine.hasOption("import-library")) {
-                // Do something
+                // Take in JSON file and fill database with entries
                 System.exit(1);
             } else if (commandLine.hasOption("export-library")) {
-                // Do something
+                // Transfer database entries to JSON file
                 System.exit(1);
             } else if (commandLine.hasOption("quiet")) {
             } else if (commandLine.hasOption("play")) {
             } else if (commandLine.hasOption("delete")) {
-            } else if (commandLine.hasOption("clear-cache")) {
-                // Do something
-                System.exit(1);
-            } else if (commandLine.hasOption("clear-expired-cache")) {
-                // Do something
+            } else if (commandLine.hasOption("cache-manager")) {
+                new Core(Mode.CACHE_MANAGEMENT);
                 System.exit(1);
             } else {
                 System.out.println("Invalid or no arguments provided. Use --help for usage information.");
@@ -61,11 +62,6 @@ public class Driver {
             System.exit(1);
         }
 
-        Core streamline = new Core(Mode.TERMINAL);
-        if (!streamline.start()) {
-            System.err.println(StreamLineMessages.FatalStartError.getMessage());
-            System.exit(1);
-        }
         System.out.println(StreamLineMessages.Farewell.getMessage());
         System.exit(0);
     }

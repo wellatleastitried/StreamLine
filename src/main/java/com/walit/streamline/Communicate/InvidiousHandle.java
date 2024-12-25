@@ -21,6 +21,7 @@ public class InvidiousHandle {
 
     public final String key;
     private final String invidiousHost = "https://inv.nadeko.net/"; // This could change, also allow for self-hosting
+    // private final String invidiousHost = "https://yewtu.be/";
 
     public InvidiousHandle(String key) {
         this.key = key;
