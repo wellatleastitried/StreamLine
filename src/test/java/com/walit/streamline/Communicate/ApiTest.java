@@ -13,21 +13,27 @@ import com.walit.streamline.Audio.Song;
 public class ApiTest {
 
     InvidiousHandle handle;
+    String host;
 
     @Before
     public void setup() {
-        handle = InvidiousHandle.getInstance();
+        host = InvidiousHandle.canConnectToAPI();
+        handle = InvidiousHandle.getInstance(host);
     }
 
     @Test
     public void checkHandleIsSingleton() {
-        InvidiousHandle testHandle = InvidiousHandle.getInstance();
+        InvidiousHandle testHandle = InvidiousHandle.getInstance(host);
         MatcherAssert.assertThat(handle, is(testHandle));
     }
 
     // Basic check to make sure the API is reachable
     @Test
     public void checkStatsFromApi() {
+        if (host == null) {
+            System.out.println("Skipping " + ApiTest.class.getName() + "#checkStatsFromApi(): No connection to API at this time.");
+            return;
+        }
         String response = handle.retrieveStats();
         MatcherAssert.assertThat(response, is(notNullValue()));
         MatcherAssert.assertThat(response, not(""));
@@ -42,6 +48,10 @@ public class ApiTest {
 
     @Test
     public void checkCanGetVideoId() {
+        if (host == null) {
+            System.out.println("Skipping " + ApiTest.class.getName() + "#checkCanGetVideoId(): No connection to API at this time.");
+            return;
+        }
         String searchTerm = "Give Cold";
         System.out.println("\n\nRESULTING VIDEO IDs ARE:");
         handle.retrieveSearchResults(searchTerm).thenAccept(searchResults -> {

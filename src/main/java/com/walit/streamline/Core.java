@@ -11,21 +11,18 @@ import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
 import com.googlecode.lanterna.terminal.Terminal;
 
 import java.io.IOException;
-import java.io.File;
-import java.io.FileWriter;
 import java.util.HashMap;
 import java.util.Scanner;
-import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.logging.XMLFormatter;
 // import java.util.concurrent.CompletableFuture;
 
 import com.walit.streamline.Utilities.CacheManager;
 import com.walit.streamline.Utilities.Internal.HelpMessages;
+import com.walit.streamline.Utilities.Internal.Config;
 import com.walit.streamline.Utilities.Internal.Mode;
 import com.walit.streamline.Utilities.Internal.StreamLineMessages;
-import com.walit.streamline.Utilities.Internal.OS;
+import com.walit.streamline.Utilities.Internal.StreamLineConstants;
 import com.walit.streamline.Interact.DatabaseLinker;
 import com.walit.streamline.Interact.DatabaseRunner;
 import com.walit.streamline.Utilities.StatementReader;
@@ -33,6 +30,7 @@ import com.walit.streamline.Utilities.RetrievedStorage;
 import com.walit.streamline.Audio.AudioPlayer;
 import com.walit.streamline.Audio.Song;
 import com.walit.streamline.Communicate.InvidiousHandle;
+import com.walit.streamline.Hosting.DockerManager;
 
 public final class Core {
 
@@ -40,7 +38,6 @@ public final class Core {
 
     private WindowBasedTextGUI textGUI;
 
-    // Windows
     private BasicWindow mainMenu;
     private BasicWindow settingsMenu;
     private BasicWindow helpMenu;
@@ -59,46 +56,35 @@ public final class Core {
     public int buttonWidth;
     public int buttonHeight;
 
-    public final OS whichOS;
     private final DatabaseLinker dbLink;
     private final DatabaseRunner dbRunner;
     private final InvidiousHandle apiHandle;
+    private final DockerManager dockerManager;
     private HashMap<String, String> queries;
 
     private final String CACHE_DIRECTORY;
 
+    private final Config config;
 
-    public Core(Mode mode) {
-        /*
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            logger.log(Level.WARNING, "Shutting down...");
-            shutdown();
-        }));
-        */
-        String os = System.getProperty("os.name").toLowerCase();
-        if (os.contains("win")) {
-            whichOS = OS.WINDOWS;
-        } else if (os.contains("nix") || os.contains("nux")) {
-            whichOS = OS.LINUX;
-        } else if (os.contains("mac")) {
-            whichOS = OS.MAC;
-        } else {
-            whichOS = OS.UNKNOWN; // If the OS is unknown, attempt running with Linux configuration.
-        }
-        logger = Logger.getLogger("Streamline"); 
-        initializeLogger();
-        this.CACHE_DIRECTORY = getCacheDirectory();
-        this.queries = Core.getMapOfQueries();
-        this.dbLink = new DatabaseLinker(whichOS, queries.get("INITIALIZE_TABLES"));
-        this.dbRunner = new DatabaseRunner(dbLink.getConnection(), queries, logger);
-        this.apiHandle = InvidiousHandle.getInstance();
-        switch (mode) {
+
+    public Core(Config config) {
+        this.config = config;
+        setShutdownHandler();
+        logger = config.getLogger();
+        CACHE_DIRECTORY = getCacheDirectory();
+        queries = Core.getMapOfQueries();
+        dbLink = new DatabaseLinker(config.getOS(), queries.get("INITIALIZE_TABLES"));
+        dbRunner = new DatabaseRunner(dbLink.getConnection(), queries, logger);
+        apiHandle = InvidiousHandle.getInstance(config.getHost());
+        dockerManager = config.getDockerConnection();
+        switch (config.getMode()) {
             case HEADLESS: // Web interface initialization
                 clearExpiredCacheOnStartup();
                 break;
             case TESTING: // headless testing
-                this.buttonWidth = 10;
-                this.buttonHeight = 10;
+                System.out.println("Setting up testing configuration.");
+                buttonWidth = 10;
+                buttonHeight = 10;
                 break;
             case CACHE_MANAGEMENT: // Allow for clearing the cache without starting the full application
                 Scanner scanner = new Scanner(System.in);
@@ -114,20 +100,20 @@ public final class Core {
             default:
                 DefaultTerminalFactory terminalFactory = new DefaultTerminalFactory();
                 try {
-                    this.terminal = terminalFactory.createTerminal();
-                    this.screen = new TerminalScreen(terminal);
-                    this.terminalSize = screen.getTerminalSize();
-                    this.buttonHeight = 2;
-                    this.buttonWidth = terminalSize.getColumns() / 4;
-                    this.textGUI = new MultiWindowTextGUI(screen);
-                    this.mainMenu = createMainMenuWindow();
-                    this.searchPage = createSearchPage();
-                    this.likedMusicPage = createLikeMusicPage();
-                    this.playlistPage = createPlaylistPage();
-                    this.recentlyPlayedPage = createRecentlyPlayedPage();
-                    this.downloadedPage = createDownloadedMusicPage();
-                    this.helpMenu = createHelpMenu();
-                    this.settingsMenu = createSettingsMenu();
+                    terminal = terminalFactory.createTerminal();
+                    screen = new TerminalScreen(terminal);
+                    terminalSize = screen.getTerminalSize();
+                    buttonHeight = 2;
+                    buttonWidth = terminalSize.getColumns() / 4;
+                    textGUI = new MultiWindowTextGUI(screen);
+                    mainMenu = createMainMenuWindow();
+                    searchPage = createSearchPage();
+                    likedMusicPage = createLikeMusicPage();
+                    playlistPage = createPlaylistPage();
+                    recentlyPlayedPage = createRecentlyPlayedPage();
+                    downloadedPage = createDownloadedMusicPage();
+                    helpMenu = createHelpMenu();
+                    settingsMenu = createSettingsMenu();
                     clearExpiredCacheOnStartup();
                 } catch (IOException iE) {
                     logger.log(Level.SEVERE, StreamLineMessages.FatalStartError.getMessage());
@@ -137,47 +123,20 @@ public final class Core {
         }
     }
 
-    private void initializeLogger() {
-        String logFileDir = switch (whichOS) {
-            case WINDOWS -> "%temp%\\Streamline\\";
-            default -> "/tmp/StreamLine/";
-        };
-        String fileName = "streamline.log";
-        File logFile = new File(logFileDir);
-        if (!logFile.mkdirs()) {
-            System.err.println("Unable to create tmp directory for log file.");
-            return;
-        }
-        logFile = new File(logFileDir + fileName);
-        FileHandler fileHandle;
-        try {
-            if (logFile.exists() && logFile.isFile()) {
-                new FileWriter(logFile, false).close();
-            }
-            fileHandle = new FileHandler(logFile.getPath(), true);
-            while (logger.getHandlers().length > 0) {
-                logger.removeHandler(logger.getHandlers()[0]);
-            }
-            logger.addHandler(fileHandle);
-            fileHandle.setLevel(Level.INFO);
-            XMLFormatter xF = new XMLFormatter();
-            fileHandle.setFormatter(xF);
-            logger.log(Level.INFO, "Log initialized.");
-        } catch (IOException iE) {
-            iE.printStackTrace();
-            logger.log(Level.WARNING, "Could not setup logging for program.");
-        }
+    private void setShutdownHandler() {
+        // Do this in the shutdown handler
+        // shutdown();
     }
 
     protected String getCacheDirectory() {
-        switch (whichOS) {
+        switch (config.getOS()) {
             case WINDOWS:
-                return "%LOCALAPPDATA\\StreamLine\\Cache\\";
+                return StreamLineConstants.WINDOWS_CACHE_ADDRESS;
             case MAC:
-                return String.format("%s/Library/Caches/com.streamline/", System.getProperty("user.home"));
+                return StreamLineConstants.MAC_CACHE_ADDRESS;
             case LINUX:
             default:
-                return String.format("%s/.cache/StreamLine/", System.getProperty("user.home"));
+                return StreamLineConstants.LINUX_CACHE_ADDRESS;
         }
     }
 
@@ -455,7 +414,7 @@ public final class Core {
 
     // Temporary function for getting TUI figured out
     public String testStatsCall() {
-        InvidiousHandle handle = InvidiousHandle.getInstance();
+        InvidiousHandle handle = InvidiousHandle.getInstance(config.getHost());
         return handle.retrieveStats();
     }
 
@@ -508,11 +467,16 @@ public final class Core {
     }
 
     private void shutdown() {
-        java.util.Collection<Window> openWindows = textGUI.getWindows();
-        for (Window window : openWindows) {
-            textGUI.removeWindow(window);
+        if (config.getMode() != Mode.TESTING) {
+            java.util.Collection<Window> openWindows = textGUI.getWindows();
+            for (Window window : openWindows) {
+                textGUI.removeWindow(window);
+            }
+            dbLink.shutdown();
+            if (dockerManager.isContainerRunning()) {
+                dockerManager.stopContainer();
+                dockerManager.removeContainer();
+            }
         }
-        dbLink.shutdown();
-        System.exit(0);
     }
 }

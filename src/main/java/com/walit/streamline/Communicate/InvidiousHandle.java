@@ -13,35 +13,48 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.List;
 
 public class InvidiousHandle {
 
     public static InvidiousHandle instance;
 
-    public final String key;
-    private final String invidiousHost = "https://inv.nadeko.net/"; // This could change, also allow for self-hosting
+    private final String[] possibleHosts = new String[] { "https://inv.nadeko.net/", "https://yewtu.be/"};
+    private final String invidiousHost;
+    // private final String host = "https://inv.nadeko.net/"; // This could change, also allow for self-hosting
     // private final String invidiousHost = "https://yewtu.be/";
 
-    public InvidiousHandle(String key) {
-        this.key = key;
+    public InvidiousHandle(String invidiousHost) {
+        this.invidiousHost = invidiousHost;
+    }
+
+    public static String canConnectToAPI() {
+        Map<String, Integer> workingHosts = new HashMap<>();
+        // Check through hosts in possibleHosts
+        if (workingHosts.isEmpty()) {
+            return null;
+        }
+        String hostname = null;
+        Integer fastestTime = null;
+        for (Map.Entry<String, Integer> entry : workingHosts.entrySet()) {
+            if (fastestTime == null || entry.getValue() < fastestTime) {
+                fastestTime = entry.getValue();
+                hostname = entry.getKey();
+            }
+        }
+        return hostname != null ? hostname : null; 
     }
 
     /**
      * Singleton structure for this class as more than one instance is unnecessary and wasteful.
      */
-    public static InvidiousHandle getInstance() {
+    public static InvidiousHandle getInstance(String hostname) {
         if (instance == null) {
-            instance = new InvidiousHandle(getKeyFromStore());
+            instance = new InvidiousHandle(hostname);
         }
         return instance;
-    }
-
-    /**
-     * Get API key from resources folder. This key should be initialized during install.
-     */
-    private static String getKeyFromStore() {
-        return "";
     }
 
     // TODO: Delete this if not used

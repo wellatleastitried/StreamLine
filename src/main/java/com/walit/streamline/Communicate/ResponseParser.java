@@ -24,7 +24,7 @@ public class ResponseParser {
                     );
              List<VideoSearchResult> videos = allSearchResults.stream()
                 .filter(result -> result instanceof VideoSearchResult)
-                .peek(result -> System.out.println("Video ID: " + ((VideoSearchResult) result).getVideoId() + " Video Length in Seconds: " + ((VideoSearchResult) result).getLengthSeconds()))
+                // .peek(result -> System.out.println("Video ID: " + ((VideoSearchResult) result).getVideoId() + " Video Length in Seconds: " + ((VideoSearchResult) result).getLengthSeconds()))
                 .map(result -> (VideoSearchResult) result)
                 .collect(Collectors.toList());
              return videos.stream()
