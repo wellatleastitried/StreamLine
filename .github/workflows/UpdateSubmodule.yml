@@ -1,0 +1,32 @@
+name: Update Invidious Submodule
+
+on:
+  schedule:
+    - cron: "0 0 1 * *"  # Runs at midnight UTC on the first day of every month
+  push:
+    branches:
+      - main  # Runs when changes are pushed to main (including merged PRs)
+
+jobs:
+  update-submodule:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          token: ${{ secrets.STREAMLINE_TOKEN }}
+
+      - name: Update Submodule to Latest Commit
+        run: |
+          git submodule update --remote --merge
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "Submodule updated, committing changes..."
+            git config --global user.name "github-actions[bot]"
+            git config --global user.email "github-actions[bot]@users.noreply.github.com"
+            git add invidious
+            git commit -m "Update Invidious submodule to latest commit"
+            git push origin main
+          else
+            echo "No updates to submodule, skipping commit."
+          fi
