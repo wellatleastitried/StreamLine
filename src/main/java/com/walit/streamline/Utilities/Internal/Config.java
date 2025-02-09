@@ -8,7 +8,7 @@ public class Config {
 
     private Mode mode;
     private OS os;
-    private boolean isOnline;
+    private volatile boolean isOnline;
     private String host;
     private Logger logger;
     private DockerManager dockerManager;

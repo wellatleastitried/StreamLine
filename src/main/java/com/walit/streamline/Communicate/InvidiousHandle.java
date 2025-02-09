@@ -1,5 +1,6 @@
 package com.walit.streamline.Communicate;
 
+import com.walit.streamline.Utilities.Internal.Config;
 import com.walit.streamline.Utilities.Internal.StreamLineMessages;
 import com.walit.streamline.Audio.Song;
 
@@ -22,12 +23,12 @@ public class InvidiousHandle {
     public static InvidiousHandle instance;
 
     private final String[] possibleHosts = new String[] { "https://inv.nadeko.net/", "https://yewtu.be/"};
-    private final String invidiousHost;
+    private final Config config;
     // private final String host = "https://inv.nadeko.net/"; // This could change, also allow for self-hosting
     // private final String invidiousHost = "https://yewtu.be/";
 
-    public InvidiousHandle(String invidiousHost) {
-        this.invidiousHost = invidiousHost;
+    public InvidiousHandle(Config config) {
+        this.config = config;
     }
 
     public static String canConnectToAPI() {
@@ -50,16 +51,16 @@ public class InvidiousHandle {
     /**
      * Singleton structure for this class as more than one instance is unnecessary and wasteful.
      */
-    public static InvidiousHandle getInstance(String hostname) {
+    public static InvidiousHandle getInstance(Config config) {
         if (instance == null) {
-            instance = new InvidiousHandle(hostname);
+            instance = new InvidiousHandle(config);
         }
         return instance;
     }
 
     // TODO: Delete this if not used
     private String getHostname() {
-        return invidiousHost;
+        return config.getHost();
     }
 
     public String urlEncodeString(String base) {
@@ -73,7 +74,7 @@ public class InvidiousHandle {
             BufferedReader reader;
             HttpURLConnection connection;
             try {
-                connection = (HttpURLConnection) new URL(invidiousHost + "api/v1/search?q=" + searchTerm).openConnection();
+                connection = (HttpURLConnection) new URL(config.getHost() + "api/v1/search?q=" + searchTerm).openConnection();
                 if (connection.getResponseCode() >= 400) {
                     reader = new BufferedReader(new InputStreamReader(connection.getErrorStream()));
                 } else {
@@ -104,7 +105,7 @@ public class InvidiousHandle {
         BufferedReader reader;
         HttpURLConnection connection;
         try {
-            connection = (HttpURLConnection) new URL(invidiousHost + "api/v1/stats").openConnection();
+            connection = (HttpURLConnection) new URL(config.getHost() + "api/v1/stats").openConnection();
 
             if (connection.getResponseCode() >= 400) {
                 reader = new BufferedReader(new InputStreamReader(connection.getErrorStream()));

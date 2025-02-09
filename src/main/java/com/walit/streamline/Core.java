@@ -66,7 +66,6 @@ public final class Core {
 
     private final Config config;
 
-
     public Core(Config config) {
         this.config = config;
         setShutdownHandler();
@@ -75,7 +74,7 @@ public final class Core {
         queries = Core.getMapOfQueries(logger);
         dbLink = new DatabaseLinker(config.getOS(), queries.get("INITIALIZE_TABLES"));
         dbRunner = new DatabaseRunner(dbLink.getConnection(), queries, logger);
-        apiHandle = InvidiousHandle.getInstance(config.getHost());
+        apiHandle = InvidiousHandle.getInstance(config);
         dockerManager = config.getDockerConnection();
         switch (config.getMode()) {
             case HEADLESS: // Web interface initialization
@@ -115,12 +114,41 @@ public final class Core {
                     helpMenu = createHelpMenu();
                     settingsMenu = createSettingsMenu();
                     clearExpiredCacheOnStartup();
+                    if (!config.getIsOnline()) {
+                        checkIfConnectionEstablished();
+                    }
                 } catch (IOException iE) {
                     logger.log(Level.SEVERE, StreamLineMessages.FatalStartError.getMessage());
                     System.exit(1);
                 }
                 break;
         }
+    }
+
+    private void checkIfConnectionEstablished() {
+        new Thread(() -> {
+            try {
+                String reachableHost = InvidiousHandle.canConnectToAPI();
+                boolean dockerIsResponding = dockerManager.isContainerRunning();
+                while (reachableHost == null && !dockerIsResponding) {
+                    reachableHost = InvidiousHandle.canConnectToAPI();
+                    if (reachableHost == null) {
+                        dockerIsResponding = dockerManager.isContainerRunning();
+                    }
+                    Thread.sleep(1000);
+                }
+                if (reachableHost != null) {
+                    config.setHost(reachableHost);
+                    config.setIsOnline(true);
+                } else if (dockerIsResponding) {
+                    config.setHost(StreamLineConstants.INVIDIOUS_INSTANCE_ADDRESS);
+                    config.setIsOnline(true);
+                }
+            } catch (InterruptedException iE) {
+                logger.log(Level.WARNING, StreamLineMessages.PeriodicConnectionTestingError.getMessage());
+            }
+
+        }).start();
     }
     
     public static boolean runCommand(String command) {
@@ -429,7 +457,7 @@ public final class Core {
 
     // Temporary function for getting TUI figured out
     public String testStatsCall() {
-        InvidiousHandle handle = InvidiousHandle.getInstance(config.getHost());
+        InvidiousHandle handle = InvidiousHandle.getInstance(config);
         return handle.retrieveStats();
     }
 

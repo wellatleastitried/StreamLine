@@ -9,28 +9,30 @@ import java.util.List;
 import static org.hamcrest.CoreMatchers.*;
 
 import com.walit.streamline.Audio.Song;
+import com.walit.streamline.Utilities.Internal.Config;
 
 public class ApiTest {
 
     InvidiousHandle handle;
-    String host;
+    Config config;
 
     @Before
     public void setup() {
-        host = InvidiousHandle.canConnectToAPI();
-        handle = InvidiousHandle.getInstance(host);
+        config = new Config();
+        config.setHost(InvidiousHandle.canConnectToAPI());
+        handle = InvidiousHandle.getInstance(config);
     }
 
     @Test
     public void checkHandleIsSingleton() {
-        InvidiousHandle testHandle = InvidiousHandle.getInstance(host);
+        InvidiousHandle testHandle = InvidiousHandle.getInstance(config);
         MatcherAssert.assertThat(handle, is(testHandle));
     }
 
     // Basic check to make sure the API is reachable
     @Test
     public void checkStatsFromApi() {
-        if (host == null) {
+        if (config.getHost() == null) {
             System.out.println("Skipping " + ApiTest.class.getName() + "#checkStatsFromApi(): No connection to API at this time.");
             return;
         }
@@ -48,7 +50,7 @@ public class ApiTest {
 
     @Test
     public void checkCanGetVideoId() {
-        if (host == null) {
+        if (config.getHost() == null) {
             System.out.println("Skipping " + ApiTest.class.getName() + "#checkCanGetVideoId(): No connection to API at this time.");
             return;
         }

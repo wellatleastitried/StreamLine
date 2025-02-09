@@ -111,13 +111,11 @@ public class Driver {
         if (apiHost == null || apiHost.length() < 1) {
             DockerManager dockerManager = new DockerManager(logger);
             config.setDockerConnection(dockerManager);
-            String dockerHost = dockerManager.startInvidiousContainer();
-            if (dockerHost == null || dockerHost.length() < 1) {
-                config.setIsOnline(false);
-            } else {
-                config.setIsOnline(true);
-            }
-            config.setHost(dockerHost);
+            new Thread(() -> {
+                String dockerHost = dockerManager.startInvidiousContainer();
+            }).start();
+            config.setIsOnline(false);
+            config.setHost(null);
         } else {
             config.setIsOnline(true);
             config.setHost(apiHost);
