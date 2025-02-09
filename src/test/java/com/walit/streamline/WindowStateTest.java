@@ -1,5 +1,6 @@
 package com.walit.streamline;
 
+import com.walit.streamline.Utilities.Internal.Config;
 import com.walit.streamline.Utilities.Internal.Mode;
 
 import com.googlecode.lanterna.TerminalSize;
@@ -16,7 +17,10 @@ public class WindowStateTest {
 
     @Before
     public void setup() {
-        core = new Core(Mode.TESTING);
+        Config config = new Config();
+        config.setMode(Mode.TESTING);
+        config.setOS(Driver.getOSOfUser());
+        core = new Core(config);
     }
 
     // Ensure getSize is returning a valid TerminalSize

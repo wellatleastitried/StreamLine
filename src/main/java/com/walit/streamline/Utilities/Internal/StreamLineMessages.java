@@ -6,6 +6,13 @@ package com.walit.streamline.Utilities.Internal;
 public enum StreamLineMessages {
 
     FatalStartError("[!] A fatal error has occured while starting StreamLine, please try reloading the app."),
+    LoggerInitializationFailure("[!] There was an error while initializing the logger, please try reloading the app!"),
+    UnableToKillDockerContainer("[!] There was an error while trying to close the container!"),
+    ErrorWritingToDockerCompose("[!] There was an error while parsing and writing docker-compose.yml, please re-run the app with the --setup tag"),
+    ErrorRetrievingTokensForDockerCompose("[!] There was an error while retrieving the youtube validator tokens, please try again later."),
+    DockerNotRunningError("[!] Docker is not currently running on your machine, only offline functionality will be available."),
+    DatabaseQueryCollectionError("[!] Encountered an error while retrieving queries from internal files. This is either due to the files being modified outside of the programs runtime, or a corrupted install."),
+    PeriodicConnectionTestingError("[!] Encountered an error while attempting to establish a network connection in the background."),
     Farewell("[*] Thank you for using StreamLine!"),
     FatalPathError("[!] A fatal error has occured while retrieving the path of the database file, please try reloading the app."),
     DBCreationFailure("[!] A fatal error has occured while generating the schema of the database, please try reloading the app."),
@@ -30,7 +37,8 @@ public enum StreamLineMessages {
     IOException("[!] IOException encountered during song playback, please try again."),
     UnableToCallAPIError("[!] Unable to connect to Invidous API at this time, please try again later."),
     JsonParsingException("[!] Unable to parse JSON response from API, please try again later."),
-    RedrawError("[!] Error while redrawing screen, please restart the app.");
+    RedrawError("[!] Error while redrawing screen, please restart the app."),
+    DockerNotInstalledError("[!] Docker does not appear to be installed on this machine, only offline functionality will be available.");
 
     private final String message;
 

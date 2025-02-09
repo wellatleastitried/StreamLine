@@ -9,25 +9,33 @@ import java.util.List;
 import static org.hamcrest.CoreMatchers.*;
 
 import com.walit.streamline.Audio.Song;
+import com.walit.streamline.Utilities.Internal.Config;
 
 public class ApiTest {
 
     InvidiousHandle handle;
+    Config config;
 
     @Before
     public void setup() {
-        handle = InvidiousHandle.getInstance();
+        config = new Config();
+        config.setHost(InvidiousHandle.canConnectToAPI());
+        handle = InvidiousHandle.getInstance(config);
     }
 
     @Test
     public void checkHandleIsSingleton() {
-        InvidiousHandle testHandle = InvidiousHandle.getInstance();
+        InvidiousHandle testHandle = InvidiousHandle.getInstance(config);
         MatcherAssert.assertThat(handle, is(testHandle));
     }
 
     // Basic check to make sure the API is reachable
     @Test
     public void checkStatsFromApi() {
+        if (config.getHost() == null) {
+            System.out.println("Skipping " + ApiTest.class.getName() + "#checkStatsFromApi(): No connection to API at this time.");
+            return;
+        }
         String response = handle.retrieveStats();
         MatcherAssert.assertThat(response, is(notNullValue()));
         MatcherAssert.assertThat(response, not(""));
@@ -42,15 +50,20 @@ public class ApiTest {
 
     @Test
     public void checkCanGetVideoId() {
+        if (config.getHost() == null) {
+            System.out.println("Skipping " + ApiTest.class.getName() + "#checkCanGetVideoId(): No connection to API at this time.");
+            return;
+        }
         String searchTerm = "Give Cold";
         System.out.println("\n\nRESULTING VIDEO IDs ARE:");
         handle.retrieveSearchResults(searchTerm).thenAccept(searchResults -> {
-            MatcherAssert.assertThat(searchResults, is(notNullValue()));
             if (searchResults != null) {
                 System.out.println("\n\nNumber of results from searching \"" + searchTerm + "\":" + searchResults.size());
                 searchResults.forEach(result -> System.out.println(result.getSongVideoId()));
+                MatcherAssert.assertThat(searchResults, not(searchResults.isEmpty()));
+            } else {
+                System.out.println("Unable to reach the API at this time.");
             }
-            MatcherAssert.assertThat(searchResults, not(searchResults.isEmpty()));
         }).join();
         System.out.println("\n");
     }

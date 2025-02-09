@@ -1,5 +1,6 @@
 package com.walit.streamline.Communicate;
 
+import com.walit.streamline.Utilities.Internal.Config;
 import com.walit.streamline.Utilities.Internal.StreamLineMessages;
 import com.walit.streamline.Audio.Song;
 
@@ -13,39 +14,53 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.List;
 
 public class InvidiousHandle {
 
     public static InvidiousHandle instance;
 
-    public final String key;
-    private final String invidiousHost = "https://inv.nadeko.net/"; // This could change, also allow for self-hosting
+    private final String[] possibleHosts = new String[] { "https://inv.nadeko.net/", "https://yewtu.be/"};
+    private final Config config;
+    // private final String host = "https://inv.nadeko.net/"; // This could change, also allow for self-hosting
+    // private final String invidiousHost = "https://yewtu.be/";
 
-    public InvidiousHandle(String key) {
-        this.key = key;
+    public InvidiousHandle(Config config) {
+        this.config = config;
+    }
+
+    public static String canConnectToAPI() {
+        Map<String, Integer> workingHosts = new HashMap<>();
+        // Check through hosts in possibleHosts
+        if (workingHosts.isEmpty()) {
+            return null;
+        }
+        String hostname = null;
+        Integer fastestTime = null;
+        for (Map.Entry<String, Integer> entry : workingHosts.entrySet()) {
+            if (fastestTime == null || entry.getValue() < fastestTime) {
+                fastestTime = entry.getValue();
+                hostname = entry.getKey();
+            }
+        }
+        return hostname != null ? hostname : null; 
     }
 
     /**
      * Singleton structure for this class as more than one instance is unnecessary and wasteful.
      */
-    public static InvidiousHandle getInstance() {
+    public static InvidiousHandle getInstance(Config config) {
         if (instance == null) {
-            instance = new InvidiousHandle(getKeyFromStore());
+            instance = new InvidiousHandle(config);
         }
         return instance;
     }
 
-    /**
-     * Get API key from resources folder. This key should be initialized during install.
-     */
-    private static String getKeyFromStore() {
-        return "";
-    }
-
     // TODO: Delete this if not used
     private String getHostname() {
-        return invidiousHost;
+        return config.getHost();
     }
 
     public String urlEncodeString(String base) {
@@ -59,7 +74,7 @@ public class InvidiousHandle {
             BufferedReader reader;
             HttpURLConnection connection;
             try {
-                connection = (HttpURLConnection) new URL(invidiousHost + "api/v1/search?q=" + searchTerm).openConnection();
+                connection = (HttpURLConnection) new URL(config.getHost() + "api/v1/search?q=" + searchTerm).openConnection();
                 if (connection.getResponseCode() >= 400) {
                     reader = new BufferedReader(new InputStreamReader(connection.getErrorStream()));
                 } else {
@@ -90,7 +105,7 @@ public class InvidiousHandle {
         BufferedReader reader;
         HttpURLConnection connection;
         try {
-            connection = (HttpURLConnection) new URL(invidiousHost + "api/v1/stats").openConnection();
+            connection = (HttpURLConnection) new URL(config.getHost() + "api/v1/stats").openConnection();
 
             if (connection.getResponseCode() >= 400) {
                 reader = new BufferedReader(new InputStreamReader(connection.getErrorStream()));

@@ -4,6 +4,7 @@ import com.walit.streamline.Utilities.Internal.StreamLineMessages;
 import com.walit.streamline.Audio.Song;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.List;
@@ -13,6 +14,9 @@ public class ResponseParser {
     
     public static List<Song> listFromSearchResponse(String jsonResponse) {
         try {
+            if (!isValidJson(jsonResponse)) {
+                return null;
+            }
             ObjectMapper objectMapper = new ObjectMapper();
             List<SearchResult> allSearchResults = objectMapper.readValue(
                     jsonResponse,
@@ -27,9 +31,18 @@ public class ResponseParser {
                  .map(x -> searchResultToSong(x))
                  .collect(Collectors.toList());
         } catch (Exception e) {
-            e.printStackTrace();
             System.err.println(StreamLineMessages.JsonParsingException.getMessage());
             return null;
+        }
+    }
+
+    public static boolean isValidJson(String jsonString) {
+        try {
+            JsonFactory factory = new JsonFactory();
+            factory.createParser(jsonString).nextToken();
+            return true;
+        } catch (Exception e) {
+            return false;
         }
     }
 

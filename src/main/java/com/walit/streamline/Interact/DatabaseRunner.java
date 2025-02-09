@@ -41,7 +41,7 @@ public final class DatabaseRunner {
         try {
             final Statement statement = connection.createStatement();
             statement.setQueryTimeout(30);
-            final ResultSet rs = statement.executeQuery(queryMap.get("getLikedSongs"));
+            final ResultSet rs = statement.executeQuery(queryMap.get("GET_LIKED_SONGS"));
             int index = 0;
             while (rs.next()) {
                 final Song song = new Song(
@@ -65,7 +65,7 @@ public final class DatabaseRunner {
         try {
             final Statement statement = connection.createStatement();
             statement.setQueryTimeout(30);
-            final ResultSet rs = statement.executeQuery(queryMap.get("getDownloadedSongs"));
+            final ResultSet rs = statement.executeQuery(queryMap.get("GET_DOWNLOADED_SONGS"));
             int index = 0;
             while (rs.next()) {
                 final Song song = new Song(
@@ -88,7 +88,7 @@ public final class DatabaseRunner {
         try {
             final Statement statement = connection.createStatement();
             statement.setQueryTimeout(30);
-            final ResultSet rs = statement.executeQuery(queryMap.get("getRecentlyPlayedSongs"));
+            final ResultSet rs = statement.executeQuery(queryMap.get("GET_RECENTLY_PLAYED_SONGS"));
             int index = 0;
             while (rs.next()) {
                 final Song song = new Song(
