@@ -14,7 +14,6 @@ import com.walit.streamline.Hosting.DockerManager;
 import com.walit.streamline.Utilities.Internal.Config;
 import com.walit.streamline.Utilities.Internal.Mode;
 import com.walit.streamline.Utilities.Internal.OS;
-import com.walit.streamline.Utilities.Internal.StreamLineConstants;
 import com.walit.streamline.Utilities.Internal.StreamLineMessages;
 
 import org.apache.commons.cli.Options;
@@ -33,6 +32,7 @@ public class Driver {
     public static void main(String [] args) {
         Options options = new Options();
         options.addOption("h", "help", false, "Help menu explaining the different flags");
+        options.addOption("s", "setup", false, "Initialize the configuration for a locally hosted invidious instance");
         options.addOption("i", "import-library", true, "Import your music library from other devices into your current setup and then exit (e.g., --import-library=/path/to/library.json");
         options.addOption("e", "export-library", false, "Generate a file (library.json) that contains all of your music library that can be used to import this library on another device and then exit");
         options.addOption("q", "quiet", true, "Headless start with ability to access the application at http://localhost:PORT");
@@ -51,21 +51,35 @@ public class Driver {
                     System.err.println(StreamLineMessages.FatalStartError.getMessage());
                     System.exit(1);
                 }
+            } else if (commandLine.hasOption("setup")) {
+                // Create API tokens, initialize docker-compose
+                DockerManager.cloneInvidiousRepo();
+                boolean didWrite = DockerManager.writeDockerCompose();
+                if (!didWrite) {
+                    System.out.println(StreamLineMessages.ErrorWritingToDockerCompose.getMessage());
+                }
+                System.exit(0);
             } else if (commandLine.hasOption("help")) {
                 printHelpCli(options);
-                System.exit(1);
+                System.exit(0);
             } else if (commandLine.hasOption("import-library")) {
                 // Take in JSON file and fill database with entries
-                System.exit(1);
+                System.exit(0);
             } else if (commandLine.hasOption("export-library")) {
                 // Transfer database entries to JSON file
-                System.exit(1);
+                System.exit(0);
             } else if (commandLine.hasOption("quiet")) {
+                // Start headless and direct user to local site
             } else if (commandLine.hasOption("play")) {
+                // Play a single song
             } else if (commandLine.hasOption("delete")) {
+                // Delete a song from library/playlist/etc
             } else if (commandLine.hasOption("cache-manager")) {
-                new Core(new Config(Mode.CACHE_MANAGEMENT));
-                System.exit(1);
+                Config config = new Config();
+                config.setMode(Mode.CACHE_MANAGEMENT);
+                config.setOS(getOSOfUser());
+                new Core(config);
+                System.exit(0);
             } else {
                 System.out.println("Invalid or no arguments provided. Use --help for usage information.");
                 System.exit(1);
@@ -77,7 +91,6 @@ public class Driver {
         }
 
         System.out.println(StreamLineMessages.Farewell.getMessage());
-        System.exit(0);
     }
 
     private static Config getConfigurationForRuntime() {
@@ -96,15 +109,15 @@ public class Driver {
 
         String apiHost = InvidiousHandle.canConnectToAPI();
         if (apiHost == null || apiHost.length() < 1) {
-            DockerManager dockerManager = new DockerManager(logger, StreamLineConstants.REQUEST_INSTANCE_START);
+            DockerManager dockerManager = new DockerManager(logger);
             config.setDockerConnection(dockerManager);
             String dockerHost = dockerManager.startInvidiousContainer();
             if (dockerHost == null || dockerHost.length() < 1) {
                 config.setIsOnline(false);
             } else {
                 config.setIsOnline(true);
-                config.setHost(dockerHost);
             }
+            config.setHost(dockerHost);
         } else {
             config.setIsOnline(true);
             config.setHost(apiHost);
@@ -112,6 +125,7 @@ public class Driver {
 
         return config;
     }
+
     public static OS getOSOfUser() {
         String osString = System.getProperty("os.name").toLowerCase();
         if (osString.contains("win")) {
@@ -124,6 +138,7 @@ public class Driver {
             return OS.UNKNOWN;
         }
     }
+
 
     private static Logger initializeLogger(OS os) {
         Logger logger = Logger.getLogger("Streamline"); 

@@ -38,7 +38,7 @@ public class DatabaseTest {
         testPath1 = ".config/notTheDatabase.db";
         testPath2 = linker.PATH;
         mockLogger = mock(Logger.class);
-        queries = Core.getMapOfQueries();
+        queries = Core.getMapOfQueries(mockLogger);
         runner = new DatabaseRunner(linker.getConnection(), queries, mockLogger);
     }
 

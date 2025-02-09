@@ -72,7 +72,7 @@ public final class Core {
         setShutdownHandler();
         logger = config.getLogger();
         CACHE_DIRECTORY = getCacheDirectory();
-        queries = Core.getMapOfQueries();
+        queries = Core.getMapOfQueries(logger);
         dbLink = new DatabaseLinker(config.getOS(), queries.get("INITIALIZE_TABLES"));
         dbRunner = new DatabaseRunner(dbLink.getConnection(), queries, logger);
         apiHandle = InvidiousHandle.getInstance(config.getHost());
@@ -122,10 +122,22 @@ public final class Core {
                 break;
         }
     }
+    
+    public static boolean runCommand(String command) {
+        try {
+            Process process = new ProcessBuilder(command.split(" ")).start();
+            int exitCode = process.waitFor();
+            return exitCode == 0;
+        } catch (InterruptedException | IOException iE) {
+            System.out.println(StreamLineMessages.DockerNotInstalledError.getMessage());
+            return false;
+        }
+    }
 
     private void setShutdownHandler() {
-        // Do this in the shutdown handler
-        // shutdown();
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            shutdown();
+        }));
     }
 
     protected String getCacheDirectory() {
@@ -155,17 +167,17 @@ public final class Core {
      * Reaches out to the SQL files in the resources folder that house the queries needed at runtime.
      * @return Map containing the full queries with a key for easy access
      */
-    public static HashMap<String, String> getMapOfQueries() {
+    public static HashMap<String, String> getMapOfQueries(Logger logger) {
         HashMap<String, String> map = new HashMap<>();
         try {
             map.put("INITIALIZE_TABLES", StatementReader.readQueryFromFile("/sql/init/DatabaseInitialization.sql"));
             map.put("CLEAR_CACHE", StatementReader.readQueryFromFile("/sql/updates/ClearCachedSongs.sql"));
             map.put("CLEAR_EXPIRED_CACHE", StatementReader.readQueryFromFile("/sql/updates/ClearExpiredCache.sql"));
             map.put("GET_EXPIRED_CACHE", StatementReader.readQueryFromFile("/sql/queries/GetExpiredCache.sql"));
-            map.put("getLikedSongs", StatementReader.readQueryFromFile("/sql/queries/GetSongForLikedMusicScreen.sql"));
-            map.put("getDownloadedSongs", StatementReader.readQueryFromFile("/sql/queries/GetSongForDownloadedScreen.sql"));
-            map.put("getRecentlyPlayedSongs", StatementReader.readQueryFromFile("/sql/queries/GetSongForRecPlayedScreen.sql"));
-            map.put("ensureRecentlyPlayedCount", StatementReader.readQueryFromFile("/sql/updates/UpdateRecentlyPlayed.sql"));
+            map.put("GET_LIKED_SONGS", StatementReader.readQueryFromFile("/sql/queries/GetSongForLikedMusicScreen.sql"));
+            map.put("GET_DOWNLOADED_SONGS", StatementReader.readQueryFromFile("/sql/queries/GetSongForDownloadedScreen.sql"));
+            map.put("GET_RECENTLY_PLAYED_SONGS", StatementReader.readQueryFromFile("/sql/queries/GetSongForRecPlayedScreen.sql"));
+            map.put("ENSURE_RECENTLY_PLAYED_SONG_COUNT", StatementReader.readQueryFromFile("/sql/updates/UpdateRecentlyPlayed.sql"));
         } catch (IOException iE) {
             System.err.println(StreamLineMessages.SQLFileReadError.getMessage());
             System.exit(1);
@@ -173,7 +185,10 @@ public final class Core {
             System.err.println(StreamLineMessages.MissingConfigurationFiles.getMessage());
             System.exit(1);
         }
-        assert(!map.isEmpty());
+        if (map.isEmpty()) {
+            logger.log(Level.SEVERE, StreamLineMessages.DatabaseQueryCollectionError.getMessage());
+            System.exit(1);
+        }
         return map;
     }
 
@@ -473,9 +488,12 @@ public final class Core {
                 textGUI.removeWindow(window);
             }
             dbLink.shutdown();
-            if (dockerManager.isContainerRunning()) {
-                dockerManager.stopContainer();
-                dockerManager.removeContainer();
+            try {
+                if (dockerManager.isContainerRunning()) {
+                    dockerManager.stopContainer();
+                }
+            } catch (InterruptedException iE) {
+                logger.log(Level.INFO, "[*] InterruptedException during shutdown.");
             }
         }
     }

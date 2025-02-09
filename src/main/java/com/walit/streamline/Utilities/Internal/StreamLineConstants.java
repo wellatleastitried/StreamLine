@@ -2,7 +2,11 @@ package com.walit.streamline.Utilities.Internal;
 
 
 public class StreamLineConstants {
-    public static final int     INVIDIOUS_PORT      = 4444;
+
+    public static final String  GET_TOKENS_FOR_YOUTUBE_VALIDATOR    = "docker run quay.io/invidious/youtube-trusted-session-generator";
+    public static final String  DOCKER_COMPOSE_PATH                 = "./invidious/docker-compose.yml";
+
+    public static final int     INVIDIOUS_PORT      = 3000;
     public static final String  INVIDIOUS_IMAGE     = "quay.io/invidious/invidious:latest";
     public static final String  CONTAINER_NAME      = "invidious_instance";
 
