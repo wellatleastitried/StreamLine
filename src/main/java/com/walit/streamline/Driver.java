@@ -24,6 +24,16 @@ import org.apache.commons.cli.ParseException;
 
 public class Driver {
 
+    private static Logger logger;
+    private static OS os;
+
+    static {
+        os = getOSOfUser();
+        logger = initializeLogger(os);
+    }
+
+    private Driver() {}
+
     private static void printHelpCli(Options options) {
         HelpFormatter formatter = new HelpFormatter();
         formatter.printHelp("StreamLine", options);
@@ -77,7 +87,7 @@ public class Driver {
             } else if (commandLine.hasOption("cache-manager")) {
                 Config config = new Config();
                 config.setMode(Mode.CACHE_MANAGEMENT);
-                config.setOS(getOSOfUser());
+                config.setOS(os);
                 new Core(config);
                 System.exit(0);
             } else {
@@ -97,22 +107,18 @@ public class Driver {
         Config config = new Config();
         config.setMode(Mode.TERMINAL);
 
-        OS os = getOSOfUser();
         config.setOS(os);
 
-        Logger logger = initializeLogger(os);
         if (logger == null) {
             System.err.println(StreamLineMessages.LoggerInitializationFailure.getMessage());
         } else {
             config.setLogger(logger);
         }
 
-        String apiHost = InvidiousHandle.canConnectToAPI();
+        String apiHost = InvidiousHandle.canConnectToAPI(logger);
         if (apiHost == null || apiHost.length() < 1) {
-            DockerManager dockerManager = new DockerManager(logger);
-            config.setDockerConnection(dockerManager);
             new Thread(() -> {
-                String dockerHost = dockerManager.startInvidiousContainer();
+                DockerManager.startInvidiousContainer(logger);
             }).start();
             config.setIsOnline(false);
             config.setHost(null);
@@ -136,7 +142,6 @@ public class Driver {
             return OS.UNKNOWN;
         }
     }
-
 
     private static Logger initializeLogger(OS os) {
         Logger logger = Logger.getLogger("Streamline"); 

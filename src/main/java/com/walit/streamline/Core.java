@@ -59,7 +59,6 @@ public final class Core {
     private final DatabaseLinker dbLink;
     private final DatabaseRunner dbRunner;
     private final InvidiousHandle apiHandle;
-    private final DockerManager dockerManager;
     private HashMap<String, String> queries;
 
     private final String CACHE_DIRECTORY;
@@ -74,66 +73,60 @@ public final class Core {
         queries = Core.getMapOfQueries(logger);
         dbLink = new DatabaseLinker(config.getOS(), queries.get("INITIALIZE_TABLES"));
         dbRunner = new DatabaseRunner(dbLink.getConnection(), queries, logger);
-        apiHandle = InvidiousHandle.getInstance(config);
-        dockerManager = config.getDockerConnection();
-        switch (config.getMode()) {
-            case HEADLESS: // Web interface initialization
+        apiHandle = InvidiousHandle.getInstance(config, logger);
+        if (config.getMode() == Mode.HEADLESS) { // Web interface intialization
+            clearExpiredCacheOnStartup();
+        } else if (config.getMode() == Mode.TESTING) { // headless testing
+            System.out.println("Setting up testing configuration.");
+            buttonWidth = 10;
+            buttonHeight = 10;
+        } else if (config.getMode() == Mode.CACHE_MANAGEMENT) { // Allow for clearing the cache without starting the full application
+            Scanner scanner = new Scanner(System.in);
+            System.out.print("Would you like to:\n1) Clear all existing cache\n2) Clear expired cache\nEnter a 1 or 2 to choose: ");
+            String response = scanner.nextLine();
+            if (response.trim().equals("1")) {
+                clearCache();
+            } else if (response.trim().equals("2")) {
                 clearExpiredCacheOnStartup();
-                break;
-            case TESTING: // headless testing
-                System.out.println("Setting up testing configuration.");
-                buttonWidth = 10;
-                buttonHeight = 10;
-                break;
-            case CACHE_MANAGEMENT: // Allow for clearing the cache without starting the full application
-                Scanner scanner = new Scanner(System.in);
-                System.out.print("Would you like to:\n1) Clear all existing cache\n2) Clear expired cache\nEnter a 1 or 2 to choose: ");
-                String response = scanner.nextLine();
-                if (response.trim().equals("1")) {
-                    clearCache();
-                } else if (response.trim().equals("2")) {
-                    clearExpiredCacheOnStartup();
+            }
+            scanner.close();
+        } else { // Else run default TUI app
+            DefaultTerminalFactory terminalFactory = new DefaultTerminalFactory();
+            try {
+                terminal = terminalFactory.createTerminal();
+                screen = new TerminalScreen(terminal);
+                terminalSize = screen.getTerminalSize();
+                buttonHeight = 2;
+                buttonWidth = terminalSize.getColumns() / 4;
+                textGUI = new MultiWindowTextGUI(screen);
+                mainMenu = createMainMenuWindow();
+                searchPage = createSearchPage();
+                likedMusicPage = createLikeMusicPage();
+                playlistPage = createPlaylistPage();
+                recentlyPlayedPage = createRecentlyPlayedPage();
+                downloadedPage = createDownloadedMusicPage();
+                helpMenu = createHelpMenu();
+                settingsMenu = createSettingsMenu();
+                clearExpiredCacheOnStartup();
+                if (!config.getIsOnline()) {
+                    checkIfConnectionEstablished();
                 }
-                break;
-            case TERMINAL: // TUI
-            default:
-                DefaultTerminalFactory terminalFactory = new DefaultTerminalFactory();
-                try {
-                    terminal = terminalFactory.createTerminal();
-                    screen = new TerminalScreen(terminal);
-                    terminalSize = screen.getTerminalSize();
-                    buttonHeight = 2;
-                    buttonWidth = terminalSize.getColumns() / 4;
-                    textGUI = new MultiWindowTextGUI(screen);
-                    mainMenu = createMainMenuWindow();
-                    searchPage = createSearchPage();
-                    likedMusicPage = createLikeMusicPage();
-                    playlistPage = createPlaylistPage();
-                    recentlyPlayedPage = createRecentlyPlayedPage();
-                    downloadedPage = createDownloadedMusicPage();
-                    helpMenu = createHelpMenu();
-                    settingsMenu = createSettingsMenu();
-                    clearExpiredCacheOnStartup();
-                    if (!config.getIsOnline()) {
-                        checkIfConnectionEstablished();
-                    }
-                } catch (IOException iE) {
-                    logger.log(Level.SEVERE, StreamLineMessages.FatalStartError.getMessage());
-                    System.exit(1);
-                }
-                break;
+            } catch (IOException iE) {
+                logger.log(Level.SEVERE, StreamLineMessages.FatalStartError.getMessage());
+                System.exit(1);
+            }
         }
     }
 
     private void checkIfConnectionEstablished() {
         new Thread(() -> {
             try {
-                String reachableHost = InvidiousHandle.canConnectToAPI();
-                boolean dockerIsResponding = dockerManager.isContainerRunning();
+                String reachableHost = InvidiousHandle.canConnectToAPI(logger);
+                boolean dockerIsResponding = DockerManager.isContainerRunning();
                 while (reachableHost == null && !dockerIsResponding) {
-                    reachableHost = InvidiousHandle.canConnectToAPI();
+                    reachableHost = InvidiousHandle.canConnectToAPI(logger);
                     if (reachableHost == null) {
-                        dockerIsResponding = dockerManager.isContainerRunning();
+                        dockerIsResponding = DockerManager.isContainerRunning();
                     }
                     Thread.sleep(1000);
                 }
@@ -150,6 +143,16 @@ public final class Core {
 
         }).start();
     }
+
+    public static Process runCommandExpectWait(String command) {
+        try {
+            Process process = new ProcessBuilder(command.split(" ")).start();
+            return process;
+        } catch (IOException iE) {
+            System.out.println(StreamLineMessages.CommandRunFailure.getMessage() + command);
+            return null;
+        }
+    }
     
     public static boolean runCommand(String command) {
         try {
@@ -157,15 +160,17 @@ public final class Core {
             int exitCode = process.waitFor();
             return exitCode == 0;
         } catch (InterruptedException | IOException iE) {
-            System.out.println(StreamLineMessages.DockerNotInstalledError.getMessage());
+            System.out.println(StreamLineMessages.CommandRunFailure.getMessage() + command);
             return false;
         }
     }
 
     private void setShutdownHandler() {
+        /*
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             shutdown();
         }));
+        */
     }
 
     protected String getCacheDirectory() {
@@ -457,7 +462,7 @@ public final class Core {
 
     // Temporary function for getting TUI figured out
     public String testStatsCall() {
-        InvidiousHandle handle = InvidiousHandle.getInstance(config);
+        InvidiousHandle handle = InvidiousHandle.getInstance(config, logger);
         return handle.retrieveStats();
     }
 
@@ -517,8 +522,8 @@ public final class Core {
             }
             dbLink.shutdown();
             try {
-                if (dockerManager.isContainerRunning()) {
-                    dockerManager.stopContainer();
+                if (DockerManager.isContainerRunning()) {
+                    DockerManager.stopContainer(logger);
                 }
             } catch (InterruptedException iE) {
                 logger.log(Level.INFO, "[*] InterruptedException during shutdown.");

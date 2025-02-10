@@ -1,3 +1,0 @@
-[submodule "invidious"]
-	path = invidious
-	url = https://github.com/iv-org/invidious.git

@@ -28,7 +28,6 @@
             <artifactId>commons-cli</artifactId>
             <version>1.9.0</version>
         </dependency>
-        <!-- Logging -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
@@ -39,14 +38,12 @@
             <artifactId>logback-classic</artifactId>
             <version>1.5.12</version>
         </dependency>
-		<!-- Testing -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.13.2</version>
             <scope>test</scope>
         </dependency>
-		<!-- Lanterna for TUI -->
 		<dependency>
 			<groupId>com.googlecode.lanterna</groupId>
 			<artifactId>lanterna</artifactId>
@@ -81,7 +78,6 @@
     </dependencies>
     <build>
         <plugins>
-			<!-- Maven Compiler for Java -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
@@ -93,16 +89,6 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
-                            <filters>
-                                <filter>
-                                    <artifact>*:*</artifact>
-                                    <excludes>
-                                        <exclude>META-INF/*.SF</exclude>
-                                        <exclude>META-INF/*.DFA</exclude>
-                                        <exclude>META-INF/*.RSA</exclude>
-                                    </excludes>
-                                </filter>
-                            </filters>
                             <createDependencyReducedPom>false</createDependencyReducedPom>
                             <transformers>
                                 <transformer
@@ -114,29 +100,27 @@
                     </execution>
                 </executions>
 			</plugin>
-            <!-- find-sec-bugs extension -->
             <plugin>
                 <groupId>com.h3xstream.findsecbugs</groupId>
                 <artifactId>findsecbugs-plugin</artifactId>
                 <version>1.13.0</version>
             </plugin>
 
-		    <!-- JaCoCo Plugin for Code Coverage -->
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.12</version> <!-- Make sure to use the latest version -->
+                <version>0.8.12</version>
                 <executions>
                     <execution>
                         <goals>
-                            <goal>prepare-agent</goal> <!-- Adds JaCoCo as a Java agent -->
+                            <goal>prepare-agent</goal>
                         </goals>
                     </execution>
                     <execution>
                         <id>report</id>
                         <phase>test</phase>
                         <goals>
-                            <goal>report</goal> <!-- Generates the coverage report -->
+                            <goal>report</goal>
                         </goals>
                     </execution>
                 </executions>

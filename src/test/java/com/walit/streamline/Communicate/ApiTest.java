@@ -5,8 +5,10 @@ import org.junit.Test;
 import org.hamcrest.MatcherAssert;
 
 import java.util.List;
+import java.util.logging.Logger;
 
 import static org.hamcrest.CoreMatchers.*;
+import static org.mockito.Mockito.*;
 
 import com.walit.streamline.Audio.Song;
 import com.walit.streamline.Utilities.Internal.Config;
@@ -15,17 +17,19 @@ public class ApiTest {
 
     InvidiousHandle handle;
     Config config;
+    Logger mockLogger;
 
     @Before
     public void setup() {
+        mockLogger = mock(Logger.class);
         config = new Config();
-        config.setHost(InvidiousHandle.canConnectToAPI());
-        handle = InvidiousHandle.getInstance(config);
+        config.setHost(InvidiousHandle.canConnectToAPI(mockLogger));
+        handle = InvidiousHandle.getInstance(config, mockLogger);
     }
 
     @Test
     public void checkHandleIsSingleton() {
-        InvidiousHandle testHandle = InvidiousHandle.getInstance(config);
+        InvidiousHandle testHandle = InvidiousHandle.getInstance(config, mockLogger);
         MatcherAssert.assertThat(handle, is(testHandle));
     }
 
