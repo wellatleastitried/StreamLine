@@ -34,9 +34,16 @@ import org.yaml.snakeyaml.Yaml;
 public class DockerManager {
 
     private static OS os;
+    private static String invidiousDirectoryPath;
+    private static String dockerComposeUp;
+    private static String dockerComposeStop;
 
     static {
         os = Driver.getOSOfUser();
+        
+        invidiousDirectoryPath = getInvidiousDirectoryPath();
+        dockerComposeUp = getDockerComposeUpCommand();
+        dockerComposeStop = getDockerComposeStopCommand();
     }
     
     private DockerManager() {}
@@ -53,12 +60,11 @@ public class DockerManager {
             return null;
         }
         System.out.println("Starting invidious instance through Docker...");
-        Core.runCommand("docker compose -f " + StreamLineConstants.DOCKER_COMPOSE_PATH + " up");
+        Core.runCommand(dockerComposeUp);
         try {
             if (isContainerRunning()) {
-                String host = "http://localhost:" + StreamLineConstants.INVIDIOUS_PORT + "/";
-                System.out.println("Invidious instance is now live at " + host);
-                return host;
+                System.out.println("Invidious instance is now live at " + StreamLineConstants.INVIDIOUS_INSTANCE_ADDRESS);
+                return StreamLineConstants.INVIDIOUS_INSTANCE_ADDRESS;
             }
         } catch (InterruptedException iE) {
             System.out.println("[!] Error pinging instance!");
@@ -66,20 +72,34 @@ public class DockerManager {
         return null;
     }
 
-    private static boolean invidiousDirectoryExists() {
-        File invidiousDirectory;
-        switch (OS) {
-            case WINDOWS:
-                invidiousDirectory = new File(StreamLineConstants.INVIDIOUS_LOCAL_WINDOWS_REPO_ADDRESS);
-                break;
-            case MAC:
-                invidiousDirectory = new File(StreamLineConstants.INVIDIOUS_LOCAL_MAC_REPO_ADDRESS);
-                break;
-            case LINUX:
-            default:
-                invidiousDirectory = new File(StreamLineConstants.INVIDIOUS_LOCAL_LINUX_REPO_ADDRESS); // Adjust for different OS
-                break;
+    private static String getDockerComposeUpCommand() {
+        if (os == WINDOWS) {
+            return String.format("docker compose -f %s/docker-compose.yml up", StreamLineConstants.INVIDIOUS_LOCAL_WINDOWS_REPO_ADDRESS);
+        } else if (os == MAC) {
+            return String.format("docker compose -f %s/docker-compose.yml up", StreamLineConstants.INVIDIOUS_LOCAL_MAC_REPO_ADDRESS);
         }
+        return String.format("docker compose -f %s/docker-compose.yml up", StreamLineConstants.INVIDIOUS_LOCAL_LINUX_REPO_ADDRESS);
+    }
+
+    private static String getDockerComposeStopCommand() {
+        if (os == WINDOWS) {
+            return String.format("docker compose -f %s/docker-compose.yml stop", StreamLineConstants.INVIDIOUS_LOCAL_WINDOWS_REPO_ADDRESS);
+        } else if (os == MAC) {
+            return String.format("docker compose -f %s/docker-compose.yml stop", StreamLineConstants.INVIDIOUS_LOCAL_MAC_REPO_ADDRESS);
+        }
+        return String.format("docker compose -f %s/docker-compose.yml stop", StreamLineConstants.INVIDIOUS_LOCAL_LINUX_REPO_ADDRESS);
+    }
+
+    private String getInvidiousDirectoryPath() {
+        if (os == WINDOWS) {
+            return StreamLineConstants.INVIDIOUS_LOCAL_WINDOWS_REPO_ADDRESS;
+        } else if (os == MAC) {
+            return StreamLineConstants.INVIDIOUS_LOCAL_MAC_REPO_ADDRESS;
+        }
+        return StreamLineConstants.INVIDIOUS_LOCAL_LINUX_REPO_ADDRESS;
+
+    private static boolean invidiousDirectoryExists() {
+        File invidiousDirectory = new File(invidiousDirectoryPath);
         return invidiousDirectory.exists();
     }
 
@@ -107,7 +127,7 @@ public class DockerManager {
         System.out.print("\r" + StreamLineConstants.LOADING_COMPLETE_MESSAGE);
     }
 
-    public static boolean writeDockerCompose() { // Adjust for diffrent OS paths
+    public static boolean writeDockerCompose() {
         try {
             String[] tokens = retrieveTokensFromYoutubeValidator();
             String hmacKey = generateHmacKey();
@@ -117,14 +137,7 @@ public class DockerManager {
                 return false;
             }
             System.out.println("Setting variables in docker-compose.yml...");
-            String yamlFilePath;
-            if (os == WINDOWS) {
-                yamlFilePath = StreamLineConstants.Invidious_LOCAL_WINDOWS_REPO_ADDRESS + "/docker-compose.yml";
-            } else if (os == MAC) {
-                yamlFilePath = StreamLineConstants.Invidious_LOCAL_MAC_REPO_ADDRESS + "/docker-compose.yml";
-            } else {
-                yamlFilePath = StreamLineConstants.Invidious_LOCAL_LINUX_REPO_ADDRESS + "/docker-compose.yml";
-            }
+            String yamlFilePath = invidiousDirectoryPath + "/docker-compose.yml";
             Yaml yaml = new Yaml();
             InputStream inputStream = new FileInputStream(yamlFilePath);
             Map<String, Object> yamlData = yaml.load(inputStream);
@@ -167,7 +180,7 @@ public class DockerManager {
             FileWriter writer = new FileWriter(yamlFilePath);
             yamlWriter.dump(yamlData, writer);
             writer.close();
-            System.out.println("Docker-compose.yml has been successfully modified!");
+            System.out.println("docker-compose.yml has been successfully modified!");
         } catch (IOException iE) {
             return false;
         }
@@ -181,7 +194,6 @@ public class DockerManager {
         System.out.println("Successfully generated HMAC key.");
         return key;
     }
-
 
     private static String[] retrieveTokensFromYoutubeValidator() {
         String[] tokensToReturn = new String[3];
@@ -228,14 +240,14 @@ public class DockerManager {
     }
 
     public static void stopContainer(Logger logger) {
-        Core.runCommand("docker compose -f " + StreamLineConstants.DOCKER_COMPOSE_PATH + " stop");
+        Core.runCommand(dockerComposeStop);
         logger.log(Level.INFO, "Container has been stopped.");
     }
 
     public static boolean isContainerRunning() throws InterruptedException {
         for (int i = 0; i < 10; i++) {  // Retry for ~10 seconds
             try {
-                URL url = new URL(String.format("http://localhost:%d/api/v1/stats", StreamLineConstants.INVIDIOUS_PORT));
+                URL url = new URL(StreamLineConstants.INVIDIOUS_INSTANCE_ADDRESS + "/api/v1/stats");
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                 connection.setRequestMethod("GET");
                 connection.setConnectTimeout(2000);
