@@ -6,8 +6,10 @@ public class StreamLineConstants {
     public static final String  GET_TOKENS_FOR_YOUTUBE_VALIDATOR    = "docker run quay.io/invidious/youtube-trusted-session-generator";
     public static final String  DOCKER_COMPOSE_PATH                 = "./invidious/docker-compose.yml";
     public static final String  INVIDIOUS_INSTANCE_ADDRESS          = "https://localhost:3000/";
-    public static final String  INVIDIOUS_REPO_ADDRESS              = "https://github.com/iv-org/invidious.git";
-
+    public static final String  INVIDIOUS_GITHUB_REPO_ADDRESS = "https://github.com/iv-org/invidious.git";
+    public static final String INVIDIOUS_LOCAL_LINUX_REPO_ADDRESS = "~/.local/share/streamline/invidious";
+    public static final String INVIDIOUS_LOCAL_WINDOWS_REPO_ADDRESS = System.getProperty("APPDATA") + "\StreamLine\invidious";
+    public static final String INVIDIOUS_LOCAL_MAC_REPO_ADDRESS = "~/Library/Application Support/StreamLine/invidious";
     public static final int     INVIDIOUS_PORT              = 3000;
 
     public static final int DOCKER_CONTAINER_KILLED         = 0;
