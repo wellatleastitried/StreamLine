@@ -16,9 +16,14 @@ public class StreamLineConstants {
 
     public static final boolean REQUEST_INSTANCE_START      = true;
 
-    public static final String  WINDOWS_CACHE_ADDRESS       = "%LOCALAPPDATA\\StreamLine\\Cache\\";
-    public static final String  LINUX_CACHE_ADDRESS         = String.format("%s/.cache/StreamLine/", System.getProperty("user.home"));
-    public static final String  MAC_CACHE_ADDRESS           = String.format("%s/Library/Caches/com.streamline/", System.getProperty("user.home"));
+    public static final String  WINDOWS_CACHE_ADDRESS       = "%LOCALAPPDATA%\\StreamLine\\Cache\\";
+    public static final String  LINUX_CACHE_ADDRESS         = System.getProperty("user.home") + "/.cache/StreamLine/";
+    public static final String  MAC_CACHE_ADDRESS           = System.getProperty("user.home") + "/Library/Caches/com.streamline/";
+
+    public static final String  WINDOWS_DB_ADDRESS          = System.getProperty("APPDATA") + "\\StreamLine\\streamline.db";
+    public static final String  LINUX_DB_ADDRESS            = System.getProperty("user.home") + "/.config/StreamLine/storage/streamline.db";
+    public static final String  MAC_DB_ADDRESS              = System.getProperty("user.home") + "/Library/Application Support/StreamLine/streamline.db";
+    public static final String  TESTING_DB_ADDRESS          = "/tmp/StreamLine/TEST.db";
 
     public static final char[]  SPINNER_SYMBOLS             = {'-', '\\', '|', '/'};
 

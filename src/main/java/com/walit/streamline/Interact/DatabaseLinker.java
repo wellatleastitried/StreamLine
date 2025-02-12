@@ -1,5 +1,6 @@
 package com.walit.streamline.Interact;
 
+import com.walit.streamline.Utilities.Internal.StreamLineConstants;
 import com.walit.streamline.Utilities.Internal.StreamLineMessages;
 import com.walit.streamline.Utilities.Internal.OS;
 
@@ -34,7 +35,7 @@ public class DatabaseLinker {
     }
 
     /**
-     * Allows com.walit.streamline.Interact.DatabaseRunner to fetch the existing connection so that it does not have to create its own.
+     * Allows com.walit.streamline.Interact.DatabaseRunner to use the existing connection so that it does not have to create its own.
      * @return The established connection to the database.
      */
     public Connection getConnection() {
@@ -67,9 +68,6 @@ public class DatabaseLinker {
         return true;
     }
 
-    /**
-     * Returns whether the database has already been setup at the path provided.
-     */
     public boolean isDatabaseSetupAtPath(String path) {
         return !(new File(path).exists());
     }
@@ -77,22 +75,20 @@ public class DatabaseLinker {
     private String setupPath(OS name) {
         switch (name) {
             case WINDOWS -> {
-                return System.getProperty("APPDATA") + "\\StreamLine\\streamline.db";
+                return StreamLineConstants.WINDOWS_DB_ADDRESS;          
             }
             case LINUX -> {
-                return System.getProperty("user.home") + "/.config/StreamLine/storage/streamline.db";
+                return StreamLineConstants.LINUX_DB_ADDRESS;
             }
             case MAC -> {
-                return System.getProperty("user.home") + "/Library/Application Support/StreamLine/streamline.db";
+                return StreamLineConstants.MAC_DB_ADDRESS;
             }
             case TESTING -> {
-                return "/tmp/StreamLine/TEST.db";
+                return StreamLineConstants.TESTING_DB_ADDRESS;
             }
             default -> {
-                System.err.println(StreamLineMessages.FatalPathError.getMessage());
-                System.exit(1);
+                return StreamLineConstants.LINUX_DB_ADDRESS;
             }
         }
-        return null;
     }
 }

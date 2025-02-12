@@ -63,11 +63,11 @@ public class Config {
         return isOnline;
     }
 
-    public void setHost(String host) {
+    public synchronized void setHost(String host) {
         this.host = host;
     }
 
-    public String getHost() {
+    public synchronized String getHost() {
         return host;
     }
 

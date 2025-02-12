@@ -59,7 +59,7 @@ public class Driver {
                 Core streamline = new Core(configuration);
                 if (!streamline.start()) {
                     System.err.println(StreamLineMessages.FatalStartError.getMessage());
-                    System.exit(1);
+                    return;
                 }
             } else if (commandLine.hasOption("setup")) {
                 // Create API tokens, initialize docker-compose
@@ -68,10 +68,8 @@ public class Driver {
                 if (!didWrite) {
                     System.out.println(StreamLineMessages.ErrorWritingToDockerCompose.getMessage());
                 }
-                System.exit(0);
             } else if (commandLine.hasOption("help")) {
                 printHelpCli(options);
-                System.exit(0);
             } else if (commandLine.hasOption("import-library")) {
                 // Take in JSON file and fill database with entries
                 System.exit(0);
@@ -89,15 +87,14 @@ public class Driver {
                 config.setMode(Mode.CACHE_MANAGEMENT);
                 config.setOS(os);
                 new Core(config);
-                System.exit(0);
             } else {
                 System.out.println("Invalid or no arguments provided. Use --help for usage information.");
-                System.exit(1);
+                return;
             }
         } catch (ParseException pE) {
             System.err.println("Error parsing command line arguments: " + pE.getMessage());
             printHelpCli(options);
-            System.exit(1);
+            return;
         }
 
         System.out.println(StreamLineMessages.Farewell.getMessage());

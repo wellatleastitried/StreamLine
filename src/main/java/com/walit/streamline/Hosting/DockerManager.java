@@ -34,7 +34,6 @@ import com.walit.streamline.Utilities.Internal.StreamLineMessages;
 
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.constructor.Constructor;
 
 public class DockerManager {
 
@@ -209,14 +208,14 @@ public class DockerManager {
     }
 
     public static void stopContainer(Logger logger) {
-        Core.runCommand("docker compose -f " + StreamLineConstants.DOCKER_COMPOSE_PATH + " down");
+        Core.runCommand("docker compose -f " + StreamLineConstants.DOCKER_COMPOSE_PATH + " stop");
         logger.log(Level.INFO, "Container has been stopped.");
     }
 
     public static boolean isContainerRunning() throws InterruptedException {
         for (int i = 0; i < 10; i++) {  // Retry for ~10 seconds
             try {
-                URL url = new URL("http://localhost:3000/api/v1/stats");
+                URL url = new URL(String.format("http://localhost:%d/api/v1/stats", StreamLineConstants.INVIDIOUS_PORT));
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                 connection.setRequestMethod("GET");
                 connection.setConnectTimeout(2000);

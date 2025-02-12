@@ -40,12 +40,14 @@ public class DatabaseTest {
         mockLogger = mock(Logger.class);
         queries = Core.getMapOfQueries(mockLogger);
         runner = new DatabaseRunner(linker.getConnection(), queries, mockLogger);
+        System.out.println("Setup complete.");
     }
 
     @Test
     public void databaseExistenceCheck() {
         MatcherAssert.assertThat(linker.isDatabaseSetupAtPath(testPath1), is(true));
         MatcherAssert.assertThat(linker.isDatabaseSetupAtPath(testPath2), is(false));
+        System.out.println("Database existence check complete.");
     }
 
     @Test
@@ -64,6 +66,7 @@ public class DatabaseTest {
             System.err.println("[!] Incorrect number of results from table in SELECT!");
             throw new RuntimeException("[!] Incorrect number of results from table in SELECT!");
         }
+        System.out.println("Simulating liking a song complete.");
     }
 
     @After
@@ -73,5 +76,7 @@ public class DatabaseTest {
         }
         new File(testPath1).delete();
         new File(testPath2).delete();
+        System.out.println("Shutdown complete.");
+        Thread.getAllStackTraces().keySet().forEach(t -> System.out.println(t.getName() + " - " + t.getState()));
     }
 }

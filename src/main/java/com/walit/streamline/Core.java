@@ -13,6 +13,11 @@ import com.googlecode.lanterna.terminal.Terminal;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Scanner;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 // import java.util.concurrent.CompletableFuture;
@@ -61,27 +66,57 @@ public final class Core {
     private final InvidiousHandle apiHandle;
     private HashMap<String, String> queries;
 
-    private final String CACHE_DIRECTORY;
+    private final String cacheDirectory;
 
     private final Config config;
 
     public Core(Config config) {
         this.config = config;
+        this.logger = config.getLogger();
+        this.cacheDirectory = getCacheDirectory();
+
         setShutdownHandler();
-        logger = config.getLogger();
-        CACHE_DIRECTORY = getCacheDirectory();
-        queries = Core.getMapOfQueries(logger);
-        dbLink = new DatabaseLinker(config.getOS(), queries.get("INITIALIZE_TABLES"));
-        dbRunner = new DatabaseRunner(dbLink.getConnection(), queries, logger);
-        apiHandle = InvidiousHandle.getInstance(config, logger);
-        if (config.getMode() == Mode.HEADLESS) { // Web interface intialization
-            clearExpiredCacheOnStartup();
-        } else if (config.getMode() == Mode.TESTING) { // headless testing
-            System.out.println("Setting up testing configuration.");
-            buttonWidth = 10;
-            buttonHeight = 10;
-        } else if (config.getMode() == Mode.CACHE_MANAGEMENT) { // Allow for clearing the cache without starting the full application
-            Scanner scanner = new Scanner(System.in);
+
+        this.queries = Core.getMapOfQueries(logger);
+        this.dbLink = initializeDatabaseConnection();
+        this.dbRunner = new DatabaseRunner(dbLink.getConnection(), queries, logger);
+        this.apiHandle = initializeAPI();
+
+        handleExecutionMode();
+    }
+
+    private DatabaseLinker initializeDatabaseConnection() {
+        return new DatabaseLinker(config.getOS(), queries.get("INITIALIZE_TABLES"));
+    }
+
+    private InvidiousHandle initializeAPI() {
+        return InvidiousHandle.getInstance(config, logger);
+    }
+
+    private void handleExecutionMode() {
+        switch (config.getMode()) {
+            case HEADLESS: // Web interface initialization
+                clearExpiredCacheOnStartup();
+                break;
+            case TESTING: // Headless testing
+                setupTestingMode();
+                break;
+            case CACHE_MANAGEMENT: // Allow for clearing the cache without starting the full application
+                handleCacheManagement();
+                break;
+            default:
+                initializeUI(); // Otherwise run default TUI app
+        }
+    }
+
+    private void setupTestingMode() {
+        System.out.println("Setting up testing configuration.");
+        buttonWidth = 10;
+        buttonHeight = 10;
+    }
+
+    private void handleCacheManagement() {
+        try (Scanner scanner = new Scanner(System.in)) {
             System.out.print("Would you like to:\n1) Clear all existing cache\n2) Clear expired cache\nEnter a 1 or 2 to choose: ");
             String response = scanner.nextLine();
             if (response.trim().equals("1")) {
@@ -89,37 +124,38 @@ public final class Core {
             } else if (response.trim().equals("2")) {
                 clearExpiredCacheOnStartup();
             }
-            scanner.close();
-        } else { // Else run default TUI app
-            DefaultTerminalFactory terminalFactory = new DefaultTerminalFactory();
-            try {
-                terminal = terminalFactory.createTerminal();
-                screen = new TerminalScreen(terminal);
-                terminalSize = screen.getTerminalSize();
-                buttonHeight = 2;
-                buttonWidth = terminalSize.getColumns() / 4;
-                textGUI = new MultiWindowTextGUI(screen);
-                mainMenu = createMainMenuWindow();
-                searchPage = createSearchPage();
-                likedMusicPage = createLikeMusicPage();
-                playlistPage = createPlaylistPage();
-                recentlyPlayedPage = createRecentlyPlayedPage();
-                downloadedPage = createDownloadedMusicPage();
-                helpMenu = createHelpMenu();
-                settingsMenu = createSettingsMenu();
-                clearExpiredCacheOnStartup();
-                if (!config.getIsOnline()) {
-                    checkIfConnectionEstablished();
-                }
-            } catch (IOException iE) {
-                logger.log(Level.SEVERE, StreamLineMessages.FatalStartError.getMessage());
-                System.exit(1);
+        }
+    }
+
+    private void initializeUI() {
+        DefaultTerminalFactory terminalFactory = new DefaultTerminalFactory();
+        try {
+            terminal = terminalFactory.createTerminal();
+            screen = new TerminalScreen(terminal);
+            terminalSize = screen.getTerminalSize();
+            buttonHeight = 2;
+            buttonWidth = terminalSize.getColumns() / 4;
+            textGUI = new MultiWindowTextGUI(screen);
+            mainMenu = createMainMenuWindow();
+            searchPage = createSearchPage();
+            likedMusicPage = createLikeMusicPage();
+            playlistPage = createPlaylistPage();
+            recentlyPlayedPage = createRecentlyPlayedPage();
+            downloadedPage = createDownloadedMusicPage();
+            helpMenu = createHelpMenu();
+            settingsMenu = createSettingsMenu();
+            clearExpiredCacheOnStartup();
+            if (!config.getIsOnline()) {
+                checkIfConnectionEstablished();
             }
+        } catch (IOException iE) {
+            logger.log(Level.SEVERE, StreamLineMessages.FatalStartError.getMessage());
+            System.exit(1);
         }
     }
 
     private void checkIfConnectionEstablished() {
-        new Thread(() -> {
+        Thread connectionTesting = new Thread(() -> {
             try {
                 String reachableHost = InvidiousHandle.canConnectToAPI(logger);
                 boolean dockerIsResponding = DockerManager.isContainerRunning();
@@ -141,7 +177,9 @@ public final class Core {
                 logger.log(Level.WARNING, StreamLineMessages.PeriodicConnectionTestingError.getMessage());
             }
 
-        }).start();
+        });
+        connectionTesting.setDaemon(true);
+        connectionTesting.start();
     }
 
     public static Process runCommandExpectWait(String command) {
@@ -166,11 +204,22 @@ public final class Core {
     }
 
     private void setShutdownHandler() {
-        /*
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            shutdown();
+            ExecutorService executor = Executors.newSingleThreadExecutor();
+
+            Future<?> future = executor.submit(this::shutdown);
+
+            try {
+                future.get(5, TimeUnit.SECONDS);
+            } catch (TimeoutException tE) {
+                logger.log(Level.WARNING, StreamLineMessages.ShutdownTookTooLong.getMessage());
+            } catch (Exception e) {
+                logger.log(Level.SEVERE, StreamLineMessages.UnexpectedErrorInShutdown.getMessage());
+            } finally {
+                executor.shutdownNow();
+                System.exit(0);
+            }
         }));
-        */
     }
 
     protected String getCacheDirectory() {
@@ -497,12 +546,12 @@ public final class Core {
     }
 
     private void clearCache() {
-        CacheManager.clearCache(CACHE_DIRECTORY);
+        CacheManager.clearCache(cacheDirectory);
         dbRunner.clearCachedSongs();
     }
 
     private void clearExpiredCacheOnStartup() {
-        CacheManager.clearExpiredCacheOnStartup(CACHE_DIRECTORY, dbRunner.getExpiredCache());
+        CacheManager.clearExpiredCacheOnStartup(cacheDirectory, dbRunner.getExpiredCache());
         dbRunner.clearExpiredCache();
     }
 
@@ -516,17 +565,15 @@ public final class Core {
 
     private void shutdown() {
         if (config.getMode() != Mode.TESTING) {
-            java.util.Collection<Window> openWindows = textGUI.getWindows();
-            for (Window window : openWindows) {
-                textGUI.removeWindow(window);
-            }
             dbLink.shutdown();
             try {
+                screen.stopScreen();
                 if (DockerManager.isContainerRunning()) {
                     DockerManager.stopContainer(logger);
                 }
-            } catch (InterruptedException iE) {
-                logger.log(Level.INFO, "[*] InterruptedException during shutdown.");
+            } catch (InterruptedException | IOException iE) {
+                logger.log(Level.SEVERE, StreamLineMessages.UnexpectedErrorInShutdown.getMessage());
+                System.exit(0);
             }
         }
     }
