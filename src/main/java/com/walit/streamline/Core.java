@@ -573,7 +573,6 @@ public final class Core {
                 }
             } catch (InterruptedException | IOException iE) {
                 logger.log(Level.SEVERE, StreamLineMessages.UnexpectedErrorInShutdown.getMessage());
-                System.exit(0);
             }
         }
     }
