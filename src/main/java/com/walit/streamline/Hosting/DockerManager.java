@@ -2,33 +2,29 @@ package com.walit.streamline.Hosting;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.FileReader;
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.IOException;
-import java.io.File;
-
 import java.lang.InterruptedException;
 import java.lang.Process;
 import java.lang.ProcessBuilder;
-
 import java.math.BigInteger;
-
-import java.net.URL;
 import java.net.HttpURLConnection;
-
+import java.net.URL;
 import java.security.SecureRandom;
-
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 import java.util.logging.Level;
-import java.util.regex.Pattern;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.walit.streamline.Core;
+import com.walit.streamline.Utilities.Internal.OS;
 import com.walit.streamline.Utilities.Internal.StreamLineConstants;
 import com.walit.streamline.Utilities.Internal.StreamLineMessages;
 
@@ -37,6 +33,12 @@ import org.yaml.snakeyaml.Yaml;
 
 public class DockerManager {
 
+    private static OS os;
+
+    static {
+        os = Driver.getOSOfUser();
+    }
+    
     private DockerManager() {}
 
     public static String startInvidiousContainer(Logger logger) {
@@ -65,14 +67,25 @@ public class DockerManager {
     }
 
     private static boolean invidiousDirectoryExists() {
-        File invidiousDirectory = new File("./invidious");
+        File invidiousDirectory;
+        switch (OS) {
+            case WINDOWS:
+                invidiousDirectory = new File(StreamLineConstants.INVIDIOUS_LOCAL_WINDOWS_REPO_ADDRESS);
+                break;
+            case MAC:
+                invidiousDirectory = new File(StreamLineConstants.INVIDIOUS_LOCAL_MAC_REPO_ADDRESS);
+                break;
+            case LINUX:
+            default:
+                invidiousDirectory = new File(StreamLineConstants.INVIDIOUS_LOCAL_LINUX_REPO_ADDRESS); // Adjust for different OS
+                break;
+        }
         return invidiousDirectory.exists();
     }
 
     public static void cloneInvidiousRepo() {
         if (!invidiousDirectoryExists()) {
-            System.out.println("Cloning Invidious repo...");
-            Process process = Core.runCommandExpectWait("git clone " + StreamLineConstants.INVIDIOUS_REPO_ADDRESS + " invidious");
+            Process process = Core.runCommandExpectWait("git clone " + StreamLineConstants.INVIDIOUS_GITHUB_REPO_ADDRESS + " invidious");
             try {
                 displayLoading(process, StreamLineConstants.CLONING_REPO_MESSAGE);
             } catch (InterruptedException iE) {
@@ -94,7 +107,7 @@ public class DockerManager {
         System.out.print("\r" + StreamLineConstants.LOADING_COMPLETE_MESSAGE);
     }
 
-    public static boolean writeDockerCompose() {
+    public static boolean writeDockerCompose() { // Adjust for diffrent OS paths
         try {
             String[] tokens = retrieveTokensFromYoutubeValidator();
             String hmacKey = generateHmacKey();
@@ -104,7 +117,14 @@ public class DockerManager {
                 return false;
             }
             System.out.println("Setting variables in docker-compose.yml...");
-            String yamlFilePath = "./invidious/docker-compose.yml";
+            String yamlFilePath;
+            if (os == WINDOWS) {
+                yamlFilePath = StreamLineConstants.Invidious_LOCAL_WINDOWS_REPO_ADDRESS + "/docker-compose.yml";
+            } else if (os == MAC) {
+                yamlFilePath = StreamLineConstants.Invidious_LOCAL_MAC_REPO_ADDRESS + "/docker-compose.yml";
+            } else {
+                yamlFilePath = StreamLineConstants.Invidious_LOCAL_LINUX_REPO_ADDRESS + "/docker-compose.yml";
+            }
             Yaml yaml = new Yaml();
             InputStream inputStream = new FileInputStream(yamlFilePath);
             Map<String, Object> yamlData = yaml.load(inputStream);
