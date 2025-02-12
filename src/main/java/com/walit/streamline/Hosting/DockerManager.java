@@ -40,10 +40,19 @@ public class DockerManager {
 
     static {
         os = Driver.getOSOfUser();
-        
-        invidiousDirectoryPath = getInvidiousDirectoryPath();
-        dockerComposeUp = getDockerComposeUpCommand();
-        dockerComposeStop = getDockerComposeStopCommand();
+        if (os == WINDOWS) {
+            invidiousDirectoryPath = StreamLineConstants.INVIDIOUS_LOCAL_WINDOWS_REPO_ADDRESS;
+            dockerComposeUp = String.format("docker compose -f %s/docker-compose.yml up", StreamLineConstants.INVIDIOUS_LOCAL_WINDOWS_REPO_ADDRESS);
+            dockerComposeStop = String.format("docker compose -f %s/docker-compose.yml stop", StreamLineConstants.INVIDIOUS_LOCAL_WINDOWS_REPO_ADDRESS);
+        } else if (os == MAC) {
+            invidiousDirectoryPath = StreamLineConstants.INVIDIOUS_LOCAL_MAC_REPO_ADDRESS;
+            dockerComposeUp = String.format("docker compose -f %s/docker-compose.yml up", StreamLineConstants.INVIDIOUS_LOCAL_MAC_REPO_ADDRESS);
+            dockerComposeStop = String.format("docker compose -f %s/docker-compose.yml stop", StreamLineConstants.INVIDIOUS_LOCAL_MAC_REPO_ADDRESS);
+        } else {
+            invidiousDirectoryPath = StreamLineConstants.INVIDIOUS_LOCAL_LINUX_REPO_ADDRESS;
+            dockerComposeUp = String.format("docker compose -f %s/docker-compose.yml up", StreamLineConstants.INVIDIOUS_LOCAL_LINUX_REPO_ADDRESS);
+            dockerComposeStop = String.format("docker compose -f %s/docker-compose.yml stop", StreamLineConstants.INVIDIOUS_LOCAL_LINUX_REPO_ADDRESS);
+        }
     }
     
     private DockerManager() {}
@@ -71,32 +80,6 @@ public class DockerManager {
         }
         return null;
     }
-
-    private static String getDockerComposeUpCommand() {
-        if (os == WINDOWS) {
-            return String.format("docker compose -f %s/docker-compose.yml up", StreamLineConstants.INVIDIOUS_LOCAL_WINDOWS_REPO_ADDRESS);
-        } else if (os == MAC) {
-            return String.format("docker compose -f %s/docker-compose.yml up", StreamLineConstants.INVIDIOUS_LOCAL_MAC_REPO_ADDRESS);
-        }
-        return String.format("docker compose -f %s/docker-compose.yml up", StreamLineConstants.INVIDIOUS_LOCAL_LINUX_REPO_ADDRESS);
-    }
-
-    private static String getDockerComposeStopCommand() {
-        if (os == WINDOWS) {
-            return String.format("docker compose -f %s/docker-compose.yml stop", StreamLineConstants.INVIDIOUS_LOCAL_WINDOWS_REPO_ADDRESS);
-        } else if (os == MAC) {
-            return String.format("docker compose -f %s/docker-compose.yml stop", StreamLineConstants.INVIDIOUS_LOCAL_MAC_REPO_ADDRESS);
-        }
-        return String.format("docker compose -f %s/docker-compose.yml stop", StreamLineConstants.INVIDIOUS_LOCAL_LINUX_REPO_ADDRESS);
-    }
-
-    private String getInvidiousDirectoryPath() {
-        if (os == WINDOWS) {
-            return StreamLineConstants.INVIDIOUS_LOCAL_WINDOWS_REPO_ADDRESS;
-        } else if (os == MAC) {
-            return StreamLineConstants.INVIDIOUS_LOCAL_MAC_REPO_ADDRESS;
-        }
-        return StreamLineConstants.INVIDIOUS_LOCAL_LINUX_REPO_ADDRESS;
 
     private static boolean invidiousDirectoryExists() {
         File invidiousDirectory = new File(invidiousDirectoryPath);
