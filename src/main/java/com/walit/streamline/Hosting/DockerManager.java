@@ -1,10 +1,8 @@
 package com.walit.streamline.Hosting;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -24,6 +22,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.walit.streamline.Core;
+import com.walit.streamline.Driver;
 import com.walit.streamline.Utilities.Internal.OS;
 import com.walit.streamline.Utilities.Internal.StreamLineConstants;
 import com.walit.streamline.Utilities.Internal.StreamLineMessages;
@@ -37,21 +36,25 @@ public class DockerManager {
     private static String invidiousDirectoryPath;
     private static String dockerComposeUp;
     private static String dockerComposeStop;
+    private static String dockerComposeBuild;
 
     static {
         os = Driver.getOSOfUser();
-        if (os == WINDOWS) {
+        if (os == OS.WINDOWS) {
             invidiousDirectoryPath = StreamLineConstants.INVIDIOUS_LOCAL_WINDOWS_REPO_ADDRESS;
-            dockerComposeUp = String.format("docker compose -f %s/docker-compose.yml up", StreamLineConstants.INVIDIOUS_LOCAL_WINDOWS_REPO_ADDRESS);
-            dockerComposeStop = String.format("docker compose -f %s/docker-compose.yml stop", StreamLineConstants.INVIDIOUS_LOCAL_WINDOWS_REPO_ADDRESS);
-        } else if (os == MAC) {
+            dockerComposeUp = String.format("docker compose -f %s\\docker-compose.yml up", StreamLineConstants.INVIDIOUS_LOCAL_WINDOWS_REPO_ADDRESS);
+            dockerComposeStop = String.format("docker compose -f %s\\docker-compose.yml stop", StreamLineConstants.INVIDIOUS_LOCAL_WINDOWS_REPO_ADDRESS);
+            dockerComposeBuild = String.format("docker compose -f %s\\docker-compose.yml build", StreamLineConstants.INVIDIOUS_LOCAL_WINDOWS_REPO_ADDRESS);
+        } else if (os == OS.MAC) {
             invidiousDirectoryPath = StreamLineConstants.INVIDIOUS_LOCAL_MAC_REPO_ADDRESS;
             dockerComposeUp = String.format("docker compose -f %s/docker-compose.yml up", StreamLineConstants.INVIDIOUS_LOCAL_MAC_REPO_ADDRESS);
             dockerComposeStop = String.format("docker compose -f %s/docker-compose.yml stop", StreamLineConstants.INVIDIOUS_LOCAL_MAC_REPO_ADDRESS);
+            dockerComposeBuild = String.format("docker compose -f %s/docker-compose.yml build", StreamLineConstants.INVIDIOUS_LOCAL_MAC_REPO_ADDRESS);
         } else {
             invidiousDirectoryPath = StreamLineConstants.INVIDIOUS_LOCAL_LINUX_REPO_ADDRESS;
             dockerComposeUp = String.format("docker compose -f %s/docker-compose.yml up", StreamLineConstants.INVIDIOUS_LOCAL_LINUX_REPO_ADDRESS);
             dockerComposeStop = String.format("docker compose -f %s/docker-compose.yml stop", StreamLineConstants.INVIDIOUS_LOCAL_LINUX_REPO_ADDRESS);
+            dockerComposeBuild = String.format("docker compose -f %s/docker-compose.yml build", StreamLineConstants.INVIDIOUS_LOCAL_LINUX_REPO_ADDRESS);
         }
     }
     
@@ -69,11 +72,16 @@ public class DockerManager {
             return null;
         }
         System.out.println("Starting invidious instance through Docker...");
-        Core.runCommand(dockerComposeUp);
+        Thread dockerHosting = new Thread(() -> {
+            Core.runCommand(dockerComposeUp);
+        });
+        dockerHosting.start();
         try {
             if (isContainerRunning()) {
                 System.out.println("Invidious instance is now live at " + StreamLineConstants.INVIDIOUS_INSTANCE_ADDRESS);
                 return StreamLineConstants.INVIDIOUS_INSTANCE_ADDRESS;
+            } else {
+                System.out.println("no");
             }
         } catch (InterruptedException iE) {
             System.out.println("[!] Error pinging instance!");
@@ -86,11 +94,11 @@ public class DockerManager {
         return invidiousDirectory.exists();
     }
 
-    public static void cloneInvidiousRepo() {
+    public static void cloneInvidiousRepo(Logger logger) {
         if (!invidiousDirectoryExists()) {
-            Process process = Core.runCommandExpectWait("git clone " + StreamLineConstants.INVIDIOUS_GITHUB_REPO_ADDRESS + " invidious");
+            Process process = Core.runCommandExpectWait("git clone " + StreamLineConstants.INVIDIOUS_GITHUB_REPO_ADDRESS + " " + invidiousDirectoryPath); 
             try {
-                displayLoading(process, StreamLineConstants.CLONING_REPO_MESSAGE);
+                displayLoading(process, StreamLineConstants.CLONING_REPO_MESSAGE, logger);
             } catch (InterruptedException iE) {
                 System.out.println(StreamLineMessages.ErrorCloningRepository.getMessage());
             }
@@ -99,20 +107,38 @@ public class DockerManager {
         }
     }
 
-    private static void displayLoading(Process process, String message) throws InterruptedException {
-        int i = 0;
-        char[] spinner = StreamLineConstants.SPINNER_SYMBOLS;
-        while (process.isAlive()) {
-            System.out.print("\r[" + spinner[i] + "] " + message);
-            i = (i + 1) % spinner.length;
-            Thread.sleep(200);
-        }
-        System.out.print("\r" + StreamLineConstants.LOADING_COMPLETE_MESSAGE);
+    private static Thread getLoadingAnimationThread(Process process, String message) {
+        return new Thread(() -> {
+            try {
+                int i = 0;
+                char[] spinner = StreamLineConstants.SPINNER_SYMBOLS;
+                while (process.isAlive()) {
+                    System.out.print("\r[" + spinner[i] + "] " + message);
+                    i = (i + 1) % spinner.length;
+                    Thread.sleep(200);
+                }
+            } catch (InterruptedException iE) {
+                Thread.currentThread().interrupt();
+            }
+        });
     }
 
-    public static boolean writeDockerCompose() {
+    private static int displayLoading(Process process, String message, Logger logger) throws InterruptedException {
+        Thread loadingAnimation = getLoadingAnimationThread(process, message);
+        loadingAnimation.start();
+        int exitCode = process.waitFor();
+        loadingAnimation.interrupt();
+        if (exitCode == 0) {
+            System.out.print("\r" + StreamLineConstants.LOADING_COMPLETE_MESSAGE);
+        } else {
+            System.out.print("\r" + StreamLineConstants.LOADING_ERROR_MESSAGE);
+        }
+        return exitCode;
+    }
+
+    public static boolean writeDockerCompose(Logger logger) {
         try {
-            String[] tokens = retrieveTokensFromYoutubeValidator();
+            String[] tokens = retrieveTokensFromYoutubeValidator(logger);
             String hmacKey = generateHmacKey();
             String poToken = tokens[0];
             String visitorData = tokens[1];
@@ -163,8 +189,26 @@ public class DockerManager {
             FileWriter writer = new FileWriter(yamlFilePath);
             yamlWriter.dump(yamlData, writer);
             writer.close();
-            System.out.println("docker-compose.yml has been successfully modified!");
+            System.out.println("docker-compose.yml has been successfully written!");
         } catch (IOException iE) {
+            return false;
+        }
+        return true;
+    }
+
+    public static boolean buildInstance(Logger logger) {
+        Process process = Core.runCommandExpectWait(dockerComposeBuild);
+        int exitCode;
+        try {
+            exitCode = displayLoading(process, StreamLineConstants.BUILD_INVIDIOUS_IMAGE, logger);
+            String host = startInvidiousContainer(logger);
+            if (host == null) {
+                return false;
+            }
+        } catch (InterruptedException iE) {
+            return false;
+        }
+        if (exitCode != 0) {
             return false;
         }
         return true;
@@ -178,12 +222,12 @@ public class DockerManager {
         return key;
     }
 
-    private static String[] retrieveTokensFromYoutubeValidator() {
+    private static String[] retrieveTokensFromYoutubeValidator(Logger logger) {
         String[] tokensToReturn = new String[3];
         try {
             ProcessBuilder pb = new ProcessBuilder(StreamLineConstants.GET_TOKENS_FOR_YOUTUBE_VALIDATOR.split(" "));
             Process process = pb.start();
-            displayLoading(process, StreamLineConstants.RETRIEVING_TOKENS_MESSAGE);
+            displayLoading(process, StreamLineConstants.RETRIEVING_TOKENS_MESSAGE, logger);
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
             StringBuilder commandOutput = new StringBuilder();
             String line;
@@ -228,9 +272,10 @@ public class DockerManager {
     }
 
     public static boolean isContainerRunning() throws InterruptedException {
-        for (int i = 0; i < 10; i++) {  // Retry for ~10 seconds
+        int attempts = 0;
+        while (attempts < 30) {
             try {
-                URL url = new URL(StreamLineConstants.INVIDIOUS_INSTANCE_ADDRESS + "/api/v1/stats");
+                URL url = new URL(StreamLineConstants.INVIDIOUS_INSTANCE_ADDRESS);
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                 connection.setRequestMethod("GET");
                 connection.setConnectTimeout(2000);
@@ -242,6 +287,7 @@ public class DockerManager {
             } catch (IOException e) {
                 Thread.sleep(1000);
             }
+            attempts++;
         }
         return false;
     }

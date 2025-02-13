@@ -5,28 +5,36 @@ import com.walit.streamline.Utilities.Internal.StreamLineMessages;
 import com.walit.streamline.Utilities.Internal.OS;
 
 import java.io.File;
-
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class DatabaseLinker {
 
     protected final OS osName;
+    private final Logger logger;
     protected final String PATH;
     private Connection connection;
-    private final boolean isNewDatabase;
+    private final boolean databaseExists;
 
-    public DatabaseLinker(OS osName, String tableCreation) {
+    public DatabaseLinker(OS osName, String tableCreationQuery, Logger logger) {
         this.osName = osName;
+        this.logger = logger;
         this.PATH = setupPath(this.osName);
         new File(PATH).getParentFile().mkdirs();
-        this.isNewDatabase = isDatabaseSetupAtPath(PATH);
+        this.databaseExists = isDatabaseSetupAtPath(PATH);
         try {
             this.connection = DriverManager.getConnection("jdbc:sqlite:" + PATH);
-            if (this.isNewDatabase) {
-                setupNewDatabase(tableCreation);
+            if (!this.databaseExists) {
+                if (setupNewDatabase(tableCreationQuery)) {
+                    System.out.println("Database set up successfully.");
+                } else {
+                    logger.log(Level.SEVERE, StreamLineMessages.DBCreationFailure.getMessage());
+                    System.exit(0);
+                }
             }
         } catch (SQLException sE) {
             System.err.println(StreamLineMessages.GetDBConnectionFailure.getMessage());
@@ -42,18 +50,19 @@ public class DatabaseLinker {
         return this.connection;
     }
 
-    private void setupNewDatabase(String tables) {
+    private boolean setupNewDatabase(String query) {
         try {
             final Statement statement = this.connection.createStatement();
             statement.setQueryTimeout(30);
-            statement.executeUpdate(tables);
+            statement.executeUpdate(query);
         } catch (SQLException sE) {
-            System.err.println(StreamLineMessages.DBCreationFailure.getMessage());
+            logger.log(Level.SEVERE, StreamLineMessages.DBCreationFailure.getMessage());
             System.exit(1);
         } catch (Exception e) {
-            System.err.println(StreamLineMessages.UnknownDBFatalError.getMessage());
+            logger.log(Level.SEVERE, StreamLineMessages.UnknownDBFatalError.getMessage());
             System.exit(1);
         }
+        return true;
     }
 
     public boolean shutdown() {
@@ -69,26 +78,17 @@ public class DatabaseLinker {
     }
 
     public boolean isDatabaseSetupAtPath(String path) {
-        return !(new File(path).exists());
+        return (new File(path).exists());
     }
 
-    private String setupPath(OS name) {
-        switch (name) {
-            case WINDOWS -> {
-                return StreamLineConstants.WINDOWS_DB_ADDRESS;          
-            }
-            case LINUX -> {
-                return StreamLineConstants.LINUX_DB_ADDRESS;
-            }
-            case MAC -> {
-                return StreamLineConstants.MAC_DB_ADDRESS;
-            }
-            case TESTING -> {
-                return StreamLineConstants.TESTING_DB_ADDRESS;
-            }
-            default -> {
-                return StreamLineConstants.LINUX_DB_ADDRESS;
-            }
+    private String setupPath(OS os) {
+        if (os == OS.WINDOWS) {
+            return StreamLineConstants.WINDOWS_DB_ADDRESS;          
+        } else if (os == OS.MAC) {
+            return StreamLineConstants.MAC_DB_ADDRESS;
+        } else if (os == OS.TESTING) {
+            return StreamLineConstants.TESTING_DB_ADDRESS;
         }
+        return StreamLineConstants.LINUX_DB_ADDRESS;
     }
 }

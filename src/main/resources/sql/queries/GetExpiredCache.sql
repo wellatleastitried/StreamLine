@@ -1,1 +1,1 @@
-SELECT Songs.* FROM Songs JOIN CachedSongs ON Songs.id = CachedSongs.song_id WHERE CachedSongs.last_time_played <= DATEADD(day, -30, GETDATE());
+SELECT s.* FROM Songs s JOIN CachedSongs cs ON s.id = cs.song_id WHERE cs.last_time_played <= DATE('now', '-30 days');

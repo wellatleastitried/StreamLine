@@ -41,6 +41,8 @@ public final class Core {
 
     private final Logger logger;
 
+    private boolean exitedGracefully = false;
+
     private WindowBasedTextGUI textGUI;
 
     private BasicWindow mainMenu;
@@ -86,7 +88,7 @@ public final class Core {
     }
 
     private DatabaseLinker initializeDatabaseConnection() {
-        return new DatabaseLinker(config.getOS(), queries.get("INITIALIZE_TABLES"));
+        return new DatabaseLinker(config.getOS(), queries.get("INITIALIZE_TABLES"), logger);
     }
 
     private InvidiousHandle initializeAPI() {
@@ -217,7 +219,6 @@ public final class Core {
                 logger.log(Level.SEVERE, StreamLineMessages.UnexpectedErrorInShutdown.getMessage());
             } finally {
                 executor.shutdownNow();
-                System.exit(0);
             }
         }));
     }
@@ -564,6 +565,11 @@ public final class Core {
     }
 
     private void shutdown() {
+        if (!exitedGracefully) {
+            exitedGracefully = true;
+        } else {
+            return;
+        }
         if (config.getMode() != Mode.TESTING) {
             dbLink.shutdown();
             try {

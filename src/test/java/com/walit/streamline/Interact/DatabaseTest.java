@@ -29,15 +29,15 @@ public class DatabaseTest {
 
     @Before
     public void setup() {
+        mockLogger = mock(Logger.class);
         try {
-            linker = new DatabaseLinker(OS.TESTING, StatementReader.readQueryFromFile("/sql/init/DatabaseInitialization.sql"));
+            linker = new DatabaseLinker(OS.TESTING, StatementReader.readQueryFromFile("/sql/init/DatabaseInitialization.sql"), mockLogger);
         } catch (Exception e) {
             System.err.println("[!] Could not initialize test db.");
             throw new RuntimeException("[!] Could not initialize test db.");
         }
         testPath1 = ".config/notTheDatabase.db";
         testPath2 = linker.PATH;
-        mockLogger = mock(Logger.class);
         queries = Core.getMapOfQueries(mockLogger);
         runner = new DatabaseRunner(linker.getConnection(), queries, mockLogger);
         System.out.println("Setup complete.");
@@ -45,8 +45,8 @@ public class DatabaseTest {
 
     @Test
     public void databaseExistenceCheck() {
-        MatcherAssert.assertThat(linker.isDatabaseSetupAtPath(testPath1), is(true));
-        MatcherAssert.assertThat(linker.isDatabaseSetupAtPath(testPath2), is(false));
+        MatcherAssert.assertThat(linker.isDatabaseSetupAtPath(testPath1), is(false));
+        MatcherAssert.assertThat(linker.isDatabaseSetupAtPath(testPath2), is(true));
         System.out.println("Database existence check complete.");
     }
 
@@ -76,7 +76,5 @@ public class DatabaseTest {
         }
         new File(testPath1).delete();
         new File(testPath2).delete();
-        System.out.println("Shutdown complete.");
-        Thread.getAllStackTraces().keySet().forEach(t -> System.out.println(t.getName() + " - " + t.getState()));
     }
 }

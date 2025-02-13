@@ -63,10 +63,15 @@ public class Driver {
                 }
             } else if (commandLine.hasOption("setup")) {
                 // Create API tokens, initialize docker-compose
-                DockerManager.cloneInvidiousRepo();
-                boolean didWrite = DockerManager.writeDockerCompose();
+                DockerManager.cloneInvidiousRepo(logger);
+                boolean didWrite = DockerManager.writeDockerCompose(logger);
                 if (!didWrite) {
                     System.out.println(StreamLineMessages.ErrorWritingToDockerCompose.getMessage());
+                }
+                if (DockerManager.buildInstance(logger)) {
+                    System.out.println("Invidious image build successfully!");
+                } else {
+                    System.out.println(StreamLineMessages.InvidiousBuildError.getMessage());
                 }
             } else if (commandLine.hasOption("help")) {
                 printHelpCli(options);

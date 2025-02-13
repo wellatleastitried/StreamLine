@@ -55,7 +55,7 @@ public final class DatabaseRunner {
                 likedSongs.add(++index, song);
             }
         } catch (SQLException sE) {
-            handleSQLException(sE);
+            handleSQLException(sE, queryMap.get("GET_LIKED_SONGS"));
         }
         return likedSongs;
     }
@@ -78,7 +78,8 @@ public final class DatabaseRunner {
                 downloadedSongs.add(++index, song);
             }
         } catch (SQLException sE) {
-            handleSQLException(sE);
+            // handleSQLException(sE);
+            handleSQLException(sE, queryMap.get("GET_DOWNLOADED_SONGS"));
         }
         return downloadedSongs;
     }
@@ -102,7 +103,8 @@ public final class DatabaseRunner {
                 recentlyPlayedSongs.add(++index, song);
             }
         } catch (SQLException sE) {
-            handleSQLException(sE);
+            // handleSQLException(sE);
+            handleSQLException(sE, queryMap.get("GET_RECENTLY_PLAYED_SONGS"));
         }
         return recentlyPlayedSongs;
     }
@@ -125,7 +127,8 @@ public final class DatabaseRunner {
                 songsFromPlaylist.add(++index, song);
             }
         } catch (SQLException sE) {
-            handleSQLException(sE);
+            // handleSQLException(sE);
+            handleSQLException(sE, playlistSongsQuery);
         }
         return songsFromPlaylist;
     }
@@ -152,7 +155,8 @@ public final class DatabaseRunner {
                 expiredSongs.add(++index, song);
             }
         } catch (SQLException sE) {
-            handleSQLException(sE);
+            // handleSQLException(sE);
+            handleSQLException(sE, queryMap.get("GET_EXPIRED_CACHE"));
         }
         return expiredSongs;
     }
@@ -162,7 +166,9 @@ public final class DatabaseRunner {
             statement.setQueryTimeout(30);
             statement.executeUpdate(queryMap.get("CLEAR_EXPIRED_CACHE"));
         } catch (SQLException sE) {
-            handleSQLException(sE);
+            System.out.println("Error is here.");
+            // handleSQLException(sE);
+            handleSQLException(sE, queryMap.get("CLEAR_EXPIRED_CACHE"));
         }
     }
 
@@ -330,6 +336,7 @@ public final class DatabaseRunner {
     }
 
     private void handleSQLException(SQLException sE) {
+        sE.printStackTrace();
         logger.log(Level.WARNING, StreamLineMessages.SQLQueryError.getMessage());
         try {
             connection.rollback();
@@ -338,6 +345,11 @@ public final class DatabaseRunner {
             logger.log(Level.SEVERE, StreamLineMessages.RollbackError.getMessage());
             System.exit(1);
         }
+    }
+
+    private void handleSQLException(SQLException sE, String query) {
+        System.out.println("Query that errored: " + query);
+        handleSQLException(sE);
     }
 
     private void restoreAutoCommit() {

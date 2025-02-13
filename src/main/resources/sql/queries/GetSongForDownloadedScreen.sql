@@ -1,1 +1,1 @@
-SELECT Songs.* FROM Songs JOIN DownloadedSongs ON Songs.id = DownloadedSongs.song_id ORDER BY DownloadedSongs.date_downloaded DESC;
+SELECT s.* FROM Songs s JOIN DownloadedSongs ds ON s.id = ds.song_id ORDER BY ds.date_downloaded DESC;
