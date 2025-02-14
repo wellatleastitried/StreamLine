@@ -12,6 +12,7 @@ import static org.mockito.Mockito.*;
 
 import com.walit.streamline.Audio.Song;
 import com.walit.streamline.Utilities.Internal.Config;
+import com.walit.streamline.Utilities.Internal.OS;
 
 public class ApiTest {
 
@@ -23,7 +24,7 @@ public class ApiTest {
     public void setup() {
         mockLogger = mock(Logger.class);
         config = new Config();
-        config.setHost(InvidiousHandle.canConnectToAPI(mockLogger));
+        config.setHost(InvidiousHandle.canConnectToAPI(OS.TESTING, mockLogger));
         handle = InvidiousHandle.getInstance(config, mockLogger);
     }
 

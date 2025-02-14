@@ -76,14 +76,11 @@ public final class Core {
         this.config = config;
         this.logger = config.getLogger();
         this.cacheDirectory = getCacheDirectory();
-
         setShutdownHandler();
-
         this.queries = Core.getMapOfQueries(logger);
         this.dbLink = initializeDatabaseConnection();
         this.dbRunner = new DatabaseRunner(dbLink.getConnection(), queries, logger);
         this.apiHandle = initializeAPI();
-
         handleExecutionMode();
     }
 

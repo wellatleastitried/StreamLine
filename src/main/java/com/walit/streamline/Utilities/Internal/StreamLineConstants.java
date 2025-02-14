@@ -4,7 +4,7 @@ package com.walit.streamline.Utilities.Internal;
 public class StreamLineConstants {
 
     public static final String  GET_TOKENS_FOR_YOUTUBE_VALIDATOR        = "docker run quay.io/invidious/youtube-trusted-session-generator";
-    public static final String  INVIDIOUS_INSTANCE_ADDRESS              = "https://localhost:3000/";
+    public static final String  INVIDIOUS_INSTANCE_ADDRESS              = "http://localhost:3000/";
     public static final String  INVIDIOUS_GITHUB_REPO_ADDRESS           = "https://github.com/iv-org/invidious.git";
     public static final String  INVIDIOUS_LOCAL_LINUX_REPO_ADDRESS      = System.getProperty("user.home") + "/.local/share/streamline/invidious";
     public static final String  INVIDIOUS_LOCAL_WINDOWS_REPO_ADDRESS    = System.getProperty("APPDATA") + "\\StreamLine\\invidious";
@@ -31,7 +31,7 @@ public class StreamLineConstants {
     public static final String  BUILD_INVIDIOUS_IMAGE       = "Building Invidious image";
     public static final String  RETRIEVING_TOKENS_MESSAGE   = "Retrieving tokens from Youtube validator";
     public static final String  CLONING_REPO_MESSAGE        = "Cloning Invidious repository";
-    public static final String  LOADING_COMPLETE_MESSAGE    = "[✔] Done!                                                                      \n";
+    public static final String  LOADING_COMPLETE_SYMBOL     = "[✔] ";
     public static final String  LOADING_ERROR_MESSAGE       = "[!] AN ERROR HAS OCCURED.                                                      \n";
 
     public static final String  HOST_RESOURCE_PATH          = "/ApiInstanceList.txt";

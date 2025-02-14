@@ -71,17 +71,17 @@ public class DockerManager {
             logger.log(Level.WARNING, StreamLineMessages.InvidiousRepositoryHasNotBeenClonedWarning.getMessage());
             return null;
         }
-        System.out.println("Starting invidious instance through Docker...");
+        System.out.println("[*] Starting invidious instance through Docker...");
         Thread dockerHosting = new Thread(() -> {
             Core.runCommand(dockerComposeUp);
         });
         dockerHosting.start();
         try {
             if (isContainerRunning()) {
-                System.out.println("Invidious instance is now live at " + StreamLineConstants.INVIDIOUS_INSTANCE_ADDRESS);
+                System.out.println("[*] Invidious instance is now live at " + StreamLineConstants.INVIDIOUS_INSTANCE_ADDRESS);
                 return StreamLineConstants.INVIDIOUS_INSTANCE_ADDRESS;
             } else {
-                System.out.println("no");
+                System.out.println("[*] Could not connect to Invidious instance at this time.");
             }
         } catch (InterruptedException iE) {
             System.out.println("[!] Error pinging instance!");
@@ -103,7 +103,7 @@ public class DockerManager {
                 System.out.println(StreamLineMessages.ErrorCloningRepository.getMessage());
             }
         } else {
-            System.out.println("Invidious repository has already been cloned.");
+            System.out.println("[*] Invidious repository has already been cloned.");
         }
     }
 
@@ -129,9 +129,9 @@ public class DockerManager {
         int exitCode = process.waitFor();
         loadingAnimation.interrupt();
         if (exitCode == 0) {
-            System.out.print("\r" + StreamLineConstants.LOADING_COMPLETE_MESSAGE);
+            System.out.println("\r" + StreamLineConstants.LOADING_COMPLETE_SYMBOL + message);
         } else {
-            System.out.print("\r" + StreamLineConstants.LOADING_ERROR_MESSAGE);
+            System.out.println("\r" + StreamLineConstants.LOADING_ERROR_MESSAGE);
         }
         return exitCode;
     }
@@ -145,7 +145,7 @@ public class DockerManager {
             if (poToken == null || visitorData == null || hmacKey == null) {
                 return false;
             }
-            System.out.println("Setting variables in docker-compose.yml...");
+            System.out.println(StreamLineConstants.LOADING_COMPLETE_SYMBOL + "Setting variables in docker-compose.yml...");
             String yamlFilePath = invidiousDirectoryPath + "/docker-compose.yml";
             Yaml yaml = new Yaml();
             InputStream inputStream = new FileInputStream(yamlFilePath);
@@ -174,7 +174,7 @@ public class DockerManager {
                     updatedConfig.append("po_token: ").append(poToken + "\n");
                     updatedConfig.append("visitor_data: ").append(visitorData + "\n");
                 } else if (line.contains("po_token") || line.contains("visitor_data")) {
-                    System.out.println("Docker-compose has already been setup.");
+                    System.out.println(StreamLineConstants.LOADING_COMPLETE_SYMBOL + "Docker-compose has already been setup.");
                     return true;
                 } else {
                     updatedConfig.append(line).append("\n");
@@ -189,7 +189,7 @@ public class DockerManager {
             FileWriter writer = new FileWriter(yamlFilePath);
             yamlWriter.dump(yamlData, writer);
             writer.close();
-            System.out.println("docker-compose.yml has been successfully written!");
+            System.out.println(StreamLineConstants.LOADING_COMPLETE_SYMBOL + "docker-compose.yml has been successfully written!");
         } catch (IOException iE) {
             return false;
         }
@@ -215,10 +215,10 @@ public class DockerManager {
     }
 
     private static String generateHmacKey() {
-        System.out.println("Generating HMAC key...");
+        System.out.println(StreamLineConstants.LOADING_COMPLETE_SYMBOL + "Generating HMAC key...");
         SecureRandom random = new SecureRandom();
         String key = new BigInteger(256, random).toString(16);
-        System.out.println("Successfully generated HMAC key.");
+        System.out.println(StreamLineConstants.LOADING_COMPLETE_SYMBOL + "Successfully generated HMAC key.");
         return key;
     }
 
@@ -236,10 +236,10 @@ public class DockerManager {
             }
             process.waitFor();
             String outputText = commandOutput.toString();
-            System.out.println("Parsing tokens from response...");
+            System.out.println(StreamLineConstants.LOADING_COMPLETE_SYMBOL + "Parsing tokens from response...");
             tokensToReturn[0] = extractValue(outputText, "po_token:\\s*(\\S+)");
             tokensToReturn[1] = extractValue(outputText, "visitor_data:\\s*(\\S+)");
-            System.out.println("Successfully retrieved tokens from Youtube validator.");
+            System.out.println(StreamLineConstants.LOADING_COMPLETE_SYMBOL + "Successfully retrieved tokens from Youtube validator.");
         } catch (InterruptedException | IOException iE) {
             System.out.println(StreamLineMessages.ErrorRetrievingTokensForDockerCompose.getMessage());
             return null;
@@ -282,7 +282,10 @@ public class DockerManager {
                 connection.connect();
 
                 if (connection.getResponseCode() == 200) {
+                    System.out.println(StreamLineConstants.LOADING_COMPLETE_SYMBOL + "Connection established.");
                     return true;
+                } else {
+                    System.out.println("[*] Could not reach instance, trying again...");
                 }
             } catch (IOException e) {
                 Thread.sleep(1000);

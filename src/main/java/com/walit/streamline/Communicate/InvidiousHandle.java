@@ -1,26 +1,26 @@
 package com.walit.streamline.Communicate;
 
+import com.walit.streamline.Driver;
+import com.walit.streamline.Audio.Song;
+import com.walit.streamline.Hosting.DockerManager;
 import com.walit.streamline.Utilities.Internal.Config;
+import com.walit.streamline.Utilities.Internal.OS;
 import com.walit.streamline.Utilities.Internal.StreamLineMessages;
 import com.walit.streamline.Utilities.Internal.StreamLineConstants;
-import com.walit.streamline.Audio.Song;
 
+import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.IOException;
-import java.io.BufferedReader;
-
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
-
 import java.nio.charset.StandardCharsets;
-
-import java.util.concurrent.CompletableFuture;
-import java.util.Map;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.ArrayList;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
@@ -53,15 +53,54 @@ public class InvidiousHandle {
     }
 
     public static String canConnectToAPI(Logger logger) {
+        return canConnectToAPI(Driver.getOSOfUser(), logger);
+    }
+
+    public static String canConnectToAPI(OS os, Logger logger) {
         Map<String, Integer> workingHosts = new HashMap<>();
         List<String> possibleHosts = getPossibleHosts(logger);
         if (possibleHosts == null) {
             return null;
         }
         for (String host : possibleHosts) {
-            // Ping each host and add the host and response time to map, if they return api is disabled then continue
+            try {
+                URL url = new URL(host + "api/v1/trending");
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.setRequestMethod("GET");
+                connection.setConnectTimeout(5000);
+                connection.setReadTimeout(5000);
+
+                long startTime = System.currentTimeMillis();
+                connection.connect();
+                long responseTime = System.currentTimeMillis();
+                
+                int responseCode = connection.getResponseCode();
+                if (responseCode != 200) {
+                    continue;
+                }
+
+                BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                StringBuilder response = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    response.append(line);
+                }
+                reader.close();
+
+                if (response.toString().toLowerCase().contains("api is disabled")) {
+                    continue;
+                }
+
+                workingHosts.put(host, (int) (responseTime - startTime));
+            } catch (Exception e) {}
         }
         if (workingHosts.isEmpty()) {
+            /*
+            if (os == OS.TESTING) {
+                DockerManager.startInvidiousContainer(logger);
+                return StreamLineConstants.INVIDIOUS_INSTANCE_ADDRESS;
+            }
+            */
             return null;
         }
         String hostname = null;
@@ -115,7 +154,7 @@ public class InvidiousHandle {
                     return null;
                 }
             } catch (Exception e) {
-                System.err.println(StreamLineMessages.UnableToCallAPIError.getMessage());
+                logger.log(Level.WARNING, StreamLineMessages.UnableToCallAPIError.getMessage());
                 return null;
             }
         });
@@ -143,7 +182,7 @@ public class InvidiousHandle {
             return result.toString(); 
 
         } catch (Exception e) {
-            System.err.println(StreamLineMessages.UnableToCallAPIError.getMessage());
+            logger.log(Level.WARNING, StreamLineMessages.UnableToCallAPIError.getMessage());
             return null;
         }
     }

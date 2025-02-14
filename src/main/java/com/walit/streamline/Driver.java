@@ -69,7 +69,7 @@ public class Driver {
                     System.out.println(StreamLineMessages.ErrorWritingToDockerCompose.getMessage());
                 }
                 if (DockerManager.buildInstance(logger)) {
-                    System.out.println("Invidious image build successfully!");
+                    System.out.println("\nInvidious image built successfully!\n");
                 } else {
                     System.out.println(StreamLineMessages.InvidiousBuildError.getMessage());
                 }

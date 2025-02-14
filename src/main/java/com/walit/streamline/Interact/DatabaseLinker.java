@@ -30,7 +30,7 @@ public class DatabaseLinker {
             this.connection = DriverManager.getConnection("jdbc:sqlite:" + PATH);
             if (!this.databaseExists) {
                 if (setupNewDatabase(tableCreationQuery)) {
-                    System.out.println("Database set up successfully.");
+                    System.out.println("[*] Database has been successfully set up.");
                 } else {
                     logger.log(Level.SEVERE, StreamLineMessages.DBCreationFailure.getMessage());
                     System.exit(0);
