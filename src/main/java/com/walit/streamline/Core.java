@@ -157,11 +157,11 @@ public final class Core {
         Thread connectionTesting = new Thread(() -> {
             try {
                 String reachableHost = InvidiousHandle.canConnectToAPI(logger);
-                boolean dockerIsResponding = DockerManager.isContainerRunning();
+                boolean dockerIsResponding = DockerManager.isContainerRunning(logger);
                 while (reachableHost == null && !dockerIsResponding) {
                     reachableHost = InvidiousHandle.canConnectToAPI(logger);
                     if (reachableHost == null) {
-                        dockerIsResponding = DockerManager.isContainerRunning();
+                        dockerIsResponding = DockerManager.isContainerRunning(logger);
                     }
                     Thread.sleep(1000);
                 }
@@ -571,7 +571,7 @@ public final class Core {
             dbLink.shutdown();
             try {
                 screen.stopScreen();
-                if (DockerManager.isContainerRunning()) {
+                if (DockerManager.isContainerRunning(logger)) {
                     DockerManager.stopContainer(logger);
                 }
             } catch (InterruptedException | IOException iE) {

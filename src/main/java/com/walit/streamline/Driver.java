@@ -62,17 +62,7 @@ public class Driver {
                     return;
                 }
             } else if (commandLine.hasOption("setup")) {
-                // Create API tokens, initialize docker-compose
-                DockerManager.cloneInvidiousRepo(logger);
-                boolean didWrite = DockerManager.writeDockerCompose(logger);
-                if (!didWrite) {
-                    System.out.println(StreamLineMessages.ErrorWritingToDockerCompose.getMessage());
-                }
-                if (DockerManager.buildInstance(logger)) {
-                    System.out.println("\nInvidious image built successfully!\n");
-                } else {
-                    System.out.println(StreamLineMessages.InvidiousBuildError.getMessage());
-                }
+                handleDockerSetup();
             } else if (commandLine.hasOption("help")) {
                 printHelpCli(options);
             } else if (commandLine.hasOption("import-library")) {
@@ -104,6 +94,20 @@ public class Driver {
 
         System.out.println(StreamLineMessages.Farewell.getMessage());
     }
+
+    public static void handleDockerSetup() {
+        DockerManager.cloneInvidiousRepo(logger);
+        boolean didWrite = DockerManager.writeDockerCompose(logger);
+        if (!didWrite) {
+            System.out.println(StreamLineMessages.ErrorWritingToDockerCompose.getMessage());
+        }
+        if (DockerManager.buildInstance(logger)) {
+            System.out.println("\nInvidious image built successfully!\n");
+        } else {
+            System.out.println(StreamLineMessages.InvidiousBuildError.getMessage());
+        }
+    }
+
 
     private static Config getConfigurationForRuntime() {
         Config config = new Config();

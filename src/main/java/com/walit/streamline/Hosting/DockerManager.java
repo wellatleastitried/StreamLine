@@ -61,35 +61,45 @@ public class DockerManager {
     private DockerManager() {}
 
     public static String startInvidiousContainer(Logger logger) {
-        if (!isDockerInstalled()) {
-            logger.log(Level.WARNING, StreamLineMessages.DockerNotInstalledError.getMessage());
-            return null;
-        } else if (!isDockerRunning()) {
-            logger.log(Level.WARNING, StreamLineMessages.DockerNotRunningError.getMessage());
-            return null;
-        } else if (!invidiousDirectoryExists()) {
-            logger.log(Level.WARNING, StreamLineMessages.InvidiousRepositoryHasNotBeenClonedWarning.getMessage());
-            return null;
-        }
-        System.out.println("[*] Starting invidious instance through Docker...");
-        Thread dockerHosting = new Thread(() -> {
-            Core.runCommand(dockerComposeUp);
-        });
-        dockerHosting.start();
         try {
-            if (isContainerRunning()) {
+            if (!isDockerInstalled()) {
+                logger.log(Level.WARNING, StreamLineMessages.DockerNotInstalledError.getMessage());
+                return null;
+            } else if (!isDockerRunning()) {
+                logger.log(Level.WARNING, StreamLineMessages.DockerNotRunningError.getMessage());
+                return null;
+            }
+            if (invidiousDirectoryExists()) {
+                if (isContainerRunning(logger, 2, 500)) {
+                    return StreamLineConstants.INVIDIOUS_INSTANCE_ADDRESS;
+                }
+            } else {
+                logger.log(Level.WARNING, StreamLineMessages.InvidiousRepositoryHasNotBeenClonedWarning.getMessage());
+                return null;
+            }
+        } catch (InterruptedException iE) {
+            logger.log(Level.WARNING, "[!] An error occured while checking the state of the Invidious image in Docker.");
+        }
+
+        System.out.println("[*] Starting invidious instance through Docker...");
+
+        Thread dockerHosting = new Thread(() -> Core.runCommand(dockerComposeUp));
+        dockerHosting.start();
+
+        try {
+            if (isContainerRunning(logger)) {
                 System.out.println("[*] Invidious instance is now live at " + StreamLineConstants.INVIDIOUS_INSTANCE_ADDRESS);
                 return StreamLineConstants.INVIDIOUS_INSTANCE_ADDRESS;
             } else {
                 System.out.println("[*] Could not connect to Invidious instance at this time.");
             }
         } catch (InterruptedException iE) {
-            System.out.println("[!] Error pinging instance!");
+            logger.log(Level.WARNING, "[!] An error occured while pinging instance!");
         }
         return null;
     }
 
-    private static boolean invidiousDirectoryExists() {
+    public static boolean invidiousDirectoryExists() {
         File invidiousDirectory = new File(invidiousDirectoryPath);
         return invidiousDirectory.exists();
     }
@@ -191,6 +201,7 @@ public class DockerManager {
             writer.close();
             System.out.println(StreamLineConstants.LOADING_COMPLETE_SYMBOL + "docker-compose.yml has been successfully written!");
         } catch (IOException iE) {
+            logger.log(Level.WARNING, "[!] An error occured while writing the docker-compose.yml for the Invidious instance.");
             return false;
         }
         return true;
@@ -271,9 +282,9 @@ public class DockerManager {
         logger.log(Level.INFO, "Container has been stopped.");
     }
 
-    public static boolean isContainerRunning() throws InterruptedException {
+    public static boolean isContainerRunning(Logger logger, int maxRetryAttempts, int timeout) throws InterruptedException {
         int attempts = 0;
-        while (attempts < 30) {
+        while (attempts < maxRetryAttempts) {
             try {
                 URL url = new URL(StreamLineConstants.INVIDIOUS_INSTANCE_ADDRESS);
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -282,16 +293,23 @@ public class DockerManager {
                 connection.connect();
 
                 if (connection.getResponseCode() == 200) {
-                    System.out.println(StreamLineConstants.LOADING_COMPLETE_SYMBOL + "Connection established.");
+                    logger.log(Level.INFO, StreamLineConstants.LOADING_COMPLETE_SYMBOL + "Connection established.");
                     return true;
                 } else {
-                    System.out.println("[*] Could not reach instance, trying again...");
+                    logger.log(Level.INFO, "[*] Could not reach instance, trying again...");
                 }
             } catch (IOException e) {
-                Thread.sleep(1000);
+                Thread.sleep(timeout);
             }
             attempts++;
         }
         return false;
+    }
+
+    /*
+     * By default: 30 maxRetryAttempts, 1 second timeout
+     */
+    public static boolean isContainerRunning(Logger logger) throws InterruptedException {
+        return isContainerRunning(logger, 30, 1000);
     }
 }

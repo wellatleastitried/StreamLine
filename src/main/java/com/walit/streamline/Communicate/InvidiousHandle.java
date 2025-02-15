@@ -53,10 +53,6 @@ public class InvidiousHandle {
     }
 
     public static String canConnectToAPI(Logger logger) {
-        return canConnectToAPI(Driver.getOSOfUser(), logger);
-    }
-
-    public static String canConnectToAPI(OS os, Logger logger) {
         Map<String, Integer> workingHosts = new HashMap<>();
         List<String> possibleHosts = getPossibleHosts(logger);
         if (possibleHosts == null) {
@@ -95,12 +91,10 @@ public class InvidiousHandle {
             } catch (Exception e) {}
         }
         if (workingHosts.isEmpty()) {
-            /*
-            if (os == OS.TESTING) {
-                DockerManager.startInvidiousContainer(logger);
-                return StreamLineConstants.INVIDIOUS_INSTANCE_ADDRESS;
+            if (DockerManager.invidiousDirectoryExists()) {
+                String host = DockerManager.startInvidiousContainer(logger);
+                return host;
             }
-            */
             return null;
         }
         String hostname = null;
@@ -119,11 +113,6 @@ public class InvidiousHandle {
             instance = new InvidiousHandle(config, logger);
         }
         return instance;
-    }
-
-    // TODO: Delete this if not used
-    private String getHostname() {
-        return config.getHost();
     }
 
     public String urlEncodeString(String base) {
