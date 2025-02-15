@@ -104,7 +104,15 @@ public class DockerManager {
         return invidiousDirectory.exists();
     }
 
+    private static boolean gitIsInstalled() {
+        return Core.runCommand("git --version");
+    }
+
     public static void cloneInvidiousRepo(Logger logger) {
+        if (!gitIsInstalled()) {
+            logger.log(Level.WARNING, StreamLineMessages.GitNotInstalled.getMessage());
+            return;
+        }
         if (!invidiousDirectoryExists()) {
             Process process = Core.runCommandExpectWait("git clone " + StreamLineConstants.INVIDIOUS_GITHUB_REPO_ADDRESS + " " + invidiousDirectoryPath); 
             try {
@@ -293,7 +301,6 @@ public class DockerManager {
                 connection.connect();
 
                 if (connection.getResponseCode() == 200) {
-                    logger.log(Level.INFO, StreamLineConstants.LOADING_COMPLETE_SYMBOL + "Connection established.");
                     return true;
                 } else {
                     logger.log(Level.INFO, "[*] Could not reach instance, trying again...");

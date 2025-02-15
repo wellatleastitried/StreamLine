@@ -14,6 +14,7 @@ import com.walit.streamline.Hosting.DockerManager;
 import com.walit.streamline.Utilities.Internal.Config;
 import com.walit.streamline.Utilities.Internal.Mode;
 import com.walit.streamline.Utilities.Internal.OS;
+import com.walit.streamline.Utilities.Internal.StreamLineConstants;
 import com.walit.streamline.Utilities.Internal.StreamLineMessages;
 
 import org.apache.commons.cli.Options;
@@ -91,8 +92,6 @@ public class Driver {
             printHelpCli(options);
             return;
         }
-
-        System.out.println(StreamLineMessages.Farewell.getMessage());
     }
 
     public static void handleDockerSetup() {
@@ -108,7 +107,6 @@ public class Driver {
         }
     }
 
-
     private static Config getConfigurationForRuntime() {
         Config config = new Config();
         config.setMode(Mode.TERMINAL);
@@ -117,6 +115,7 @@ public class Driver {
 
         if (logger == null) {
             System.err.println(StreamLineMessages.LoggerInitializationFailure.getMessage());
+            System.exit(0);
         } else {
             config.setLogger(logger);
         }
@@ -152,8 +151,8 @@ public class Driver {
     private static Logger initializeLogger(OS os) {
         Logger logger = Logger.getLogger("Streamline"); 
         String logFileDir = switch (os) {
-            case WINDOWS -> "%temp%\\Streamline\\";
-            default -> "/tmp/StreamLine/";
+            case WINDOWS -> StreamLineConstants.WINDOWS_TEMP_DIR_PATH;
+            default -> StreamLineConstants.OTHER_OS_TEMP_DIR_PATH;
         };
         String fileName = "streamline.log";
         File logFile = new File(logFileDir);

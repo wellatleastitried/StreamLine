@@ -17,6 +17,7 @@ public enum StreamLineMessages {
     ShutdownTookTooLong("[!] The shutdown process of the app took too long, forcing shutdown..."),
     UnexpectedErrorInShutdown("[!] An unexpected error occured during shutdown, forcing shutdown..."),
     DockerNotRunningError("[!] Docker is not currently running on your machine, only offline functionality will be available."),
+    GitNotInstalled("[!] Git is not installed on this device. Git must be installed before running setup!"),
     CommandRunFailure("[!] The system encountered an error while running the following command: "),
     DatabaseQueryCollectionError("[!] Encountered an error while retrieving queries from internal files. This is either due to the files being modified outside of the programs runtime, or a corrupted install."),
     PeriodicConnectionTestingError("[!] Encountered an error while attempting to establish a network connection in the background."),

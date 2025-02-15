@@ -337,7 +337,7 @@ public final class Core {
         Button settingsButton = createButton("Settings", () -> transitionMenus(settingsMenu));
         buttons.put(buttonCount++, settingsButton);
 
-        Button quitButton = createButton("Quit", () -> shutdown());
+        Button quitButton = createButton("Quit", () -> System.exit(0));
         buttons.put(buttonCount++, quitButton);
 
         panel.addComponent(generateNewSpace());
@@ -567,6 +567,7 @@ public final class Core {
         } else {
             return;
         }
+
         if (config.getMode() != Mode.TESTING) {
             dbLink.shutdown();
             try {
@@ -578,5 +579,6 @@ public final class Core {
                 logger.log(Level.SEVERE, StreamLineMessages.UnexpectedErrorInShutdown.getMessage());
             }
         }
+        System.out.println(StreamLineMessages.Farewell.getMessage());
     }
 }
