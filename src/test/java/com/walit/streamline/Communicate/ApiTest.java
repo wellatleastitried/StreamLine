@@ -1,31 +1,37 @@
 package com.walit.streamline.Communicate;
     
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.hamcrest.MatcherAssert;
 
 import java.util.List;
+import java.util.logging.Logger;
 
 import static org.hamcrest.CoreMatchers.*;
+import static org.mockito.Mockito.*;
 
 import com.walit.streamline.Audio.Song;
+import com.walit.streamline.Hosting.DockerManager;
 import com.walit.streamline.Utilities.Internal.Config;
 
 public class ApiTest {
 
     InvidiousHandle handle;
     Config config;
+    Logger mockLogger;
 
     @Before
     public void setup() {
+        mockLogger = mock(Logger.class);
         config = new Config();
-        config.setHost(InvidiousHandle.canConnectToAPI());
-        handle = InvidiousHandle.getInstance(config);
+        config.setHost(InvidiousHandle.canConnectToAPI(mockLogger));
+        handle = InvidiousHandle.getInstance(config, mockLogger);
     }
 
     @Test
     public void checkHandleIsSingleton() {
-        InvidiousHandle testHandle = InvidiousHandle.getInstance(config);
+        InvidiousHandle testHandle = InvidiousHandle.getInstance(config, mockLogger);
         MatcherAssert.assertThat(handle, is(testHandle));
     }
 
@@ -39,7 +45,7 @@ public class ApiTest {
         String response = handle.retrieveStats();
         MatcherAssert.assertThat(response, is(notNullValue()));
         MatcherAssert.assertThat(response, not(""));
-        System.out.println("API is reachable:");
+        System.out.println("API is reachable!");
         System.out.println(String.format("\nInvidious Stats: %s\n", handle.retrieveStats().replace("},", "},\n")));
     }
 
@@ -55,10 +61,10 @@ public class ApiTest {
             return;
         }
         String searchTerm = "Give Cold";
-        System.out.println("\n\nRESULTING VIDEO IDs ARE:");
+        System.out.println("\nRESULTING VIDEO IDs ARE:");
         handle.retrieveSearchResults(searchTerm).thenAccept(searchResults -> {
             if (searchResults != null) {
-                System.out.println("\n\nNumber of results from searching \"" + searchTerm + "\":" + searchResults.size());
+                System.out.println("\nNumber of results from searching \"" + searchTerm + "\":" + searchResults.size());
                 searchResults.forEach(result -> System.out.println(result.getSongVideoId()));
                 MatcherAssert.assertThat(searchResults, not(searchResults.isEmpty()));
             } else {
@@ -72,5 +78,17 @@ public class ApiTest {
     public void attemptVideoDownloadAndAudioStrip() {
         // Access stream from URL.
         // Try to strip audio from video and save as mp3
+    }
+
+    @After
+    public void shutdown() {
+        try {
+            if (DockerManager.isContainerRunning(mockLogger)) {
+                DockerManager.stopContainer(mockLogger);
+            }
+        } catch (InterruptedException iE) {
+            System.err.println("InterruptedException occured while trying to stop docker instance.");
+            iE.printStackTrace();
+        }
     }
 }

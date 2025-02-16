@@ -330,14 +330,22 @@ public final class DatabaseRunner {
     }
 
     private void handleSQLException(SQLException sE) {
+        sE.printStackTrace();
         logger.log(Level.WARNING, StreamLineMessages.SQLQueryError.getMessage());
         try {
             connection.rollback();
         } catch (SQLException rollbackException) {
-            System.err.println(connection); // So the connection is NOT null
             logger.log(Level.SEVERE, StreamLineMessages.RollbackError.getMessage());
             System.exit(1);
         }
+    }
+
+    /*
+     * This was used for debugging, leaving it in for now in case any other issue comes up...
+     */
+    private void handleSQLException(SQLException sE, String query) {
+        System.out.println("Query that errored: " + query);
+        handleSQLException(sE);
     }
 
     private void restoreAutoCommit() {

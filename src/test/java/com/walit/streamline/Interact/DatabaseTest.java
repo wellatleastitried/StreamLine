@@ -29,23 +29,25 @@ public class DatabaseTest {
 
     @Before
     public void setup() {
+        mockLogger = mock(Logger.class);
         try {
-            linker = new DatabaseLinker(OS.TESTING, StatementReader.readQueryFromFile("/sql/init/DatabaseInitialization.sql"));
+            linker = new DatabaseLinker(OS.TESTING, StatementReader.readQueryFromFile("/sql/init/DatabaseInitialization.sql"), mockLogger);
         } catch (Exception e) {
             System.err.println("[!] Could not initialize test db.");
             throw new RuntimeException("[!] Could not initialize test db.");
         }
         testPath1 = ".config/notTheDatabase.db";
         testPath2 = linker.PATH;
-        mockLogger = mock(Logger.class);
         queries = Core.getMapOfQueries(mockLogger);
         runner = new DatabaseRunner(linker.getConnection(), queries, mockLogger);
+        System.out.println("Setup complete.");
     }
 
     @Test
     public void databaseExistenceCheck() {
-        MatcherAssert.assertThat(linker.isDatabaseSetupAtPath(testPath1), is(true));
-        MatcherAssert.assertThat(linker.isDatabaseSetupAtPath(testPath2), is(false));
+        MatcherAssert.assertThat(linker.isDatabaseSetupAtPath(testPath1), is(false));
+        MatcherAssert.assertThat(linker.isDatabaseSetupAtPath(testPath2), is(true));
+        System.out.println("Database existence check complete.");
     }
 
     @Test
@@ -64,6 +66,7 @@ public class DatabaseTest {
             System.err.println("[!] Incorrect number of results from table in SELECT!");
             throw new RuntimeException("[!] Incorrect number of results from table in SELECT!");
         }
+        System.out.println("Simulating liking a song complete.");
     }
 
     @After

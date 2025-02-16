@@ -18,6 +18,7 @@ StreamLine is a terminal-based (TUI) music player built in Java using the [Lante
 - **Help menu**: Provides guidance on how to use StreamLine.
 
 ## Installation
+This method is not yet available, StreamLine 0.0.1 will be releasing soon!
 ### For Debian-Based Systems (Ubuntu, etc.)
 You can download the '.deb' package from the releases page and install it using 'dpkg':
 ```bash
@@ -51,6 +52,7 @@ streamline
 - **Quit**: Exit the application.
 ## Building From Source
 ### Requirements to Build:
+- Git
 - Java 17+
 - Maven
 ### Steps to Build:
@@ -61,17 +63,22 @@ cd StreamLine
 ```
 2. Build the project using Maven:
 ```bash
-mvn clean install
+mvn install
 ```
-3. Run the application:
+3. ***Optional:*** Run the application setup for hosting a local Docker instance:
+```bash
+java -jar target/streamline-VERSION.jar --setup
+```
+4. Run the application:
 ```bash
 java -jar target/streamline-VERSION.jar
 ```
 ## Requirements
 - Java 17+
 - Terminal with support for text-based interfaces
-- Internet connection (If you intend to search for or listen to songs that have not been downloaded)
-- 
+- Internet connection (If you intend to search for/listen to songs that have not been downloaded)
+- If you want to have a locally hosted Invidious instance (can be quicker, failsafe is APIs are down):
+  - Latest version of Docker
 ## Contributing
 Contributions are welcome! Please check out [CONTRIBUTING.md](https://github.com/wellatleastitried/StreamLine/CONTRIBUTING.md) before getting started. Make sure to follow the project's code style and ensure all tests pass before submitting.
 

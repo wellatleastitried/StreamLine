@@ -14,6 +14,7 @@ import com.walit.streamline.Hosting.DockerManager;
 import com.walit.streamline.Utilities.Internal.Config;
 import com.walit.streamline.Utilities.Internal.Mode;
 import com.walit.streamline.Utilities.Internal.OS;
+import com.walit.streamline.Utilities.Internal.StreamLineConstants;
 import com.walit.streamline.Utilities.Internal.StreamLineMessages;
 
 import org.apache.commons.cli.Options;
@@ -23,6 +24,16 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.ParseException;
 
 public class Driver {
+
+    private static Logger logger;
+    private static OS os;
+
+    static {
+        os = getOSOfUser();
+        logger = initializeLogger(os);
+    }
+
+    private Driver() {}
 
     private static void printHelpCli(Options options) {
         HelpFormatter formatter = new HelpFormatter();
@@ -49,19 +60,12 @@ public class Driver {
                 Core streamline = new Core(configuration);
                 if (!streamline.start()) {
                     System.err.println(StreamLineMessages.FatalStartError.getMessage());
-                    System.exit(1);
+                    return;
                 }
             } else if (commandLine.hasOption("setup")) {
-                // Create API tokens, initialize docker-compose
-                DockerManager.cloneInvidiousRepo();
-                boolean didWrite = DockerManager.writeDockerCompose();
-                if (!didWrite) {
-                    System.out.println(StreamLineMessages.ErrorWritingToDockerCompose.getMessage());
-                }
-                System.exit(0);
+                handleDockerSetup();
             } else if (commandLine.hasOption("help")) {
                 printHelpCli(options);
-                System.exit(0);
             } else if (commandLine.hasOption("import-library")) {
                 // Take in JSON file and fill database with entries
                 System.exit(0);
@@ -77,42 +81,49 @@ public class Driver {
             } else if (commandLine.hasOption("cache-manager")) {
                 Config config = new Config();
                 config.setMode(Mode.CACHE_MANAGEMENT);
-                config.setOS(getOSOfUser());
+                config.setOS(os);
                 new Core(config);
-                System.exit(0);
             } else {
                 System.out.println("Invalid or no arguments provided. Use --help for usage information.");
-                System.exit(1);
+                return;
             }
         } catch (ParseException pE) {
             System.err.println("Error parsing command line arguments: " + pE.getMessage());
             printHelpCli(options);
-            System.exit(1);
+            return;
         }
+    }
 
-        System.out.println(StreamLineMessages.Farewell.getMessage());
+    public static void handleDockerSetup() {
+        DockerManager.cloneInvidiousRepo(logger);
+        boolean didWrite = DockerManager.writeDockerCompose(logger);
+        if (!didWrite) {
+            System.out.println(StreamLineMessages.ErrorWritingToDockerCompose.getMessage());
+        }
+        if (DockerManager.buildInstance(logger)) {
+            System.out.println("\nInvidious image built successfully!\n");
+        } else {
+            System.out.println(StreamLineMessages.InvidiousBuildError.getMessage());
+        }
     }
 
     private static Config getConfigurationForRuntime() {
         Config config = new Config();
         config.setMode(Mode.TERMINAL);
 
-        OS os = getOSOfUser();
         config.setOS(os);
 
-        Logger logger = initializeLogger(os);
         if (logger == null) {
             System.err.println(StreamLineMessages.LoggerInitializationFailure.getMessage());
+            System.exit(0);
         } else {
             config.setLogger(logger);
         }
 
-        String apiHost = InvidiousHandle.canConnectToAPI();
+        String apiHost = InvidiousHandle.canConnectToAPI(logger);
         if (apiHost == null || apiHost.length() < 1) {
-            DockerManager dockerManager = new DockerManager(logger);
-            config.setDockerConnection(dockerManager);
             new Thread(() -> {
-                String dockerHost = dockerManager.startInvidiousContainer();
+                DockerManager.startInvidiousContainer(logger);
             }).start();
             config.setIsOnline(false);
             config.setHost(null);
@@ -137,12 +148,11 @@ public class Driver {
         }
     }
 
-
     private static Logger initializeLogger(OS os) {
         Logger logger = Logger.getLogger("Streamline"); 
         String logFileDir = switch (os) {
-            case WINDOWS -> "%temp%\\Streamline\\";
-            default -> "/tmp/StreamLine/";
+            case WINDOWS -> StreamLineConstants.WINDOWS_TEMP_DIR_PATH;
+            default -> StreamLineConstants.OTHER_OS_TEMP_DIR_PATH;
         };
         String fileName = "streamline.log";
         File logFile = new File(logFileDir);

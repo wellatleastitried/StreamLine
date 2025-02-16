@@ -2,8 +2,6 @@ package com.walit.streamline.Utilities.Internal;
 
 import java.util.logging.Logger;
 
-import com.walit.streamline.Hosting.DockerManager;
-
 public class Config {
 
     private Mode mode;
@@ -11,7 +9,6 @@ public class Config {
     private volatile boolean isOnline;
     private String host;
     private Logger logger;
-    private DockerManager dockerManager;
 
     public Config() {}
 
@@ -35,16 +32,11 @@ public class Config {
         this.logger = logger;
     }
 
-    public Config(DockerManager dockerManager) {
-        this.dockerManager = dockerManager;
-    }
-
-    public Config(Mode mode, OS os, boolean isOnline, Logger logger, DockerManager dockerManager) {
+    public Config(Mode mode, OS os, boolean isOnline, Logger logger) {
         this.mode = mode;
         this.os = os;
         this.isOnline = isOnline;
         this.logger = logger;
-        this.dockerManager = dockerManager;
     }
 
     public void setMode(Mode mode) {
@@ -71,11 +63,11 @@ public class Config {
         return isOnline;
     }
 
-    public void setHost(String host) {
+    public synchronized void setHost(String host) {
         this.host = host;
     }
 
-    public String getHost() {
+    public synchronized String getHost() {
         return host;
     }
 
@@ -85,13 +77,5 @@ public class Config {
 
     public Logger getLogger() {
         return logger;
-    }
-
-    public void setDockerConnection(DockerManager dockerManager) {
-        this.dockerManager = dockerManager;
-    }
-
-    public DockerManager getDockerConnection() {
-        return dockerManager;
     }
 }
