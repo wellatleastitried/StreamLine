@@ -20,14 +20,16 @@ jobs:
             const existingLabels = context.payload.issue.labels.map(label => label.name);
             const labelsToActuallyRemove = existingLabels.filter(label => labelsToRemove.includes(label));
 
-            if (labelsToActuallyRemove.length > 0) {
-              await github.rest.issues.removeLabels({
+            for (const label of labelsToActuallyRemove) {
+              await github.rest.issues.removeLabel({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: issueNumber,
-                labels: labelsToActuallyRemove
+                name: label
               });
-              console.log(`Removed labels ${labelsToActuallyRemove.join(", ")} from issue #${issueNumber}`);
-            } else {
+              console.log(`Removed label "${label}" from issue #${issueNumber}`);
+            }
+
+            if (labelsToActuallyRemove.length === 0) {
               console.log(`No matching labels found to remove on issue #${issueNumber}`);
             }
