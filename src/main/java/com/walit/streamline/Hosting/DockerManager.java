@@ -38,6 +38,8 @@ public class DockerManager {
     private static String dockerComposeStop;
     private static String dockerComposeBuild;
 
+    private static Thread containerRuntime;
+
     static {
         os = Driver.getOSOfUser();
         if (os == OS.WINDOWS) {
@@ -56,6 +58,8 @@ public class DockerManager {
             dockerComposeStop = String.format("docker compose -f %s/docker-compose.yml stop", StreamLineConstants.INVIDIOUS_LOCAL_LINUX_REPO_ADDRESS);
             dockerComposeBuild = String.format("docker compose -f %s/docker-compose.yml build", StreamLineConstants.INVIDIOUS_LOCAL_LINUX_REPO_ADDRESS);
         }
+        containerRuntime = new Thread(() -> Core.runCommand(dockerComposeUp));
+        containerRuntime.setName("Invidious Runtime");
     }
     
     private DockerManager() {}
@@ -70,7 +74,7 @@ public class DockerManager {
                 return null;
             }
             if (invidiousDirectoryExists()) {
-                if (isContainerRunning(logger, 2, 500)) {
+                if (canConnectToContainer(logger, 2, 500)) {
                     return StreamLineConstants.INVIDIOUS_INSTANCE_ADDRESS;
                 }
             } else {
@@ -83,11 +87,10 @@ public class DockerManager {
 
         System.out.println("[*] Starting invidious instance through Docker...");
 
-        Thread dockerHosting = new Thread(() -> Core.runCommand(dockerComposeUp));
-        dockerHosting.start();
+        containerRuntime.start();
 
         try {
-            if (isContainerRunning(logger)) {
+            if (canConnectToContainer(logger)) {
                 System.out.println("[*] Invidious instance is now live at " + StreamLineConstants.INVIDIOUS_INSTANCE_ADDRESS);
                 return StreamLineConstants.INVIDIOUS_INSTANCE_ADDRESS;
             } else {
@@ -143,13 +146,22 @@ public class DockerManager {
 
     private static int displayLoading(Process process, String message, Logger logger) throws InterruptedException {
         Thread loadingAnimation = getLoadingAnimationThread(process, message);
+        loadingAnimation.setName("Loading Graphic");
         loadingAnimation.start();
         int exitCode = process.waitFor();
         loadingAnimation.interrupt();
         if (exitCode == 0) {
             System.out.println("\r" + StreamLineConstants.LOADING_COMPLETE_SYMBOL + message);
         } else {
-            System.out.println("\r" + StreamLineConstants.LOADING_ERROR_MESSAGE);
+            System.out.println("\r" + StreamLineConstants.LOADING_ERROR_MESSAGE); 
+            try (BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
+                String line;
+                while ((line = errorReader.readLine()) != null) {
+                    System.err.println(line);
+                }
+            } catch (IOException e) {
+                logger.log(Level.WARNING, "Failed to read process error output", e);
+            }
         }
         return exitCode;
     }
@@ -286,11 +298,15 @@ public class DockerManager {
     }
 
     public static void stopContainer(Logger logger) {
+        containerRuntime.interrupt();
         Core.runCommand(dockerComposeStop);
-        logger.log(Level.INFO, "Container has been stopped.");
     }
 
-    public static boolean isContainerRunning(Logger logger, int maxRetryAttempts, int timeout) throws InterruptedException {
+    public static boolean containerIsAlive() {
+        return containerRuntime.isAlive();
+    }
+
+    public static boolean canConnectToContainer(Logger logger, int maxRetryAttempts, int timeout) throws InterruptedException {
         int attempts = 0;
         while (attempts < maxRetryAttempts) {
             try {
@@ -302,8 +318,6 @@ public class DockerManager {
 
                 if (connection.getResponseCode() == 200) {
                     return true;
-                } else {
-                    logger.log(Level.INFO, "[*] Could not reach instance, trying again...");
                 }
             } catch (IOException e) {
                 Thread.sleep(timeout);
@@ -316,7 +330,7 @@ public class DockerManager {
     /*
      * By default: 30 maxRetryAttempts, 1 second timeout
      */
-    public static boolean isContainerRunning(Logger logger) throws InterruptedException {
-        return isContainerRunning(logger, 30, 1000);
+    public static boolean canConnectToContainer(Logger logger) throws InterruptedException {
+        return canConnectToContainer(logger, 30, 1000);
     }
 }
