@@ -35,7 +35,7 @@ public class StreamLineConstants {
     public static final String  RETRIEVING_TOKENS_MESSAGE   = "Retrieving tokens from Youtube validator";
     public static final String  CLONING_REPO_MESSAGE        = "Cloning Invidious repository";
     public static final String  LOADING_COMPLETE_SYMBOL     = "[✔] ";
-    public static final String  LOADING_ERROR_MESSAGE       = "[!] AN ERROR HAS OCCURED.                                                      \n";
+    public static final String  LOADING_ERROR_MESSAGE       = "[!] An error has occurred:                                                      \n";
 
     public static final String  HOST_RESOURCE_PATH          = "/ApiInstanceList.txt";
 }

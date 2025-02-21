@@ -69,6 +69,7 @@ mvn install
 ```bash
 java -jar target/streamline-VERSION.jar --setup
 ```
+**While this step ***is*** optional, using this app without Docker** [may be inconsistent](#notice) <br><br>
 4. Run the application:
 ```bash
 java -jar target/streamline-VERSION.jar
@@ -79,6 +80,8 @@ java -jar target/streamline-VERSION.jar
 - Internet connection (If you intend to search for/listen to songs that have not been downloaded)
 - If you want to have a locally hosted Invidious instance (can be quicker, failsafe is APIs are down):
   - Latest version of Docker
+## Notice
+The public instances of Invidious can change or go down at a moments notice. I will be trying to keep the list of API instances used by StreamLine updated, but running a local Docker instance will ensure that the app will always have online functionality. If you choose not to use Docker, StreamLine will only have online functionality if the public Invidious instances are reachable.
 ## Contributing
 Contributions are welcome! Please check out [CONTRIBUTING.md](https://github.com/wellatleastitried/StreamLine/CONTRIBUTING.md) before getting started. Make sure to follow the project's code style and ensure all tests pass before submitting.
 

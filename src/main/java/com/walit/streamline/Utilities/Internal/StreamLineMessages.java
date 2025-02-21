@@ -7,7 +7,8 @@ public enum StreamLineMessages {
 
     FatalStartError("[!] A fatal error has occured while starting StreamLine, please try reloading the app."),
     InvidiousRepositoryHasNotBeenClonedWarning("[*] The Invidious repository has not been cloned, docker will not be able to produce an Invidious instance without it. Reload the application with the --setup flag to locally clone the repository."),
-    InvidiousBuildError("[!] An error occured while build the image for Invidious with Docker. Please try re-running the app with the --setup flag."),
+    IllegalStateExceptionInShutdown("[!] There was an exception while cleaning up the terminal interface:\n"),
+    InvidiousBuildError("[!] An error occured while building the image for Invidious with Docker. Please try re-running the app with the --setup flag."),
     LoggerInitializationFailure("[!] There was an error while initializing the logger, please try reloading the app!"),
     UnableToKillDockerContainer("[!] There was an error while trying to close the container!"),
     ErrorCloningRepository("[!] There was an error while trying to clone the Invidious repository, please try re-running the app with the --setup flag."),

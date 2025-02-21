@@ -105,6 +105,7 @@ public final class Driver {
         } else {
             System.out.println(StreamLineMessages.InvidiousBuildError.getMessage());
         }
+        System.exit(0);
     }
 
     private static Config getConfigurationForRuntime() {
@@ -120,7 +121,7 @@ public final class Driver {
             config.setLogger(logger);
         }
 
-        String apiHost = InvidiousHandle.canConnectToAPI(logger);
+        String apiHost = InvidiousHandle.getWorkingHostnameFromApiOrDocker(logger);
         if (apiHost == null || apiHost.length() < 1) {
             new Thread(() -> {
                 DockerManager.startInvidiousContainer(logger);

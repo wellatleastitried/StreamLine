@@ -1,7 +1,7 @@
 package com.walit.streamline.Communicate;
     
-import org.junit.After;
-import org.junit.Before;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.hamcrest.MatcherAssert;
 
@@ -17,15 +17,15 @@ import com.walit.streamline.Utilities.Internal.Config;
 
 public class ApiTest {
 
-    InvidiousHandle handle;
-    Config config;
-    Logger mockLogger;
+    static InvidiousHandle handle;
+    static Config config;
+    static Logger mockLogger;
 
-    @Before
-    public void setup() {
+    @BeforeClass
+    public static void setup() {
         mockLogger = mock(Logger.class);
         config = new Config();
-        config.setHost(InvidiousHandle.canConnectToAPI(mockLogger));
+        config.setHost(InvidiousHandle.getWorkingHostnameFromApiOrDocker(mockLogger));
         handle = InvidiousHandle.getInstance(config, mockLogger);
     }
 
@@ -80,10 +80,10 @@ public class ApiTest {
         // Try to strip audio from video and save as mp3
     }
 
-    @After
-    public void shutdown() {
+    @AfterClass
+    public static void shutdown() {
         try {
-            if (DockerManager.isContainerRunning(mockLogger)) {
+            if (DockerManager.containerIsAlive() && DockerManager.canConnectToContainer(mockLogger)) {
                 DockerManager.stopContainer(mockLogger);
             }
         } catch (InterruptedException iE) {

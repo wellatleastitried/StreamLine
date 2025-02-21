@@ -52,7 +52,7 @@ public class InvidiousHandle {
         return null;
     }
 
-    public static String canConnectToAPI(Logger logger) {
+    public static String getWorkingHostnameFromApiOrDocker(Logger logger) {
         Map<String, Integer> workingHosts = new HashMap<>();
         List<String> possibleHosts = getPossibleHosts(logger);
         if (possibleHosts == null) {

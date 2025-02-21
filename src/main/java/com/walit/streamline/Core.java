@@ -12,12 +12,8 @@ import com.googlecode.lanterna.terminal.Terminal;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 // import java.util.concurrent.CompletableFuture;
@@ -44,6 +40,7 @@ public final class Core {
     private boolean exitedGracefully = false;
 
     private WindowBasedTextGUI textGUI;
+    private TextGUIThread guiThread;
 
     private BasicWindow mainMenu;
     private BasicWindow settingsMenu;
@@ -135,6 +132,7 @@ public final class Core {
             buttonHeight = 2;
             buttonWidth = terminalSize.getColumns() / 4;
             textGUI = new MultiWindowTextGUI(screen);
+            guiThread = textGUI.getGUIThread();
             mainMenu = createMainMenuWindow();
             searchPage = createSearchPage();
             likedMusicPage = createLikeMusicPage();
@@ -153,15 +151,19 @@ public final class Core {
         }
     }
 
+    private boolean canReachDocker() throws InterruptedException {
+        return DockerManager.containerIsAlive() && DockerManager.canConnectToContainer(logger);
+    }
+
     private void checkIfConnectionEstablished() {
         Thread connectionTesting = new Thread(() -> {
             try {
-                String reachableHost = InvidiousHandle.canConnectToAPI(logger);
-                boolean dockerIsResponding = DockerManager.isContainerRunning(logger);
+                String reachableHost = InvidiousHandle.getWorkingHostnameFromApiOrDocker(logger);
+                boolean dockerIsResponding = canReachDocker();
                 while (reachableHost == null && !dockerIsResponding) {
-                    reachableHost = InvidiousHandle.canConnectToAPI(logger);
+                    reachableHost = InvidiousHandle.getWorkingHostnameFromApiOrDocker(logger);
                     if (reachableHost == null) {
-                        dockerIsResponding = DockerManager.isContainerRunning(logger);
+                        dockerIsResponding = canReachDocker();
                     }
                     Thread.sleep(1000);
                 }
@@ -203,21 +205,7 @@ public final class Core {
     }
 
     private void setShutdownHandler() {
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            ExecutorService executor = Executors.newSingleThreadExecutor();
-
-            Future<?> future = executor.submit(this::shutdown);
-
-            try {
-                future.get(5, TimeUnit.SECONDS);
-            } catch (TimeoutException tE) {
-                logger.log(Level.WARNING, StreamLineMessages.ShutdownTookTooLong.getMessage());
-            } catch (Exception e) {
-                logger.log(Level.SEVERE, StreamLineMessages.UnexpectedErrorInShutdown.getMessage());
-            } finally {
-                executor.shutdownNow();
-            }
-        }));
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> shutdown()));
     }
 
     protected String getCacheDirectory() {
@@ -337,7 +325,8 @@ public final class Core {
         Button settingsButton = createButton("Settings", () -> transitionMenus(settingsMenu));
         buttons.put(buttonCount++, settingsButton);
 
-        Button quitButton = createButton("Quit", () -> System.exit(0));
+        // Button quitButton = createButton("Quit", () -> System.exit(0));
+        Button quitButton = createButton("Quit", () -> shutdown());
         buttons.put(buttonCount++, quitButton);
 
         panel.addComponent(generateNewSpace());
@@ -380,7 +369,7 @@ public final class Core {
         panel.addComponent(generateNewSpace());
 
         Button backButton = createButton("  <- Back  ", () -> {
-            textGUI.getGUIThread().invokeLater(() -> {
+            guiThread.invokeLater(() -> {
                 dropWindow(helpMenu);
                 runMainWindow();
             });
@@ -411,7 +400,7 @@ public final class Core {
         panel.addComponent(generateNewSpace());
 
         Button backButton = createButton("  <- Back  ", () -> {
-            textGUI.getGUIThread().invokeLater(() -> {
+            guiThread.invokeLater(() -> {
                 dropWindow(settingsMenu);
                 runMainWindow();
             });
@@ -464,7 +453,7 @@ public final class Core {
             public synchronized Result handleKeyStroke(KeyStroke keyStroke) {
                 if (keyStroke.getKeyType() == KeyType.Enter) {
                     // TODO: Change to display the results from the search (a row for each song within the "resultsBox"
-                    textGUI.getGUIThread().invokeLater(() -> {
+                    guiThread.invokeLater(() -> {
                         System.out.println("Enter pressed!"); // TODO: Change this to display the results
                         try {
                             textGUI.getScreen().refresh();
@@ -495,7 +484,7 @@ public final class Core {
         panel.addComponent(resultsBox);
 
         Button backButton = createButton("  <- Back  ", () -> {
-            textGUI.getGUIThread().invokeLater(() -> {
+            guiThread.invokeLater(() -> {
                 dropWindow(searchPage);
                 runMainWindow();
             });
@@ -571,14 +560,46 @@ public final class Core {
         if (config.getMode() != Mode.TESTING) {
             dbLink.shutdown();
             try {
-                screen.stopScreen();
-                if (DockerManager.isContainerRunning(logger)) {
+                if (canReachDocker()) {
                     DockerManager.stopContainer(logger);
                 }
+                guiThread.invokeLater(() -> {
+                    try {
+                        for (Window window : textGUI.getWindows()) {
+                            textGUI.removeWindow(window);
+                        }
+                    } catch (IllegalStateException iE) {
+                        logger.log(Level.WARNING, StreamLineMessages.IllegalStateExceptionInShutdown.getMessage() + iE.getMessage());
+                    }
+                });
+                screen.stopScreen();
+                terminal.close();
             } catch (InterruptedException | IOException iE) {
                 logger.log(Level.SEVERE, StreamLineMessages.UnexpectedErrorInShutdown.getMessage());
+            } catch (IllegalStateException iE) {
+                logger.log(Level.WARNING, StreamLineMessages.IllegalStateExceptionInShutdown.getMessage() + iE.getMessage());
             }
         }
         System.out.println(StreamLineMessages.Farewell.getMessage());
+    }
+
+    /*
+     * This is a method I am leaving for potential debugging in the future.
+     */
+    private void getThreadStates() {
+        Map<Thread, StackTraceElement[]> threads = Thread.getAllStackTraces();
+        System.out.println("Currently running threads:");
+        for (Map.Entry<Thread, StackTraceElement[]> entry : threads.entrySet()) {
+            Thread thread = entry.getKey();
+            StackTraceElement[] sTE = entry.getValue();
+            if (thread.getId() != 3) {
+                System.out.println(thread.getName() + " (ID: " + thread.getId() + ") -> " + thread.getState());
+            } else {
+                System.out.println("Thread: " + thread.getName() + " (ID: " + thread.getId() + ") -> " + thread.getState());
+                for (StackTraceElement element : sTE) {
+                    System.out.println("\t" + element);
+                }
+            }
+        }
     }
 }
