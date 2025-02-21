@@ -69,7 +69,7 @@ mvn install
 ```bash
 java -jar target/streamline-VERSION.jar --setup
 ```
-While this step ***is*** optional, using this app without Docker [may be inconsistent](#Notice)
+**While this step ***is*** optional, using this app without Docker** [may be inconsistent](#notice) <br><br>
 4. Run the application:
 ```bash
 java -jar target/streamline-VERSION.jar
