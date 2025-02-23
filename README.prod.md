@@ -3,10 +3,9 @@ StreamLine is a terminal-based (TUI) music player built in Java using the [Lante
 
 ## Table of Contents
 - [Features](#features)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Building from Source](#building-from-source)
 - [Requirements](#requirements)
+- [Building from Source](#building-from-source)
+- [Usage](#usage)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -17,39 +16,13 @@ StreamLine is a terminal-based (TUI) music player built in Java using the [Lante
 - **Recently Played**: Track your recently played songs.
 - **Help menu**: Provides guidance on how to use StreamLine.
 
-## Installation
-This method is not yet available, StreamLine 0.0.1 will be releasing soon!
-### For Debian-Based Systems (Ubuntu, etc.)
-You can download the '.deb' package from the releases page and install it using 'dpkg':
-```bash
-sudo dpkg -i streamline.deb
-```
-### For Arch-Based Systems
-You can install StreamLine using the .pkg.tar.zst:
-```bash
-sudo pacman -U streamline.pkg.tar.zst
-```
-### For Other Linux Distributions
-You can manually install the .tar.gz file and run the compiled JAR. An example of this would be:
-```bash
-sudo cp streamline /usr/local/bin/streamline
-```
-Now you can run streamline from the terminal:
-```bash
-streamline
-```
-## Usage
-Once installed, run the program using
-```bash
-streamline
-```
-### Main Menu Options
-- **Search for a song**: Start searching for your favorite songs by interacting with the Invidious API.
-- **View Liked Music**: Browse your liked songs.
-- **Playlists**: View and manage your playlists.
-- **Recently Played**: View your recently played songs.
-- **Help**: Access help information for using StreamLine.
-- **Quit**: Exit the application.
+## Requirements
+- Java 17+
+- Terminal with support for text-based interfaces
+- Internet connection (If you intend to search for/listen to songs that have not been downloaded)
+- If you want to have a locally hosted Invidious instance (can be quicker, failsafe if APIs are down):
+  - Latest version of Docker
+
 ## Building From Source
 ### Requirements to Build:
 - Git
@@ -74,12 +47,22 @@ java -jar target/streamline-VERSION.jar --setup
 ```bash
 java -jar target/streamline-VERSION.jar
 ```
-## Requirements
-- Java 17+
-- Terminal with support for text-based interfaces
-- Internet connection (If you intend to search for/listen to songs that have not been downloaded)
-- If you want to have a locally hosted Invidious instance (can be quicker, failsafe if APIs are down):
-  - Latest version of Docker
+
+## Usage
+Once installed, run the following command to display the possible usages:
+```bash
+streamline
+```
+*Only one argument can be provided at a time.*
+
+### Main Menu Options
+- **Search for a song**: Start searching for your favorite songs by interacting with the Invidious API.
+- **View Liked Music**: Browse your liked songs.
+- **Playlists**: View and manage your playlists.
+- **Recently Played**: View your recently played songs.
+- **Help**: Access help information for using StreamLine.
+- **Quit**: Exit the application.
+
 ## Notice
 The public instances of Invidious can change or go down at a moments notice. I will be trying to keep the list of API instances used by StreamLine updated, but running a local Docker instance will ensure that the app will always have online functionality. If you choose not to use Docker, StreamLine will only have online functionality if the public Invidious instances are reachable.
 ## Contributing
