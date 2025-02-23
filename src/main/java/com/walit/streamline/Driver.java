@@ -9,8 +9,10 @@ import java.util.logging.Logger;
 import java.util.logging.FileHandler;
 import java.util.logging.XMLFormatter;
 
+import com.walit.streamline.Backend.Core;
 import com.walit.streamline.Communicate.InvidiousHandle;
 import com.walit.streamline.Hosting.DockerManager;
+import com.walit.streamline.Interface.TerminalInterface;
 import com.walit.streamline.Utilities.Internal.Config;
 import com.walit.streamline.Utilities.Internal.Mode;
 import com.walit.streamline.Utilities.Internal.OS;
@@ -57,8 +59,9 @@ public final class Driver {
             commandLine = new DefaultParser().parse(options, args);
             if (args.length < 1) {
                 Config configuration = getConfigurationForRuntime();
-                Core streamline = new Core(configuration);
-                if (!streamline.start()) {
+                Core streamlineBackend = new Core(configuration);
+                TerminalInterface tui = new TerminalInterface(streamlineBackend);
+                if (!tui.run()) {
                     System.err.println(StreamLineMessages.FatalStartError.getMessage());
                     return;
                 }
@@ -68,10 +71,8 @@ public final class Driver {
                 printHelpCli(options);
             } else if (commandLine.hasOption("import-library")) {
                 // Take in JSON file and fill database with entries
-                System.exit(0);
             } else if (commandLine.hasOption("export-library")) {
                 // Transfer database entries to JSON file
-                System.exit(0);
             } else if (commandLine.hasOption("quiet")) {
                 // Start headless and direct user to local site
             } else if (commandLine.hasOption("play")) {
@@ -82,7 +83,8 @@ public final class Driver {
                 Config config = new Config();
                 config.setMode(Mode.CACHE_MANAGEMENT);
                 config.setOS(os);
-                new Core(config);
+                Core streamlineBackend = new Core(config);
+                streamlineBackend.handleCacheManagement();
             } else {
                 System.out.println("Invalid or no arguments provided. Use --help for usage information.");
                 return;

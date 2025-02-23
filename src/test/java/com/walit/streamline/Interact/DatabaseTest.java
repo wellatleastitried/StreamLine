@@ -12,7 +12,7 @@ import java.util.HashMap;
 import com.walit.streamline.Utilities.Internal.OS;
 import com.walit.streamline.Utilities.StatementReader;
 import com.walit.streamline.Audio.Song;
-import com.walit.streamline.Core;
+import com.walit.streamline.Backend.Core;
 import com.walit.streamline.Utilities.RetrievedStorage;
 
 import static org.hamcrest.CoreMatchers.is;
