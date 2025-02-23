@@ -21,7 +21,7 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.walit.streamline.Core;
+import com.walit.streamline.Backend.Core;
 import com.walit.streamline.Driver;
 import com.walit.streamline.Utilities.Internal.OS;
 import com.walit.streamline.Utilities.Internal.StreamLineConstants;
