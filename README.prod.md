@@ -78,7 +78,7 @@ java -jar target/streamline-VERSION.jar
 - Java 17+
 - Terminal with support for text-based interfaces
 - Internet connection (If you intend to search for/listen to songs that have not been downloaded)
-- If you want to have a locally hosted Invidious instance (can be quicker, failsafe is APIs are down):
+- If you want to have a locally hosted Invidious instance (can be quicker, failsafe if APIs are down):
   - Latest version of Docker
 ## Notice
 The public instances of Invidious can change or go down at a moments notice. I will be trying to keep the list of API instances used by StreamLine updated, but running a local Docker instance will ensure that the app will always have online functionality. If you choose not to use Docker, StreamLine will only have online functionality if the public Invidious instances are reachable.
