@@ -8,6 +8,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.walit.streamline.Audio.AudioPlayer;
+import com.walit.streamline.Audio.Song;
 import com.walit.streamline.Communicate.InvidiousHandle;
 import com.walit.streamline.Interact.DatabaseLinker;
 import com.walit.streamline.Interact.DatabaseRunner;
@@ -22,6 +23,8 @@ import com.walit.streamline.Utilities.Internal.StreamLineMessages;
 public final class Core {
 
     private final Logger logger;
+
+    public Thread audioThread;
 
     private final DatabaseLinker dbLink;
     private final DatabaseRunner dbRunner;
@@ -39,6 +42,7 @@ public final class Core {
         this.logger = config.getLogger();
         this.cacheDirectory = getCacheDirectory();
         setShutdownHandler();
+        this.audioThread = null;
         this.queries = Core.getMapOfQueries(logger);
         this.dbLink = initializeDatabaseConnection();
         this.dbRunner = new DatabaseRunner(dbLink.getConnection(), queries, logger);
@@ -187,11 +191,20 @@ public final class Core {
         return handle.retrieveStats();
     }
 
-    private void playQueue(RetrievedStorage songQueue) {
-        // Something like this...
+    public Song getSongFromName(String songName) {
+        return dbRunner.searchForSongName(songName);
+    }
+
+    public void playSong(Song song) {
+        AudioPlayer audioPlayer = new AudioPlayer(song);
+        audioThread = new Thread(audioPlayer);
+        audioThread.start();
+    }
+
+    public void playQueue(RetrievedStorage songQueue) {
         AudioPlayer audioPlayer = new AudioPlayer(songQueue);
-        // new Thread(() -> audioPlayer).start(); OR
-        // CompletableFuture.runAsync(() -> audioPlayer);
+        audioThread = new Thread(audioPlayer);
+        audioThread.start();
     }
 
     public void clearCache() {
@@ -229,6 +242,9 @@ public final class Core {
                 logger.log(Level.SEVERE, StreamLineMessages.UnexpectedErrorInShutdown.getMessage());
             } catch (IllegalStateException iE) {
                 logger.log(Level.WARNING, StreamLineMessages.IllegalStateExceptionInShutdown.getMessage() + iE.getMessage());
+            }
+            if (audioThread.isAlive()) {
+                audioThread.interrupt();
             }
             exitedGracefully = true;
             System.out.println(StreamLineMessages.Farewell.getMessage());

@@ -10,6 +10,7 @@ public enum StreamLineMessages {
     IllegalStateExceptionInShutdown("[!] There was an exception while cleaning up the terminal interface:\n"),
     InvidiousBuildError("[!] An error occured while building the image for Invidious with Docker. Please try re-running the app with the --setup flag."),
     LoggerInitializationFailure("[!] There was an error while initializing the logger, please try reloading the app!"),
+    IncorrectNumberOfResultsFromSongSearch("[*] There were either no results, or too many results for the song name you entered, try to be more specific with your search.\n[*] Example:\n[*] \tstreamline --play <songName> - <songAuthor>"),
     UnableToKillDockerContainer("[!] There was an error while trying to close the container!"),
     ErrorCloningRepository("[!] There was an error while trying to clone the Invidious repository, please try re-running the app with the --setup flag."),
     ErrorWritingToDockerCompose("[!] There was an error while parsing and writing docker-compose.yml, please re-run the app with the --setup flag"),

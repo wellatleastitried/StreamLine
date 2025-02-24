@@ -3,7 +3,7 @@ package com.walit.streamline.Interface;
 import com.walit.streamline.Backend.Core;
 import com.walit.streamline.Utilities.RetrievedStorage;
 
-public abstract class FrontendInterface {
+abstract class FrontendInterface {
 
     public final Core backend;
 

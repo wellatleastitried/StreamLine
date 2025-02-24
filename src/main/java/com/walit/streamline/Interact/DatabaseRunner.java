@@ -107,9 +107,37 @@ public final class DatabaseRunner {
         return recentlyPlayedSongs;
     }
 
+    public Song searchForSongName(String songName) {
+        final String searchQuery = "SELECT * FROM Songs s WHERE s.title like '%" + songName + "%'";
+        Song song = null;
+        boolean hasResult = false;
+        try (final Statement statement = connection.createStatement()) {
+            statement.setQueryTimeout(10);
+            final ResultSet rs = statement.executeQuery(searchQuery);
+            while (rs.next()) {
+                if (hasResult) {
+                    song = null;
+                    break;
+                }
+                song = new Song(
+                        rs.getInt("id"),
+                        rs.getString("title"),
+                        rs.getString("artist"),
+                        rs.getString("url"),
+                        rs.getString("videoId")
+                );
+                hasResult = true;
+            }
+        } catch (SQLException sE) {
+            handleSQLException(sE);
+            song = null;
+        }
+        return song;
+    }
+
     public RetrievedStorage getSongsFromPlaylist(String playlistName) {
         final RetrievedStorage songsFromPlaylist = new RetrievedStorage();
-        final String playlistSongsQuery = "SELECT * FROM Songs WHERE song_id IN (SELECT song_id FROM PlaylistSongs WHERE playlist_id = ? ORDER BY data_added_to_playlist DESC);";
+        final String playlistSongsQuery = "SELECT * FROM Songs s WHERE s.id IN (SELECT song_id FROM PlaylistSongs WHERE playlist_id = ? ORDER BY data_added_to_playlist DESC);";
         try (final PreparedStatement statement = connection.prepareStatement(playlistSongsQuery)) {
             statement.setString(1, playlistName);
             final ResultSet rs = statement.executeQuery();

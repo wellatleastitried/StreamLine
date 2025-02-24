@@ -9,6 +9,7 @@ import java.util.logging.Logger;
 import java.util.logging.FileHandler;
 import java.util.logging.XMLFormatter;
 
+import com.walit.streamline.Audio.Song;
 import com.walit.streamline.Backend.Core;
 import com.walit.streamline.Communicate.InvidiousHandle;
 import com.walit.streamline.Hosting.DockerManager;
@@ -43,6 +44,11 @@ public final class Driver {
     }
 
     public static void main(String [] args) {
+        Options options = getOptionsForTerminal();
+        handleArguments(args, options);
+    }
+
+    private static Options getOptionsForTerminal() {
         Options options = new Options();
         options.addOption("h", "help", false, "Help menu explaining the different flags");
         options.addOption("s", "setup", false, "Initialize the configuration for a locally hosted invidious instance");
@@ -52,12 +58,15 @@ public final class Driver {
         options.addOption("p", "play", true, "Play a single song (e.g., --play=\"songname\") and start headless with CLI commands available");
         options.addOption("d", "delete", true, "Removes all of the song names given from the database and/or the filesystem (e.g., --delete=\"song1,song2\"");
         options.addOption("cm", "cache-manager", false, "Choose whether to clear all cache or only expired cache and then exit");
+        return options;
+    }
 
+    private static void handleArguments(String[] arguments, Options options) {
         CommandLine commandLine;
 
         try {
-            commandLine = new DefaultParser().parse(options, args);
-            if (args.length < 1) {
+            commandLine = new DefaultParser().parse(options, arguments);
+            if (arguments.length < 1) {
                 Config configuration = getConfigurationForRuntime();
                 Core streamlineBackend = new Core(configuration);
                 TerminalInterface tui = new TerminalInterface(streamlineBackend);
@@ -76,7 +85,8 @@ public final class Driver {
             } else if (commandLine.hasOption("quiet")) {
                 // Start headless and direct user to local site
             } else if (commandLine.hasOption("play")) {
-                // Play a single song
+                String songName = commandLine.getOptionValue("play");
+                handlePlayingSingleSong(songName);
             } else if (commandLine.hasOption("delete")) {
                 // Delete a song from library/playlist/etc
             } else if (commandLine.hasOption("cache-manager")) {
@@ -93,6 +103,23 @@ public final class Driver {
             System.err.println("Error parsing command line arguments: " + pE.getMessage());
             printHelpCli(options);
             return;
+        }
+    }
+
+    private static void handlePlayingSingleSong(String songName) {
+        Config configuration = new Config();
+        configuration.setOS(os);
+        Core streamlineBackend = new Core(configuration);
+        Song song = streamlineBackend.getSongFromName(songName);
+        if (song == null) {
+            System.out.println(StreamLineMessages.IncorrectNumberOfResultsFromSongSearch.getMessage());
+        } else {
+            streamlineBackend.playSong(song);
+            try {
+                streamlineBackend.audioThread.join();
+            } catch (InterruptedException iE) {
+                logger.log(Level.WARNING, "[!] An error occured during playback, please try again.");
+            }
         }
     }
 

@@ -2,13 +2,19 @@ package com.walit.streamline.Audio;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.Queue;
 import java.util.PriorityQueue;
-import javax.sound.sampled.*;
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.DataLine;
 import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.SourceDataLine;
+import javax.sound.sampled.UnsupportedAudioFileException;
 
-import com.walit.streamline.Utilities.Internal.StreamLineMessages;
 import com.walit.streamline.Utilities.RetrievedStorage;
+import com.walit.streamline.Utilities.Internal.StreamLineMessages;
 
 public class AudioPlayer implements Runnable {
 
@@ -18,6 +24,11 @@ public class AudioPlayer implements Runnable {
     public AudioPlayer() {
         songsToPlay = new PriorityQueue<Song>();
         shuffledSongsToPlay = new PriorityQueue<Song>();
+    }
+
+    public AudioPlayer(Song song) {
+        songsToPlay = new PriorityQueue<Song>();
+        songsToPlay.add(song);
     }
 
     public AudioPlayer(RetrievedStorage queriedSongs) {
@@ -43,9 +54,9 @@ public class AudioPlayer implements Runnable {
                 song = songsToPlay.poll();
                 // Display info on currently playing song
                 if (song.isSongDownloaded() && checkDownloadIntegrity(song)) {
-                    playSong(song.getDownloadPath());
+                    playSongFromFile(song.getDownloadPath());
                 } else {
-                    playSong(song.getSongLink());
+                    playSongFromUrl(song.getSongLink());
                 }
             }
         } catch (UnsupportedAudioFileException uAFE) {
@@ -74,8 +85,26 @@ public class AudioPlayer implements Runnable {
         return true;
     }
 
-    private void playSong(String pathToAudio) throws UnsupportedAudioFileException, IOException, LineUnavailableException {
+    private void playSongFromFile(String pathToAudio) throws UnsupportedAudioFileException, IOException, LineUnavailableException {
         AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(new File(pathToAudio));
+        AudioFormat format = audioInputStream.getFormat();
+        DataLine.Info info = new DataLine.Info(SourceDataLine.class, format);
+        SourceDataLine audioLine = (SourceDataLine) AudioSystem.getLine(info);
+        audioLine.open(format);
+        audioLine.start();
+        byte[] buffer = new byte[4096];
+        int bytesRead = -1;
+        while ((bytesRead = audioInputStream.read(buffer)) != -1) {
+            audioLine.write(buffer, 0, bytesRead);
+        }
+        audioLine.drain();
+        audioLine.close();
+        audioInputStream.close();
+    }
+
+    private void playSongFromUrl(String pathToAudio) throws UnsupportedAudioFileException, IOException, LineUnavailableException {
+        URL audioUrl = new URL(pathToAudio);
+        AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(audioUrl);
         AudioFormat format = audioInputStream.getFormat();
         DataLine.Info info = new DataLine.Info(SourceDataLine.class, format);
         SourceDataLine audioLine = (SourceDataLine) AudioSystem.getLine(info);
