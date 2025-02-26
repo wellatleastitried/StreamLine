@@ -39,6 +39,7 @@ public final class Driver {
     private Driver() {}
 
     private static void printHelpCli(Options options) {
+        System.out.println("\nUsage:\n\tstreamline [--OPTION] [ARGUMENT]\n");
         HelpFormatter formatter = new HelpFormatter();
         formatter.printHelp("StreamLine", options);
     }
@@ -51,7 +52,8 @@ public final class Driver {
     private static Options getOptionsForTerminal() {
         Options options = new Options();
         options.addOption("h", "help", false, "Help menu explaining the different flags");
-        options.addOption("s", "setup", false, "Initialize the configuration for a locally hosted invidious instance");
+        options.addOption("s", "setup", true, "Initialize the configuration for:\n\t- \"--Docker\" for a locally hosted Invidious instance\n\t- \"--YouTube\" for audio conversion from YouTube videos");
+        options.addOption("c", "clean", true, "Remove unwanted files from the Docker or Youtube install.\nExample:\n\tstreamline --Docker\t=> Removes the Invidious repository from the filesystem\n\n\tstreamline --YouTube\t=> Removes the binary for yt-dlp from the filesystem.");
         options.addOption("i", "import-library", true, "Import your music library from other devices into your current setup and then exit (e.g., --import-library=/path/to/library.json");
         options.addOption("e", "export-library", false, "Generate a file (library.json) that contains all of your music library that can be used to import this library on another device and then exit");
         options.addOption("q", "quiet", true, "Headless start with ability to access the application at http://localhost:PORT");
@@ -66,44 +68,47 @@ public final class Driver {
 
         try {
             commandLine = new DefaultParser().parse(options, arguments);
-            if (arguments.length < 1) {
-                Config configuration = getConfigurationForRuntime();
-                Core streamlineBackend = new Core(configuration);
-                TerminalInterface tui = new TerminalInterface(streamlineBackend);
-                if (!tui.run()) {
-                    System.err.println(StreamLineMessages.FatalStartError.getMessage());
-                    return;
-                }
-            } else if (commandLine.hasOption("setup")) {
-                handleDockerSetup();
-            } else if (commandLine.hasOption("help")) {
-                printHelpCli(options);
-            } else if (commandLine.hasOption("import-library")) {
-                // Take in JSON file and fill database with entries
-            } else if (commandLine.hasOption("export-library")) {
-                // Transfer database entries to JSON file
-            } else if (commandLine.hasOption("quiet")) {
-                // Start headless and direct user to local site
-            } else if (commandLine.hasOption("play")) {
-                String songName = commandLine.getOptionValue("play");
-                handlePlayingSingleSong(songName);
-            } else if (commandLine.hasOption("delete")) {
-                // Delete a song from library/playlist/etc
-            } else if (commandLine.hasOption("cache-manager")) {
-                Config config = new Config();
-                config.setMode(Mode.CACHE_MANAGEMENT);
-                config.setOS(os);
-                Core streamlineBackend = new Core(config);
-                streamlineBackend.handleCacheManagement();
-            } else {
-                System.out.println("Invalid or no arguments provided. Use --help for usage information.");
-                return;
+            if (arguments.length > 2 && !commandLine.hasOption("delete")) {
+                System.out.println(StreamLineMessages.TooManyArgumentsProvided.getMessage());
+                System.exit(0);
             }
+            if (arguments.length < 1) handleStandardRuntime();
+            else if (commandLine.hasOption("setup")) handleSetup(commandLine);
+            else if (commandLine.hasOption("help")) printHelpCli(options);
+            else if (commandLine.hasOption("import-library")) handleLibraryImport(commandLine);
+            else if (commandLine.hasOption("export-library")) handleLibraryExport();
+            else if (commandLine.hasOption("quiet")) handleHeadlessMode(commandLine);
+            else if (commandLine.hasOption("play")) handlePlay(commandLine);
+            else if (commandLine.hasOption("delete")) handleDelete(commandLine);
+            else if (commandLine.hasOption("cache-manager")) handleCacheManager();
+            else System.out.println("Invalid or no arguments provided. Use --help for usage information.");
         } catch (ParseException pE) {
             System.err.println("Error parsing command line arguments: " + pE.getMessage());
             printHelpCli(options);
-            return;
         }
+    }
+    
+    private static void handleSetup(CommandLine commandLine) {
+        String choice = commandLine.getOptionValue("setup").toLowerCase();
+        if (choice.contains("docker")) {
+            handleDockerSetup();
+        } else if (choice.contains("youtube")) {
+            handleYoutubeSetup();
+        } else {
+            System.out.println("[!] Invalid argument passed for --setup");
+        }
+    }
+
+    private static void handleLibraryExport() { // Transfer database entries to JSON file
+    }
+
+    private static void handleLibraryImport(CommandLine commandLine) { // Take in JSON file and fill database with entries
+    }
+
+    private static void handleHeadlessMode(CommandLine commandLine) { // Start headless and direct user to local site
+    }
+
+    private static void handleDelete(CommandLine commandLine) { // Delete a song from library/playlist/etc
     }
 
     private static void handlePlayingSingleSong(String songName) {
@@ -123,6 +128,37 @@ public final class Driver {
         }
     }
 
+    private static void handleStandardRuntime() {
+                Config configuration = getConfigurationForRuntime();
+                Core streamlineBackend = new Core(configuration);
+                TerminalInterface tui = new TerminalInterface(streamlineBackend);
+                if (!tui.run()) {
+                    System.err.println(StreamLineMessages.FatalStartError.getMessage());
+                    return;
+                }
+    }
+
+    private static void handleCacheManager() {
+        Config config = new Config();
+        config.setMode(Mode.CACHE_MANAGEMENT);
+        config.setOS(os);
+        Core streamlineBackend = new Core(config);
+        streamlineBackend.handleCacheManagement();
+    }
+
+    private static void handlePlay(CommandLine commandLine) {
+        /*
+           String songName = commandLine.getOptionValue("play");
+           handlePlayingSingleSong(songName);
+           */
+        try {
+            // new com.walit.streamline.Audio.AudioPlayer().playSongFromUrl("localhost:3000/watch?v=z6nIHFCcto8");
+            new com.walit.streamline.Audio.AudioPlayer().playSongFromUrl(InvidiousHandle.getAudioUrlFromVideoId("z6nIHFCcto8"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public static void handleDockerSetup() {
         DockerManager.cloneInvidiousRepo(logger);
         boolean didWrite = DockerManager.writeDockerCompose(logger);
@@ -134,6 +170,10 @@ public final class Driver {
         } else {
             System.out.println(StreamLineMessages.InvidiousBuildError.getMessage());
         }
+        System.exit(0);
+    }
+
+    public static void handleYoutubeSetup() {
         System.exit(0);
     }
 

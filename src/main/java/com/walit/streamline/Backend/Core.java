@@ -243,7 +243,7 @@ public final class Core {
             } catch (IllegalStateException iE) {
                 logger.log(Level.WARNING, StreamLineMessages.IllegalStateExceptionInShutdown.getMessage() + iE.getMessage());
             }
-            if (audioThread.isAlive()) {
+            if (audioThread != null && audioThread.isAlive()) {
                 audioThread.interrupt();
             }
             exitedGracefully = true;

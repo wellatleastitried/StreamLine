@@ -102,7 +102,8 @@ public class AudioPlayer implements Runnable {
         audioInputStream.close();
     }
 
-    private void playSongFromUrl(String pathToAudio) throws UnsupportedAudioFileException, IOException, LineUnavailableException {
+    // Change back to public
+    public void playSongFromUrl(String pathToAudio) throws UnsupportedAudioFileException, IOException, LineUnavailableException {
         URL audioUrl = new URL(pathToAudio);
         AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(audioUrl);
         AudioFormat format = audioInputStream.getFormat();

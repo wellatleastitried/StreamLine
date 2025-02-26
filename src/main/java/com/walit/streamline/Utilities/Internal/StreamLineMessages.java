@@ -13,6 +13,7 @@ public enum StreamLineMessages {
     IncorrectNumberOfResultsFromSongSearch("[*] There were either no results, or too many results for the song name you entered, try to be more specific with your search.\n[*] Example:\n[*] \tstreamline --play <songName> - <songAuthor>"),
     UnableToKillDockerContainer("[!] There was an error while trying to close the container!"),
     ErrorCloningRepository("[!] There was an error while trying to clone the Invidious repository, please try re-running the app with the --setup flag."),
+    TooManyArgumentsProvided("[!] There were too many arguments provided. Only one option can be chosen at a time.\n\tUsage:\n\t\tstreamline [--OPTION] [ARGUMENT]\n"),
     ErrorWritingToDockerCompose("[!] There was an error while parsing and writing docker-compose.yml, please re-run the app with the --setup flag"),
     ErrorRetrievingTokensForDockerCompose("[!] There was an error while retrieving the youtube validator tokens, please try again later."),
     ErrorReadingHostsFromResource("[!] Could not read hostnames from internal resource file, the installation may be corrupted!"),

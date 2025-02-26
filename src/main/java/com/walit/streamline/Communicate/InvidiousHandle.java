@@ -149,6 +149,29 @@ public class InvidiousHandle {
         });
     }
 
+    public static String getAudioUrlFromVideoId(String id) {
+        StringBuilder result = new StringBuilder();
+        BufferedReader reader;
+        HttpURLConnection connection;
+        try {
+            connection = (HttpURLConnection) new URL("http://localhost:3000/api/v1/videos/" + id).openConnection();
+            if (connection.getResponseCode() >= 400) {
+                reader = new BufferedReader(new InputStreamReader(connection.getErrorStream()));
+            } else {
+                reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            }
+            String line;
+            while ((line = reader.readLine()) != null) {
+                result.append(line);
+            }
+            return ResponseParser.urlFromInvidividualVideoResponse(result.toString());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        //if (type.contains("audio/mp4")) {
+        return "";
+    }
+
     /**
      * Being used as a test function to ensure the proper handling and execution of API calls.
      */

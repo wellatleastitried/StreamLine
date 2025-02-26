@@ -364,6 +364,8 @@ public class VideoResult {
     public void setRecommendedVideos(List<RecommendedVideo> recommendedVideos) {
         this.recommendedVideos = recommendedVideos;
     }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Thumbnail {
         private String quality;
         private String url;
@@ -402,6 +404,8 @@ public class VideoResult {
             return height;
         }
     }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Storyboard {
         private String url;
         private String templateUrl;
@@ -486,6 +490,7 @@ public class VideoResult {
         }
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class AdaptiveFormat {
         private String index;
         private String bitrate;
@@ -495,11 +500,12 @@ public class VideoResult {
         private String type;
         private String clen;
         private String lmt;
-        private int projectionType;
+        private String projectionType;
         private String container;
         private String encoding;
-        private String qualityLabel; // Nullable field
-        private String resolution;   // Nullable field
+        private String audioQuality;
+        private String audioSampleRate;
+        private String audioChannels;
 
         public String getInit() {
             return init;
@@ -565,12 +571,12 @@ public class VideoResult {
             this.encoding = encoding;
         }
 
-        public String getResolution() {
-            return resolution;
+        public String getAudioQuality() {
+            return audioQuality;
         }
 
-        public void setResolution(String resolution) {
-            this.resolution = resolution;
+        public void setAudioQuality(String audioQuality) {
+            this.audioQuality = audioQuality;
         }
 
         public String getContainer() {
@@ -589,23 +595,32 @@ public class VideoResult {
             this.bitrate = bitrate;
         }
 
-        public String getQualityLabel() {
-            return qualityLabel;
+        public String getAudioSampleRate() {
+            return audioSampleRate;
         }
 
-        public void setQualityLabel(String qualityLabel) {
-            this.qualityLabel = qualityLabel;
+        public void setAudioSampleRate(String audioSampleRate) {
+            this.audioSampleRate = audioSampleRate;
         }
 
-        public int getProjectionType() {
+        public String getProjectionType() {
             return projectionType;
         }
 
-        public void setProjectionType(int projectionType) {
+        public void setProjectionType(String projectionType) {
             this.projectionType = projectionType;
+        }
+
+        public String getAudioChannels() {
+            return audioChannels;
+        }
+
+        public void setAudioChannels(String audioChannels) {
+            this.audioChannels = audioChannels;
         }
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class FormatStream {
         private String url;
         private String itag;
@@ -690,6 +705,7 @@ public class VideoResult {
         }
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Caption {
         private String label;
         private String languageCode;
@@ -720,6 +736,7 @@ public class VideoResult {
         }
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class RecommendedVideo {
         private String videoId;
         private String title;
