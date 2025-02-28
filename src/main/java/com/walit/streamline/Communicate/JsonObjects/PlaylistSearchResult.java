@@ -1,4 +1,4 @@
-package com.walit.streamline.Communicate;
+package com.walit.streamline.Communicate.JsonObjects;
 
 import java.util.List;
 

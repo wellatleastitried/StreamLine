@@ -17,6 +17,8 @@ public class StreamLineConstants {
 
     public static final boolean REQUEST_INSTANCE_START      = true;
 
+    public static final String  YOUTUBE_HOST                = "";
+
     public static final String  WINDOWS_CACHE_ADDRESS       = "%LOCALAPPDATA%\\StreamLine\\Cache\\";
     public static final String  LINUX_CACHE_ADDRESS         = System.getProperty("user.home") + "/.cache/StreamLine/";
     public static final String  MAC_CACHE_ADDRESS           = System.getProperty("user.home") + "/Library/Caches/com.streamline/";

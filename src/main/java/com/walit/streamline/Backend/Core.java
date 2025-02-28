@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 import com.walit.streamline.Audio.AudioPlayer;
 import com.walit.streamline.Audio.Song;
 import com.walit.streamline.Communicate.InvidiousHandle;
+import com.walit.streamline.Communicate.YoutubeHandle;
 import com.walit.streamline.Interact.DatabaseLinker;
 import com.walit.streamline.Interact.DatabaseRunner;
 import com.walit.streamline.Hosting.DockerManager;
@@ -28,7 +29,6 @@ public final class Core {
 
     private final DatabaseLinker dbLink;
     private final DatabaseRunner dbRunner;
-    private final InvidiousHandle apiHandle;
     private HashMap<String, String> queries;
 
     private final String cacheDirectory;
@@ -46,19 +46,19 @@ public final class Core {
         this.queries = Core.getMapOfQueries(logger);
         this.dbLink = initializeDatabaseConnection();
         this.dbRunner = new DatabaseRunner(dbLink.getConnection(), queries, logger);
-        this.apiHandle = initializeAPI();
+        if (config.getAudioSource() == 'd') {
+            config.setHandle(InvidiousHandle.getInstance(config, logger));
+        } else {
+            config.setHandle(YoutubeHandle.getInstance(config, logger));
+        }
         clearExpiredCacheOnStartup();
-        if (!config.getIsOnline()) {
+        if (config.getAudioSource() != 'y' && !config.getIsOnline()) {
             checkIfConnectionEstablished();
         }
     }
 
     private DatabaseLinker initializeDatabaseConnection() {
         return new DatabaseLinker(config.getOS(), queries.get("INITIALIZE_TABLES"), logger);
-    }
-
-    private InvidiousHandle initializeAPI() {
-        return InvidiousHandle.getInstance(config, logger);
     }
 
     public void handleCacheManagement() {
@@ -107,7 +107,7 @@ public final class Core {
 
     public RetrievedStorage doSearch(String searchTerm) {
         RetrievedStorage finalResults = new RetrievedStorage();
-        apiHandle.retrieveSearchResults(searchTerm).thenAccept(searchResults -> {
+        config.getHandle().retrieveSearchResults(searchTerm).thenAccept(searchResults -> {
             if (searchResults != null) {
                 for (int i = 0; i < searchResults.size(); i++) {
                     finalResults.add(i, searchResults.get(i));
@@ -235,11 +235,9 @@ public final class Core {
                 dbLink.shutdown();
             }
             try {
-                if (canReachDocker()) {
+                if (DockerManager.containerIsAlive()) {
                     DockerManager.stopContainer(logger);
                 }
-            } catch (InterruptedException iE) {
-                logger.log(Level.SEVERE, StreamLineMessages.UnexpectedErrorInShutdown.getMessage());
             } catch (IllegalStateException iE) {
                 logger.log(Level.WARNING, StreamLineMessages.IllegalStateExceptionInShutdown.getMessage() + iE.getMessage());
             }

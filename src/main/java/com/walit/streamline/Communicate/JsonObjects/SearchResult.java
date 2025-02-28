@@ -1,4 +1,4 @@
-package com.walit.streamline.Communicate;
+package com.walit.streamline.Communicate.JsonObjects;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;

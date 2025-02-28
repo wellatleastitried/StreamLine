@@ -25,12 +25,12 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 
 
-public class InvidiousHandle {
+public final class InvidiousHandle implements ApiHandle {
 
     public static InvidiousHandle instance;
 
-    private final Config config;
-    private final Logger logger;
+    public final Config config;
+    public final Logger logger;
 
     public InvidiousHandle(Config config, Logger logger) {
         this.config = config;
@@ -51,6 +51,14 @@ public class InvidiousHandle {
         }
         return null;
     }
+
+    public static InvidiousHandle getInstance(Config config, Logger logger) {
+        if (instance == null) {
+            instance = new InvidiousHandle(config, logger);
+        }
+        return instance;
+    }
+
 
     public static String getWorkingHostnameFromApiOrDocker(Logger logger) {
         Map<String, Integer> workingHosts = new HashMap<>();
@@ -108,17 +116,7 @@ public class InvidiousHandle {
         return hostname != null ? hostname : null; 
     }
 
-    public static InvidiousHandle getInstance(Config config, Logger logger) {
-        if (instance == null) {
-            instance = new InvidiousHandle(config, logger);
-        }
-        return instance;
-    }
-
-    public String urlEncodeString(String base) {
-        return URLEncoder.encode(base, StandardCharsets.UTF_8);
-    }
-
+    @Override
     public CompletableFuture<List<Song>> retrieveSearchResults(String term) {
         final String searchTerm = urlEncodeString(term.trim());
         return CompletableFuture.supplyAsync(() -> {

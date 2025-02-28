@@ -72,9 +72,10 @@ public final class Driver {
                 System.out.println(StreamLineMessages.TooManyArgumentsProvided.getMessage());
                 System.exit(0);
             }
-            if (arguments.length < 1) handleStandardRuntime();
+            if (arguments.length < 1) handleStandardRuntime(commandLine);
             else if (commandLine.hasOption("setup")) handleSetup(commandLine);
             else if (commandLine.hasOption("help")) printHelpCli(options);
+            else if (commandLine.hasOption("youtube")) handleStandardRuntime(commandLine);
             else if (commandLine.hasOption("import-library")) handleLibraryImport(commandLine);
             else if (commandLine.hasOption("export-library")) handleLibraryExport();
             else if (commandLine.hasOption("quiet")) handleHeadlessMode(commandLine);
@@ -128,14 +129,19 @@ public final class Driver {
         }
     }
 
-    private static void handleStandardRuntime() {
-                Config configuration = getConfigurationForRuntime();
-                Core streamlineBackend = new Core(configuration);
-                TerminalInterface tui = new TerminalInterface(streamlineBackend);
-                if (!tui.run()) {
-                    System.err.println(StreamLineMessages.FatalStartError.getMessage());
-                    return;
-                }
+    private static void handleStandardRuntime(CommandLine commandLine) {
+        Config configuration;
+        if (commandLine.hasOption("youtube") || commandLine.hasOption("docker")) {
+            configuration = getConfigurationForRuntime(commandLine);
+        } else {
+            configuration = getConfigurationForRuntime();
+        }
+        Core streamlineBackend = new Core(configuration);
+        TerminalInterface tui = new TerminalInterface(streamlineBackend);
+        if (!tui.run()) {
+            System.err.println(StreamLineMessages.FatalStartError.getMessage());
+            return;
+        }
     }
 
     private static void handleCacheManager() {
@@ -154,6 +160,7 @@ public final class Driver {
         try {
             // new com.walit.streamline.Audio.AudioPlayer().playSongFromUrl("localhost:3000/watch?v=z6nIHFCcto8");
             new com.walit.streamline.Audio.AudioPlayer().playSongFromUrl(InvidiousHandle.getAudioUrlFromVideoId("z6nIHFCcto8"));
+            // new com.walit.streamline.Audio.AudioPlayer().playSongFromUrl(YoutubeHandle.getAudioUrlFromVideoId(""));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -190,18 +197,31 @@ public final class Driver {
             config.setLogger(logger);
         }
 
-        String apiHost = InvidiousHandle.getWorkingHostnameFromApiOrDocker(logger);
-        if (apiHost == null || apiHost.length() < 1) {
-            new Thread(() -> {
-                DockerManager.startInvidiousContainer(logger);
-            }).start();
-            config.setIsOnline(false);
-            config.setHost(null);
-        } else {
-            config.setIsOnline(true);
-            config.setHost(apiHost);
-        }
+        config.setAudioSource('y');
 
+        return config;
+    }
+
+    private static Config getConfigurationForRuntime(CommandLine commandLine) {
+        Config config = getConfigurationForRuntime();
+        if (commandLine.hasOption("youtube")) {
+            config.setAudioSource('y');
+            config.setIsOnline(true);
+            config.setHost(StreamLineConstants.YOUTUBE_HOST);
+        } else {
+            config.setAudioSource('d');
+            String apiHost = InvidiousHandle.getWorkingHostnameFromApiOrDocker(logger);
+            if (apiHost == null || apiHost.length() < 1) {
+                new Thread(() -> {
+                    DockerManager.startInvidiousContainer(logger);
+                }).start();
+                config.setIsOnline(false);
+                config.setHost(null);
+            } else {
+                config.setIsOnline(true);
+                config.setHost(apiHost);
+            }
+        }
         return config;
     }
 

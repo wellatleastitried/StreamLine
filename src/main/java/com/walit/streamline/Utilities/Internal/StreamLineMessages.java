@@ -46,7 +46,7 @@ public enum StreamLineMessages {
     AudioFileFormatError("[!] Error resolving file format, please try again."),
     AudioFetchFailure("[!] Error while fetching audio, please try again."),
     IOException("[!] IOException encountered during song playback, please try again."),
-    UnableToCallAPIError("[!] Unable to connect to Invidous API at this time, please try again later."),
+    UnableToCallAPIError("[!] Unable to connect to API at this time, please try again later."),
     JsonParsingException("[!] Unable to parse JSON response from API, please try again later."),
     RedrawError("[!] Error while redrawing screen, please restart the app."),
     DockerNotInstalledError("[!] Docker does not appear to be installed on this machine, only offline functionality will be available.");

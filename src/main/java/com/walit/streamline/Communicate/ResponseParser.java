@@ -1,7 +1,8 @@
 package com.walit.streamline.Communicate;
 
-import com.walit.streamline.Utilities.Internal.StreamLineMessages;
 import com.walit.streamline.Audio.Song;
+import com.walit.streamline.Communicate.JsonObjects.*;
+import com.walit.streamline.Utilities.Internal.StreamLineMessages;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.core.JsonFactory;
@@ -69,6 +70,10 @@ public class ResponseParser {
             String url = null;
             String audioType = null;
             int bestQuality = 0;
+                // 0 => Unknown
+                // 1 => LOW
+                // 2 => MEDIUM
+                // 3 => HIGH
             for (VideoResult.AdaptiveFormat format : result.getAdaptiveFormats()) {
                 if (format.getType().contains("video")) {
                     continue;
