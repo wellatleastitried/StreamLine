@@ -40,32 +40,37 @@ public final class YoutubeHandle implements ApiHandle {
 
     @Override
     public CompletableFuture<List<Song>> retrieveSearchResults(String term) {
-        final String searchTerm = urlEncodeString(term.trim());
         return CompletableFuture.supplyAsync(() -> {
-            StringBuilder result = new StringBuilder();
-            BufferedReader reader;
-            HttpURLConnection connection;
+            List<Song> results = new ArrayList<>();
             try {
-                connection = (HttpURLConnection) new URL(config.getHost() + "api/v1/search?q=" + searchTerm).openConnection();
-                if (connection.getResponseCode() >= 400) {
-                    reader = new BufferedReader(new InputStreamReader(connection.getErrorStream()));
-                } else {
-                    reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                }
+                ProcessBuilder pb = new ProcessBuilder(
+                        "yt-dlp", 
+                        "ytsearch10:" + term, 
+                        "--print", "%(title)s | %(uploader)s | %(duration>%M:%S)s | %(id)s"
+                        );
+                Process process = pb.start();
+                BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
                 String line;
                 while ((line = reader.readLine()) != null) {
-                    result.append(line);
+                    String[] fields = line.split(" \\| ");
+                    if (fields.length == 4) {
+                        String title = fields[0];
+                        String author = fields[1];
+                        String duration = fields[2];
+                        String videoId = fields[3];
+                        results.add(new Song(-1, title, author, null, duration, videoId));
+                    }
                 }
-                List<Song> searchResults = ResponseParser.listFromSearchResponse(result.toString());
-                if (searchResults != null) {
-                    return searchResults;
-                } else {
-                    return null;
-                }
-            } catch (Exception e) {
-                logger.log(Level.WARNING, StreamLineMessages.UnableToCallAPIError.getMessage());
-                return null;
+                process.waitFor(); // Ensure process completes before returning results
+            } catch (IOException | InterruptedException e) {
+                e.printStackTrace();
             }
+            return results;
         });
+    }
+
+    @Override
+    public String getAudioUrlFromVideoId(String id) {
+        return "";
     }
 }

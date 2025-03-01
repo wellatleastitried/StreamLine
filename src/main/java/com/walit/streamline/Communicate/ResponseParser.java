@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 
 public class ResponseParser {
 
-    public static List<Song> listFromSearchResponse(String jsonResponse) {
+    public static List<Song> listFromInvidiousSearchResponse(String jsonResponse) {
         try {
             if (!isValidJson(jsonResponse)) {
                 return null;

@@ -1,10 +1,8 @@
 package com.walit.streamline.Communicate;
 
-import com.walit.streamline.Driver;
 import com.walit.streamline.Audio.Song;
 import com.walit.streamline.Hosting.DockerManager;
 import com.walit.streamline.Utilities.Internal.Config;
-import com.walit.streamline.Utilities.Internal.OS;
 import com.walit.streamline.Utilities.Internal.StreamLineMessages;
 import com.walit.streamline.Utilities.Internal.StreamLineConstants;
 
@@ -14,7 +12,6 @@ import java.io.InputStreamReader;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -134,7 +131,7 @@ public final class InvidiousHandle implements ApiHandle {
                 while ((line = reader.readLine()) != null) {
                     result.append(line);
                 }
-                List<Song> searchResults = ResponseParser.listFromSearchResponse(result.toString());
+                List<Song> searchResults = ResponseParser.listFromInvidiousSearchResponse(result.toString());
                 if (searchResults != null) {
                     return searchResults;
                 } else {
@@ -147,7 +144,8 @@ public final class InvidiousHandle implements ApiHandle {
         });
     }
 
-    public static String getAudioUrlFromVideoId(String id) {
+    @Override
+    public String getAudioUrlFromVideoId(String id) {
         StringBuilder result = new StringBuilder();
         BufferedReader reader;
         HttpURLConnection connection;

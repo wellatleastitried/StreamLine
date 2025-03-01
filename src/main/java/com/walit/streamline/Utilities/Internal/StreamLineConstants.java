@@ -19,6 +19,10 @@ public class StreamLineConstants {
 
     public static final String  YOUTUBE_HOST                = "";
 
+    public static final String  YT_DLP_BIN_LOCATION_WINDOWS = System.getProperty("APPDATA") + "\\Local\\StreamLine\\bin\\";
+    public static final String  YT_DLP_BIN_LOCATION_LINUX   = System.getProperty("user.home") + "/.local/bin/";
+    public static final String  YT_DLP_BIN_LOCATION_MAC     = System.getProperty("user.home") + "/Library/Application Support/StreamLine/bin/";
+
     public static final String  WINDOWS_CACHE_ADDRESS       = "%LOCALAPPDATA%\\StreamLine\\Cache\\";
     public static final String  LINUX_CACHE_ADDRESS         = System.getProperty("user.home") + "/.cache/StreamLine/";
     public static final String  MAC_CACHE_ADDRESS           = System.getProperty("user.home") + "/Library/Caches/com.streamline/";

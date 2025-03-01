@@ -13,6 +13,7 @@ public class Config {
     private Logger logger;
     private char audioSource;
     private ApiHandle apiHandle;
+    private String binaryPath;
 
     public Config() {}
 
@@ -44,13 +45,12 @@ public class Config {
         this.apiHandle = apiHandle;
     }
 
-    public Config(Mode mode, OS os, boolean isOnline, Logger logger, char audioSource, ApiHandle apiHandle) {
+    public Config(Mode mode, OS os, boolean isOnline, Logger logger, char audioSource) {
         this.mode = mode;
         this.os = os;
         this.isOnline = isOnline;
         this.logger = logger;
         this.audioSource = audioSource;
-        this.apiHandle = apiHandle;
     }
 
     public void setMode(Mode mode) {
@@ -107,5 +107,13 @@ public class Config {
 
     public ApiHandle getHandle() {
         return apiHandle;
+    }
+
+    public void setBinaryPath(String binaryPath) {
+        this.binaryPath = binaryPath;
+    }
+
+    public String getBinaryPath() {
+        return binaryPath;
     }
 }

@@ -4,6 +4,11 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.PosixFilePermissions;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.FileHandler;
@@ -158,8 +163,9 @@ public final class Driver {
            handlePlayingSingleSong(songName);
            */
         try {
+            Config config = new Config();
             // new com.walit.streamline.Audio.AudioPlayer().playSongFromUrl("localhost:3000/watch?v=z6nIHFCcto8");
-            new com.walit.streamline.Audio.AudioPlayer().playSongFromUrl(InvidiousHandle.getAudioUrlFromVideoId("z6nIHFCcto8"));
+            new com.walit.streamline.Audio.AudioPlayer().playSongFromUrl(InvidiousHandle.getInstance(config, logger).getAudioUrlFromVideoId("z6nIHFCcto8"));
             // new com.walit.streamline.Audio.AudioPlayer().playSongFromUrl(YoutubeHandle.getAudioUrlFromVideoId(""));
         } catch (Exception e) {
             e.printStackTrace();
@@ -181,7 +187,55 @@ public final class Driver {
     }
 
     public static void handleYoutubeSetup() {
+        Config config = getConfigurationForRuntime();
+        if (!isYtDlpDownloaded(config)) {
+            downloadYtDlp(config);
+            System.out.println("yt-dlp has been downloaded.");
+        } else {
+            System.out.println("yt-dlp is already downloaded.");
+        }
         System.exit(0);
+    }
+
+    private static void downloadYtDlp(Config config) {
+        String ytDlpUrl;
+        String ytDlpTargetLocation;
+        if (config.getOS() == OS.MAC) {
+            ytDlpUrl = "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp";
+            ytDlpTargetLocation = StreamLineConstants.YT_DLP_BIN_LOCATION_MAC;
+        } else if (config.getOS() == OS.WINDOWS) {
+            ytDlpUrl = "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe";
+            ytDlpTargetLocation = StreamLineConstants.YT_DLP_BIN_LOCATION_WINDOWS;
+        } else {
+            ytDlpUrl = "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp";
+            ytDlpTargetLocation = StreamLineConstants.YT_DLP_BIN_LOCATION_LINUX;
+        }
+        String command = String.format("curl -L %s -o %s", ytDlpUrl, ytDlpTargetLocation);
+        try {
+            ProcessBuilder processBuilder = new ProcessBuilder(command.split(" "));
+            Process process = processBuilder.start();
+            process.waitFor();
+            if (config.getOS() == OS.LINUX || config.getOS() == OS.MAC) {
+                Path path = Paths.get(ytDlpTargetLocation + "yt-dlp");
+                Files.setPosixFilePermissions(path, PosixFilePermissions.fromString("rwxr-xr-x"));
+                System.out.println("Binary has been marked as executable.");
+            }
+        } catch (InterruptedException | IOException iE) {
+            iE.printStackTrace();
+        }
+    }
+
+    private static boolean isYtDlpDownloaded(Config config) {
+        File binary;
+        if (config.getOS() == OS.MAC) {
+            binary = new File(StreamLineConstants.YT_DLP_BIN_LOCATION_MAC + "yt-dlp");
+        } else if (config.getOS() == OS.WINDOWS) {
+            binary = new File(StreamLineConstants.YT_DLP_BIN_LOCATION_WINDOWS + "yt-dlp.exe");
+        } else {
+            binary = new File(StreamLineConstants.YT_DLP_BIN_LOCATION_LINUX + "yt-dlp");
+        }
+        
+        return binary.exists();
     }
 
     private static Config getConfigurationForRuntime() {
@@ -198,8 +252,18 @@ public final class Driver {
         }
 
         config.setAudioSource('y');
+        config.setBinaryPath(getBinaryPath(config));
 
         return config;
+    }
+
+    private static String getBinaryPath(Config config) {
+        if (config.getOS() == OS.WINDOWS) {
+            return StreamLineConstants.YT_DLP_BIN_LOCATION_WINDOWS + "yt-dlp.exe";
+        } else if (config.getOS() == OS.MAC) {
+            return StreamLineConstants.YT_DLP_BIN_LOCATION_MAC + "yt-dlp";
+        }
+        return "yt-dlp";
     }
 
     private static Config getConfigurationForRuntime(CommandLine commandLine) {

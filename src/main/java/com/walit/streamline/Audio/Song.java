@@ -6,6 +6,7 @@ public class Song {
     private String title;
     private String artist;
     private String url;
+    private String duration;
     private String videoId;
     private boolean isLiked;
     private boolean isDownloaded;
@@ -24,6 +25,23 @@ public class Song {
         this.title = title;
         this.artist = artist;
         this.url = url;
+        this.videoId = videoId;
+        this.isLiked = false;
+        this.isDownloaded = false;
+        this.isRecentlyPlayed = false;
+        this.downloadPath = null;
+        this.fileHash = null;
+    }
+
+    public Song(int songId, String title, String artist, String url, String duration, String videoId) {
+        if (songId == -1) {
+            // TODO: handle this
+        }
+        this.songId = songId;
+        this.title = title;
+        this.artist = artist;
+        this.url = url;
+        this.duration = duration;
         this.videoId = videoId;
         this.isLiked = false;
         this.isDownloaded = false;
@@ -79,6 +97,10 @@ public class Song {
         this.isRecentlyPlayed = isRecentlyPlayed;
     }
 
+    public void setDuration(String duration) {
+        this.duration = duration;
+    }
+
     public int getSongId() {
         return songId;
     }
@@ -117,5 +139,9 @@ public class Song {
 
     public String getFileHash() {
         return fileHash;
+    }
+
+    public String getDuration() {
+        return duration;
     }
 }
