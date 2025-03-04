@@ -1,4 +1,4 @@
-package com.walit.streamline.communicate;
+package com.walit.streamline.backend;
 
 import com.walit.streamline.audio.Song;
 
@@ -7,7 +7,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-public interface ApiHandle {
+public interface ConnectionHandle {
 
     default String urlEncodeString(String base) {
         return URLEncoder.encode(base, StandardCharsets.UTF_8);

@@ -1,6 +1,7 @@
-package com.walit.streamline.communicate;
+package com.walit.streamline.backend;
 
 import com.walit.streamline.audio.Song;
+import com.walit.streamline.communicate.ResponseParser;
 import com.walit.streamline.hosting.DockerManager;
 import com.walit.streamline.utilities.internal.Config;
 import com.walit.streamline.utilities.internal.StreamLineMessages;
@@ -22,7 +23,7 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 
 
-public final class InvidiousHandle implements ApiHandle {
+public final class InvidiousHandle implements ConnectionHandle {
 
     public static InvidiousHandle instance;
 

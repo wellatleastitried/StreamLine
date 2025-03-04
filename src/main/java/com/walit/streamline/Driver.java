@@ -11,8 +11,8 @@ import java.util.logging.XMLFormatter;
 
 import com.walit.streamline.audio.Song;
 import com.walit.streamline.backend.Core;
-import com.walit.streamline.communicate.InvidiousHandle;
-import com.walit.streamline.communicate.YoutubeHandle;
+import com.walit.streamline.backend.InvidiousHandle;
+import com.walit.streamline.backend.YoutubeHandle;
 import com.walit.streamline.frontend.TerminalInterface;
 import com.walit.streamline.hosting.DockerManager;
 import com.walit.streamline.utilities.internal.Config;
@@ -26,6 +26,10 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.ParseException;
+
+// Remove below imports after testing
+import com.walit.streamline.utilities.RetrievedStorage;
+
 
 public final class Driver {
 
@@ -159,10 +163,15 @@ public final class Driver {
            handlePlayingSingleSong(songName);
            */
         try {
-            Config config = new Config();
-            // new com.walit.streamline.Audio.AudioPlayer().playSongFromUrl("localhost:3000/watch?v=z6nIHFCcto8");
-            new com.walit.streamline.audio.AudioPlayer().playSongFromUrl(InvidiousHandle.getInstance(config, logger).getAudioUrlFromVideoId("z6nIHFCcto8"));
-            // new com.walit.streamline.Audio.AudioPlayer().playSongFromUrl(YoutubeHandle.getAudioUrlFromVideoId(""));
+            Config config = getConfigurationForRuntime();
+            // new com.walit.streamline.audio.AudioPlayer().playSongFromUrl("localhost:3000/watch?v=z6nIHFCcto8");
+            // new com.walit.streamline.audio.AudioPlayer().playSongFromUrl(InvidiousHandle.getInstance(config, logger).getAudioUrlFromVideoId("z6nIHFCcto8"));
+            RetrievedStorage results = new Core(config).doSearch("Cold - Give");
+            for (Song song : results.getArrayOfSongs()) {
+                song.printDetails();
+            }
+            // new com.walit.streamline.audio.AudioPlayer().playSongFromUrl(new YoutubeHandle(config, logger).getAudioUrlFromVideoId(results.getSongFromIndex(0).getSongVideoId()));
+            new com.walit.streamline.audio.AudioPlayer().playSongFromUrl(new YoutubeHandle(config, logger).getAudioUrlFromVideoId("z6nIHFCcto8"));
         } catch (Exception e) {
             e.printStackTrace();
         }

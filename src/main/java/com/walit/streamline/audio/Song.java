@@ -144,4 +144,14 @@ public class Song {
     public String getDuration() {
         return duration;
     }
+
+    public void printDetails() {
+        if (title == null || artist == null || url == null || videoId == null) {
+            System.out.println("NULL SONG");
+        }
+        System.out.println("Song title: " + title);
+        System.out.println("Song artist: " + artist);
+        System.out.println("Song url: " + url);
+        System.out.println("Song videoId: " + videoId);
+    }
 }

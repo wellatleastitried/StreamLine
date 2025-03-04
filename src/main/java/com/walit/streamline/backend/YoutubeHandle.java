@@ -1,4 +1,4 @@
-package com.walit.streamline.communicate;
+package com.walit.streamline.backend;
 
 import com.walit.streamline.audio.Song;
 import com.walit.streamline.backend.Core;
@@ -26,7 +26,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
-public final class YoutubeHandle implements ApiHandle {
+public final class YoutubeHandle implements ConnectionHandle {
 
     public static YoutubeHandle instance;
 
@@ -49,13 +49,19 @@ public final class YoutubeHandle implements ApiHandle {
     public CompletableFuture<List<Song>> retrieveSearchResults(String term) {
         return CompletableFuture.supplyAsync(() -> {
             List<Song> results = new ArrayList<>();
+            String[] command = {
+                config.getBinaryPath(),
+                "ytsearch10:\"" + term + "\"",
+                "--print",
+                "\"%(title)s | %(uploader)s | %(duration>%M:%S)s | %(id)s\""
+            };
             try {
-                ProcessBuilder pb = new ProcessBuilder(
-                        "yt-dlp", 
-                        "ytsearch10:" + term, 
-                        "--print", "%(title)s | %(uploader)s | %(duration>%M:%S)s | %(id)s"
-                        );
-                Process process = pb.start();
+                Process process = Core.runCommandExpectWait(command);
+                if (process == null) {
+                    System.out.println("process was null");
+                    return results;
+                }
+                process.waitFor();
                 BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
                 String line;
                 while ((line = reader.readLine()) != null) {
@@ -73,7 +79,7 @@ public final class YoutubeHandle implements ApiHandle {
                 process.waitFor();
             } catch (IOException | InterruptedException e) {
                 System.out.println("Exception hit in " + this.getClass().getName() + "#retrieveSearchResults(String)");
-                e.printStackTrace();
+                // e.printStackTrace();
             }
             return results;
         });
@@ -92,6 +98,10 @@ public final class YoutubeHandle implements ApiHandle {
 
     @Override
     public String getAudioUrlFromVideoId(String id) {
+        /*
+        Process process = Core.runCommandExpectWait(config.getBinaryPath() + "--geo-bypass -f ba --get-url \"https://www.youtube.com/watch?v=" + id + "\"");
+        process.waitFor();
+        */
         return "";
     }
 
@@ -117,7 +127,7 @@ public final class YoutubeHandle implements ApiHandle {
         }
         String[] command = {"curl", "-fL", ytDlpUrl, "-o", ytDlpTargetLocation};
         try {
-            Process process = Runtime.getRuntime().exec(command);
+            Process process = Core.runCommandExpectWait(command);
             process.waitFor();
             if (process.exitValue() != 0) {
                 System.out.println("Error: curl command failed with exit code " + process.exitValue());

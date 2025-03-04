@@ -1,6 +1,7 @@
 package com.walit.streamline.backend;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
@@ -9,8 +10,6 @@ import java.util.logging.Logger;
 
 import com.walit.streamline.audio.AudioPlayer;
 import com.walit.streamline.audio.Song;
-import com.walit.streamline.communicate.InvidiousHandle;
-import com.walit.streamline.communicate.YoutubeHandle;
 import com.walit.streamline.interact.DatabaseLinker;
 import com.walit.streamline.interact.DatabaseRunner;
 import com.walit.streamline.hosting.DockerManager;
@@ -113,7 +112,7 @@ public final class Core {
                     finalResults.add(i, searchResults.get(i));
                 }
             } else {
-                System.out.println("Unable to reach the API at this time.");
+                System.out.println("Unable to retrieve search results at this time.");
             }
         }).join();
         return finalResults.size() > 0 ? finalResults : null;
@@ -128,6 +127,18 @@ public final class Core {
             return null;
         }
     }
+
+    public static Process runCommandExpectWait(String[] splitCommand) {
+        try {
+            Process process = Runtime.getRuntime().exec(splitCommand);
+            return process;
+        } catch (IOException iE) {
+            StringBuilder sB = new StringBuilder();
+            Arrays.stream(splitCommand).forEach(str -> sB.append(str + " "));
+            System.out.println(StreamLineMessages.CommandRunFailure.getMessage() + sB.toString().trim());
+            return null;
+        }
+    }
     
     public static boolean runCommand(String command) {
         try {
@@ -136,6 +147,19 @@ public final class Core {
             return exitCode == 0;
         } catch (InterruptedException | IOException iE) {
             System.out.println(StreamLineMessages.CommandRunFailure.getMessage() + command);
+            return false;
+        }
+    }
+
+    public static boolean runCommand(String[] splitCommand) {
+        try {
+            Process process = Runtime.getRuntime().exec(splitCommand);
+            int exitCode = process.waitFor();
+            return exitCode == 0;
+        } catch (InterruptedException | IOException iE) {
+            StringBuilder sB = new StringBuilder();
+            Arrays.stream(splitCommand).forEach(str -> sB.append(str));
+            System.out.println(StreamLineMessages.CommandRunFailure.getMessage() + sB.toString());
             return false;
         }
     }

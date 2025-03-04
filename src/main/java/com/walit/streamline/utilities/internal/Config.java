@@ -1,6 +1,6 @@
 package com.walit.streamline.utilities.internal;
 
-import com.walit.streamline.communicate.ApiHandle;
+import com.walit.streamline.backend.ConnectionHandle;
 
 import java.util.logging.Logger;
 
@@ -12,7 +12,7 @@ public class Config {
     private String host;
     private Logger logger;
     private char audioSource;
-    private ApiHandle apiHandle;
+    private ConnectionHandle apiHandle;
     private String binaryPath;
 
     public Config() {}
@@ -41,7 +41,7 @@ public class Config {
         this.audioSource = audioSource;
     }
 
-    public Config(ApiHandle apiHandle) {
+    public Config(ConnectionHandle apiHandle) {
         this.apiHandle = apiHandle;
     }
 
@@ -101,11 +101,11 @@ public class Config {
         return audioSource;
     }
 
-    public void setHandle(ApiHandle apiHandle) {
+    public void setHandle(ConnectionHandle apiHandle) {
         this.apiHandle = apiHandle;
     }
 
-    public ApiHandle getHandle() {
+    public ConnectionHandle getHandle() {
         return apiHandle;
     }
 

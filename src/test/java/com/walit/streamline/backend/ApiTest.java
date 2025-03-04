@@ -1,4 +1,4 @@
-package com.walit.streamline.communicate;
+package com.walit.streamline.backend;
     
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
