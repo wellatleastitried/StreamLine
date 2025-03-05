@@ -2,9 +2,12 @@ package com.walit.streamline.audio;
 
 import java.io.File;
 import java.io.IOException;
+
 import java.net.URL;
+
 import java.util.Queue;
 import java.util.PriorityQueue;
+
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
@@ -85,7 +88,7 @@ public class AudioPlayer implements Runnable {
         return true;
     }
 
-    private void playSongFromFile(String pathToAudio) throws UnsupportedAudioFileException, IOException, LineUnavailableException {
+    public void playSongFromFile(String pathToAudio) throws UnsupportedAudioFileException, IOException, LineUnavailableException {
         AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(new File(pathToAudio));
         AudioFormat format = audioInputStream.getFormat();
         DataLine.Info info = new DataLine.Info(SourceDataLine.class, format);
@@ -102,7 +105,6 @@ public class AudioPlayer implements Runnable {
         audioInputStream.close();
     }
 
-    // Change back to public
     public void playSongFromUrl(String pathToAudio) throws UnsupportedAudioFileException, IOException, LineUnavailableException {
         URL audioUrl = new URL(pathToAudio);
         AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(audioUrl);

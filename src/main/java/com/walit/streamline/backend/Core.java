@@ -1,6 +1,7 @@
 package com.walit.streamline.backend;
 
 import java.io.IOException;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -130,12 +131,13 @@ public final class Core {
 
     public static Process runCommandExpectWait(String[] splitCommand) {
         try {
-            Process process = Runtime.getRuntime().exec(splitCommand);
+            Process process = new ProcessBuilder(splitCommand).start();
             return process;
         } catch (IOException iE) {
             StringBuilder sB = new StringBuilder();
             Arrays.stream(splitCommand).forEach(str -> sB.append(str + " "));
             System.out.println(StreamLineMessages.CommandRunFailure.getMessage() + sB.toString().trim());
+            iE.printStackTrace();
             return null;
         }
     }
@@ -153,7 +155,7 @@ public final class Core {
 
     public static boolean runCommand(String[] splitCommand) {
         try {
-            Process process = Runtime.getRuntime().exec(splitCommand);
+            Process process = new ProcessBuilder(splitCommand).start();
             int exitCode = process.waitFor();
             return exitCode == 0;
         } catch (InterruptedException | IOException iE) {

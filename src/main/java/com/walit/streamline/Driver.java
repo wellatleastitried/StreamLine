@@ -9,22 +9,24 @@ import java.util.logging.Logger;
 import java.util.logging.FileHandler;
 import java.util.logging.XMLFormatter;
 
+import com.walit.streamline.audio.AudioPlayer;
 import com.walit.streamline.audio.Song;
 import com.walit.streamline.backend.Core;
 import com.walit.streamline.backend.InvidiousHandle;
 import com.walit.streamline.backend.YoutubeHandle;
 import com.walit.streamline.frontend.TerminalInterface;
 import com.walit.streamline.hosting.DockerManager;
+import com.walit.streamline.utilities.LibraryManager;
 import com.walit.streamline.utilities.internal.Config;
 import com.walit.streamline.utilities.internal.Mode;
 import com.walit.streamline.utilities.internal.OS;
 import com.walit.streamline.utilities.internal.StreamLineConstants;
 import com.walit.streamline.utilities.internal.StreamLineMessages;
 
-import org.apache.commons.cli.Options;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
 // Remove below imports after testing
@@ -58,12 +60,13 @@ public final class Driver {
         Options options = new Options();
         options.addOption("h", "help", false, "Help menu explaining the different flags");
         options.addOption("s", "setup", true, "Initialize the configuration for:\n\t- \"--Docker\" for a locally hosted Invidious instance\n\t- \"--YouTube\" for audio conversion from YouTube videos");
+        options.addOption("d", "docker", false, "Start StreamLine with an Invidious docker instance being used in the backend.");
+        options.addOption("y", "youtube", false, "Start StreamLine with yt-dlp being used in the backend. [THIS IS THE DEFAULT IF NO BACKEND IS SPECIFIED]");
         options.addOption("c", "clean", true, "Remove unwanted files from the Docker or Youtube install.\nExample:\n\tstreamline --Docker\t=> Removes the Invidious repository from the filesystem\n\n\tstreamline --YouTube\t=> Removes the binary for yt-dlp from the filesystem.");
         options.addOption("i", "import-library", true, "Import your music library from other devices into your current setup and then exit (e.g., --import-library=/path/to/library.json");
         options.addOption("e", "export-library", false, "Generate a file (library.json) that contains all of your music library that can be used to import this library on another device and then exit");
         options.addOption("q", "quiet", true, "Headless start with ability to access the application at http://localhost:PORT");
         options.addOption("p", "play", true, "Play a single song (e.g., --play=\"songname\") and start headless with CLI commands available");
-        options.addOption("d", "delete", true, "Removes all of the song names given from the database and/or the filesystem (e.g., --delete=\"song1,song2\"");
         options.addOption("cm", "cache-manager", false, "Choose whether to clear all cache or only expired cache and then exit");
         return options;
     }
@@ -80,12 +83,11 @@ public final class Driver {
             if (arguments.length < 1) handleStandardRuntime(commandLine);
             else if (commandLine.hasOption("setup")) handleSetup(commandLine);
             else if (commandLine.hasOption("help")) printHelpCli(options);
-            else if (commandLine.hasOption("youtube")) handleStandardRuntime(commandLine);
+            else if (commandLine.hasOption("docker") || commandLine.hasOption("youtube")) handleStandardRuntime(commandLine);
             else if (commandLine.hasOption("import-library")) handleLibraryImport(commandLine);
             else if (commandLine.hasOption("export-library")) handleLibraryExport();
             else if (commandLine.hasOption("quiet")) handleHeadlessMode(commandLine);
             else if (commandLine.hasOption("play")) handlePlay(commandLine);
-            else if (commandLine.hasOption("delete")) handleDelete(commandLine);
             else if (commandLine.hasOption("cache-manager")) handleCacheManager();
             else System.out.println("Invalid or no arguments provided. Use --help for usage information.");
         } catch (ParseException pE) {
@@ -106,18 +108,30 @@ public final class Driver {
     }
 
     private static void handleLibraryExport() { // Transfer database entries to JSON file
+        Config config = getConfigurationForRuntime();
+        LibraryManager libManager = new LibraryManager(config);
+        String exportPath = libManager.exportExistingLibrary();
+        if (exportPath != null) {
+            System.out.println("[*] Your library has been exported to the file: " + exportPath);
+        } else {
+            System.out.println("[!] There was an error while exporting your library, please try again.");
+        }
     }
 
     private static void handleLibraryImport(CommandLine commandLine) { // Take in JSON file and fill database with entries
+        Config config = getConfigurationForRuntime();
+        String filename = commandLine.getOptionValue("import-library");
+        LibraryManager libManager = new LibraryManager(config);
+        boolean success = libManager.importExistingLibrary(filename);
+        if (!success) {
+            System.out.println("[!] An error occured while importing your library, please try again.");
+        }
     }
 
     private static void handleHeadlessMode(CommandLine commandLine) { // Start headless and direct user to local site
     }
 
-    private static void handleDelete(CommandLine commandLine) { // Delete a song from library/playlist/etc
-    }
-
-    private static void handlePlayingSingleSong(String songName) {
+    private static boolean handlePlayingSingleSong(String songName) {
         Config configuration = new Config();
         configuration.setOS(os);
         Core streamlineBackend = new Core(configuration);
@@ -128,10 +142,12 @@ public final class Driver {
             streamlineBackend.playSong(song);
             try {
                 streamlineBackend.audioThread.join();
+                return true;
             } catch (InterruptedException iE) {
                 logger.log(Level.WARNING, "[!] An error occured during playback, please try again.");
             }
         }
+        return false;
     }
 
     private static void handleStandardRuntime(CommandLine commandLine) {
@@ -158,22 +174,18 @@ public final class Driver {
     }
 
     private static void handlePlay(CommandLine commandLine) {
-        /*
-           String songName = commandLine.getOptionValue("play");
-           handlePlayingSingleSong(songName);
-           */
-        try {
-            Config config = getConfigurationForRuntime();
-            // new com.walit.streamline.audio.AudioPlayer().playSongFromUrl("localhost:3000/watch?v=z6nIHFCcto8");
-            // new com.walit.streamline.audio.AudioPlayer().playSongFromUrl(InvidiousHandle.getInstance(config, logger).getAudioUrlFromVideoId("z6nIHFCcto8"));
-            RetrievedStorage results = new Core(config).doSearch("Cold - Give");
-            for (Song song : results.getArrayOfSongs()) {
-                song.printDetails();
+        Config config = getConfigurationForRuntime();
+        String songName = commandLine.getOptionValue("play");
+        boolean songWasAlreadyAvailable = handlePlayingSingleSong(songName);
+        if (!songWasAlreadyAvailable) {
+            try {
+                RetrievedStorage results = new Core(config).doSearch("Cold - Give");
+                String videoId = results.getArrayOfSongs()[0].getSongVideoId();
+                String url = new YoutubeHandle(config, logger).getAudioUrlFromVideoId(videoId);
+                new AudioPlayer().playSongFromUrl(url);
+            } catch (Exception e) {
+                System.out.println("[!] An error occured during song playback, please try restarting the app.");
             }
-            // new com.walit.streamline.audio.AudioPlayer().playSongFromUrl(new YoutubeHandle(config, logger).getAudioUrlFromVideoId(results.getSongFromIndex(0).getSongVideoId()));
-            new com.walit.streamline.audio.AudioPlayer().playSongFromUrl(new YoutubeHandle(config, logger).getAudioUrlFromVideoId("z6nIHFCcto8"));
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 
@@ -297,6 +309,6 @@ public final class Driver {
         } else if (config.getOS() == OS.MAC) {
             return StreamLineConstants.YT_DLP_BIN_LOCATION_MAC + "yt-dlp";
         }
-        return "yt-dlp";
+        return StreamLineConstants.YT_DLP_BIN_LOCATION_LINUX + "yt-dlp";
     }
 }

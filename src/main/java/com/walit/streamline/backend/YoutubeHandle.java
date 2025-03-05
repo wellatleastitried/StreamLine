@@ -51,9 +51,9 @@ public final class YoutubeHandle implements ConnectionHandle {
             List<Song> results = new ArrayList<>();
             String[] command = {
                 config.getBinaryPath(),
-                "ytsearch10:\"" + term + "\"",
+                "ytsearch3:'" + term + "'",
                 "--print",
-                "\"%(title)s | %(uploader)s | %(duration>%M:%S)s | %(id)s\""
+                "%(title)s | %(uploader)s | %(duration>%M:%S)s | %(id)s"
             };
             try {
                 Process process = Core.runCommandExpectWait(command);
@@ -61,7 +61,6 @@ public final class YoutubeHandle implements ConnectionHandle {
                     System.out.println("process was null");
                     return results;
                 }
-                process.waitFor();
                 BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
                 String line;
                 while ((line = reader.readLine()) != null) {
@@ -78,8 +77,8 @@ public final class YoutubeHandle implements ConnectionHandle {
                 }
                 process.waitFor();
             } catch (IOException | InterruptedException e) {
-                System.out.println("Exception hit in " + this.getClass().getName() + "#retrieveSearchResults(String)");
-                // e.printStackTrace();
+                logger.log(Level.WARNING, StreamLineMessages.UnableToPullSearchResultsFromYtDlp.getMessage());
+                return null;
             }
             return results;
         });
@@ -98,11 +97,28 @@ public final class YoutubeHandle implements ConnectionHandle {
 
     @Override
     public String getAudioUrlFromVideoId(String id) {
-        /*
-        Process process = Core.runCommandExpectWait(config.getBinaryPath() + "--geo-bypass -f ba --get-url \"https://www.youtube.com/watch?v=" + id + "\"");
-        process.waitFor();
-        */
-        return "";
+        StringBuilder stringBuilder = new StringBuilder();
+        String[] command = {
+            config.getBinaryPath(),
+            "--geo-bypass",
+            "-f",
+            "ba",
+            "--get-url",
+            "https://www.youtube.com/watch?v=" + id
+        };
+        try {
+            Process process = Core.runCommandExpectWait(command);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                stringBuilder.append(line);
+            }
+
+            process.waitFor();
+        } catch (InterruptedException | IOException iE) {
+            return null;
+        }
+        return stringBuilder.toString().trim();
     }
 
     public static boolean setupYoutubeInterop(Config config) {
