@@ -11,9 +11,8 @@ import java.util.logging.Logger;
 
 import com.walit.streamline.audio.AudioPlayer;
 import com.walit.streamline.audio.Song;
-import com.walit.streamline.interact.DatabaseLinker;
-import com.walit.streamline.interact.DatabaseRunner;
-import com.walit.streamline.hosting.DockerManager;
+import com.walit.streamline.database.DatabaseLinker;
+import com.walit.streamline.database.DatabaseRunner;
 import com.walit.streamline.utilities.CacheManager;
 import com.walit.streamline.utilities.RetrievedStorage;
 import com.walit.streamline.utilities.StatementReader;
@@ -51,7 +50,7 @@ public final class Core {
         } else {
             config.setHandle(YoutubeHandle.getInstance(config, logger));
         }
-        clearExpiredCacheOnStartup();
+        // clearExpiredCacheOnStartup();
         if (config.getAudioSource() != 'y' && !config.getIsOnline()) {
             checkIfConnectionEstablished();
         }

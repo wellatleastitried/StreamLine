@@ -12,11 +12,12 @@ import java.util.logging.XMLFormatter;
 import com.walit.streamline.audio.AudioPlayer;
 import com.walit.streamline.audio.Song;
 import com.walit.streamline.backend.Core;
+import com.walit.streamline.backend.DockerManager;
 import com.walit.streamline.backend.InvidiousHandle;
 import com.walit.streamline.backend.YoutubeHandle;
 import com.walit.streamline.frontend.TerminalInterface;
-import com.walit.streamline.hosting.DockerManager;
 import com.walit.streamline.utilities.LibraryManager;
+import com.walit.streamline.utilities.RetrievedStorage;
 import com.walit.streamline.utilities.internal.Config;
 import com.walit.streamline.utilities.internal.Mode;
 import com.walit.streamline.utilities.internal.OS;
@@ -28,10 +29,6 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-
-// Remove below imports after testing
-import com.walit.streamline.utilities.RetrievedStorage;
-
 
 public final class Driver {
 
@@ -137,7 +134,7 @@ public final class Driver {
         Core streamlineBackend = new Core(configuration);
         Song song = streamlineBackend.getSongFromName(songName);
         if (song == null) {
-            System.out.println(StreamLineMessages.IncorrectNumberOfResultsFromSongSearch.getMessage());
+            return false;
         } else {
             streamlineBackend.playSong(song);
             try {

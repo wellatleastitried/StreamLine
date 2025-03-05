@@ -1,4 +1,4 @@
-package com.walit.streamline.hosting;
+package com.walit.streamline.backend;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -21,7 +21,6 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.walit.streamline.backend.Core;
 import com.walit.streamline.Driver;
 import com.walit.streamline.utilities.internal.OS;
 import com.walit.streamline.utilities.internal.StreamLineConstants;

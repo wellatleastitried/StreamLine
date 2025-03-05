@@ -1,4 +1,4 @@
-package com.walit.streamline.interact;
+package com.walit.streamline.database;
 
 import com.walit.streamline.utilities.internal.StreamLineMessages;
 import com.walit.streamline.audio.Song;

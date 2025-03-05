@@ -5,14 +5,11 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.hamcrest.MatcherAssert;
 
-import java.util.List;
 import java.util.logging.Logger;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.mockito.Mockito.*;
 
-import com.walit.streamline.audio.Song;
-import com.walit.streamline.hosting.DockerManager;
 import com.walit.streamline.utilities.internal.Config;
 
 public class ApiTest {
