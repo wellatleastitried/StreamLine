@@ -35,7 +35,7 @@ public class RetrievedStorage {
         return result;
     }
 
-    public boolean remove (Song song) {
+    public boolean remove(Song song) {
         int index = songToIndex.get(song);
         boolean result = indexToSong.remove(index, song) && songToIndex.remove(song, index);
         assert(indexToSong.size() == songToIndex.size());

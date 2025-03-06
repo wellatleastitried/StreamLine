@@ -50,7 +50,7 @@ public final class Core {
         } else {
             config.setHandle(YoutubeHandle.getInstance(config, logger));
         }
-        // clearExpiredCacheOnStartup();
+        clearExpiredCacheOnStartup();
         if (config.getAudioSource() != 'y' && !config.getIsOnline()) {
             checkIfConnectionEstablished();
         }

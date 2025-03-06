@@ -189,6 +189,7 @@ public final class DatabaseRunner {
         try (final Statement statement = connection.createStatement()) {
             statement.setQueryTimeout(30);
             statement.executeUpdate(queryMap.get("CLEAR_EXPIRED_CACHE"));
+            connection.commit();
         } catch (SQLException sE) {
             handleSQLException(sE);
         }
@@ -311,7 +312,7 @@ public final class DatabaseRunner {
             insertSongStatement.setString(3, song.getSongLink());
             insertSongStatement.setString(4, song.getSongVideoId());
             insertSongStatement.executeUpdate();
-
+            connection.commit();
             try (final ResultSet generatedKeys = insertSongStatement.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
                     return generatedKeys.getInt(1);
@@ -326,6 +327,7 @@ public final class DatabaseRunner {
         try (final Statement statement = connection.createStatement()) {
             statement.setQueryTimeout(30);
             statement.executeUpdate(queryMap.get("CLEAR_CACHE"));
+            connection.commit();
         } catch (SQLException sE) {
             handleSQLException(sE);
         }
@@ -336,6 +338,7 @@ public final class DatabaseRunner {
         try (final PreparedStatement insertStatement = connection.prepareStatement(insertIntoRecentlyPlayed)) {
             insertStatement.setInt(1, songId);
             insertStatement.executeUpdate();
+            connection.commit();
         }
     }
 
@@ -346,6 +349,7 @@ public final class DatabaseRunner {
             insertSongStatement.setString(2, filePath);
             insertSongStatement.setString(3, fileHash);
             insertSongStatement.executeUpdate();
+            connection.commit();
         }
     }
 
@@ -354,6 +358,7 @@ public final class DatabaseRunner {
         try (final PreparedStatement insertSongStatement = connection.prepareStatement(insertIntoLikedSongs)) {
             insertSongStatement.setInt(1, songId);
             insertSongStatement.executeUpdate();
+            connection.commit();
         }
     }
 
@@ -366,14 +371,6 @@ public final class DatabaseRunner {
             logger.log(Level.SEVERE, StreamLineMessages.RollbackError.getMessage());
             System.exit(1);
         }
-    }
-
-    /*
-     * This was used for debugging, leaving it in for now in case any other issue comes up...
-     */
-    private void handleSQLException(SQLException sE, String query) {
-        System.out.println("Query that errored: " + query);
-        handleSQLException(sE);
     }
 
     private void restoreAutoCommit() {

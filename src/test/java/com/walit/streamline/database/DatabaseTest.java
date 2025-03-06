@@ -2,8 +2,8 @@ package com.walit.streamline.database;
 
 import java.io.File;
 
-import org.junit.Before;
-import org.junit.After;
+import org.junit.BeforeClass;
+import org.junit.AfterClass;
 import org.junit.Test;
 import org.hamcrest.MatcherAssert;
 import java.util.logging.*;
@@ -20,15 +20,15 @@ import static org.mockito.Mockito.*;
 
 public class DatabaseTest {
 
-    private DatabaseLinker linker;
-    private DatabaseRunner runner;
-    private String testPath1;
-    private String testPath2;
-    private Logger mockLogger;
-    private HashMap<String, String> queries;
+    private static DatabaseLinker linker;
+    private static DatabaseRunner runner;
+    private static String testPath1;
+    private static String testPath2;
+    private static Logger mockLogger;
+    private static HashMap<String, String> queries;
 
-    @Before
-    public void setup() {
+    @BeforeClass
+    public static void setup() {
         mockLogger = mock(Logger.class);
         try {
             linker = new DatabaseLinker(OS.TESTING, StatementReader.readQueryFromFile("/sql/init/DatabaseInitialization.sql"), mockLogger);
@@ -69,8 +69,8 @@ public class DatabaseTest {
         System.out.println("Simulating liking a song complete.");
     }
 
-    @After
-    public void shutdown() {
+    @AfterClass
+    public static void shutdown() {
         if (!linker.shutdown()) {
             throw new RuntimeException("[!] Could not properly close database linker.");
         }

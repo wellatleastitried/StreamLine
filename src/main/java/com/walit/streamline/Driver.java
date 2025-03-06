@@ -113,6 +113,7 @@ public final class Driver {
         } else {
             System.out.println("[!] There was an error while exporting your library, please try again.");
         }
+        System.exit(0);
     }
 
     private static void handleLibraryImport(CommandLine commandLine) { // Take in JSON file and fill database with entries
@@ -123,15 +124,14 @@ public final class Driver {
         if (!success) {
             System.out.println("[!] An error occured while importing your library, please try again.");
         }
+        System.exit(0);
     }
 
     private static void handleHeadlessMode(CommandLine commandLine) { // Start headless and direct user to local site
     }
 
-    private static boolean handlePlayingSingleSong(String songName) {
-        Config configuration = new Config();
-        configuration.setOS(os);
-        Core streamlineBackend = new Core(configuration);
+    private static boolean handlePlayingSingleSong(Config config, String songName) {
+        Core streamlineBackend = new Core(config);
         Song song = streamlineBackend.getSongFromName(songName);
         if (song == null) {
             return false;
@@ -173,7 +173,7 @@ public final class Driver {
     private static void handlePlay(CommandLine commandLine) {
         Config config = getConfigurationForRuntime();
         String songName = commandLine.getOptionValue("play");
-        boolean songWasAlreadyAvailable = handlePlayingSingleSong(songName);
+        boolean songWasAlreadyAvailable = handlePlayingSingleSong(config, songName);
         if (!songWasAlreadyAvailable) {
             try {
                 RetrievedStorage results = new Core(config).doSearch("Cold - Give");
@@ -184,6 +184,7 @@ public final class Driver {
                 System.out.println("[!] An error occured during song playback, please try restarting the app.");
             }
         }
+        System.exit(0);
     }
 
     public static void handleDockerSetup() {

@@ -10,6 +10,7 @@ import com.googlecode.lanterna.screen.TerminalScreen;
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
 import com.googlecode.lanterna.terminal.Terminal;
 
+import com.walit.streamline.audio.Song;
 import com.walit.streamline.backend.Core;
 import com.walit.streamline.utilities.RetrievedStorage;
 import com.walit.streamline.utilities.internal.HelpMessages;
@@ -239,15 +240,13 @@ public final class TerminalInterface extends FrontendInterface {
             @Override
             public synchronized Result handleKeyStroke(KeyStroke keyStroke) {
                 if (keyStroke.getKeyType() == KeyType.Enter) {
-                    // TODO: Change to display the results from the search (a row for each song within the "resultsBox"
+                    String enteredText = this.getText();
+                    RetrievedStorage results = backend.doSearch(enteredText);
+                    Button[] buttons = resultsToButtons(results);
                     guiThread.invokeLater(() -> {
-                        /*
-                        String enteredText = this.getText();
-                        RetrievedStorage results = fetchSearchResults(enteredText);
-                        for (Button button : resultsToButtons(results)) {
+                        for (Button button : buttons) {
                             resultsBox.addComponent(button);
                         }
-                        */
                         try {
                             textGUI.getScreen().refresh();
                         } catch (IOException iE) {
@@ -259,6 +258,34 @@ public final class TerminalInterface extends FrontendInterface {
                 }
                 return super.handleKeyStroke(keyStroke);
             }
+
+            public Button[] resultsToButtons(RetrievedStorage results) {
+                Button[] buttons = new Button[results.size()];
+                for (int i = 0; i < results.size(); i++) {
+                    Song song = results.getSongFromIndex(i);
+                    String text = String.format(
+                            "%d%s%s - %s   %s",
+                            results.getIndexFromSong(song) + 1,
+                            getOffsetForSongButton(results.getIndexFromSong(song)),
+                            song.getSongName(),
+                            song.getSongArtist(),
+                            song.getDuration()
+                            );
+                    buttons[i] = new Button(text, () -> menuForSongInUI());
+                }
+                return buttons;
+            }
+
+            private void menuForSongInUI() {}
+
+            private String getOffsetForSongButton(int digits) {
+                StringBuilder sB = new StringBuilder();
+                for (int i = 0; i < 7 - String.valueOf(digits).length(); i++) {
+                    sB.append(" ");
+                }
+                return sB.toString();
+            }
+
         });
         panel.addComponent(generateNewSpace());
 
@@ -274,7 +301,7 @@ public final class TerminalInterface extends FrontendInterface {
 
         return window;
     }
-    
+
     public EmptySpace generateNewSpace() {
         EmptySpace space = new EmptySpace();
         space.setPreferredSize(getSize(buttonWidth, buttonHeight));

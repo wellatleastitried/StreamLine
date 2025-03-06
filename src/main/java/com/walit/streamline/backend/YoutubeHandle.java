@@ -50,7 +50,7 @@ public final class YoutubeHandle implements ConnectionHandle {
             List<Song> results = new ArrayList<>();
             String[] command = {
                 config.getBinaryPath(),
-                "ytsearch3:'" + term + "'",
+                "ytsearch10:'" + term + "'",
                 "--print",
                 "%(title)s | %(uploader)s | %(duration>%M:%S)s | %(id)s"
             };
