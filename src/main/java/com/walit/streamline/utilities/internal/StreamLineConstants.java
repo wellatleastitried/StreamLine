@@ -6,7 +6,7 @@ public class StreamLineConstants {
     public static final String  GET_TOKENS_FOR_YOUTUBE_VALIDATOR        = "docker run quay.io/invidious/youtube-trusted-session-generator";
     public static final String  INVIDIOUS_INSTANCE_ADDRESS              = "http://localhost:3000/";
     public static final String  INVIDIOUS_GITHUB_REPO_ADDRESS           = "https://github.com/iv-org/invidious.git";
-    public static final String  INVIDIOUS_LOCAL_LINUX_REPO_ADDRESS      = System.getProperty("user.home") + "/.local/share/streamline/invidious";
+    public static final String  INVIDIOUS_LOCAL_LINUX_REPO_ADDRESS      = System.getProperty("user.home") + "/.local/share/StreamLine/invidious";
     public static final String  INVIDIOUS_LOCAL_WINDOWS_REPO_ADDRESS    = System.getProperty("APPDATA") + "\\StreamLine\\invidious";
     public static final String  INVIDIOUS_LOCAL_MAC_REPO_ADDRESS        = System.getProperty("user.home") + "/Library/Application Support/StreamLine/invidious";
     public static final int     INVIDIOUS_PORT                          = 3000;
@@ -28,10 +28,14 @@ public class StreamLineConstants {
     public static final String  MAC_CACHE_ADDRESS           = System.getProperty("user.home") + "/Library/Caches/com.streamline/";
 
     public static final String  WINDOWS_TEMP_DIR_PATH       = System.getProperty("TEMP") + "\\Streamline\\";
-    public static final String  OTHER_OS_TEMP_DIR_PATH      = "/tmp/streamline/";
+    public static final String  OTHER_OS_TEMP_DIR_PATH      = "/tmp/StreamLine/";
+
+    public static final String  WINDOWS_LOG_CONFIG_DIR_PATH = System.getProperty("APPDATA") + "\\StreamLine\\";
+    public static final String  LINUX_LOG_CONFIG_DIR_PATH   = System.getProperty("user.home") + "/.config/StreamLine/";
+    public static final String  MAC_LOG_CONFIG_DIR_PATH     = System.getProperty("user.home") + "/Library/Application Support/StreamLine/";
 
     public static final String  WINDOWS_DB_ADDRESS          = System.getProperty("APPDATA") + "\\StreamLine\\streamline.db";
-    public static final String  LINUX_DB_ADDRESS            = System.getProperty("user.home") + "/.config/StreamLine/storage/streamline.db";
+    public static final String  LINUX_DB_ADDRESS            = System.getProperty("user.home") + "/.local/share/StreamLine/storage/streamline.db";
     public static final String  MAC_DB_ADDRESS              = System.getProperty("user.home") + "/Library/Application Support/StreamLine/streamline.db";
     public static final String  TESTING_DB_ADDRESS          = "/tmp/StreamLine/TEST.db";
 
@@ -44,4 +48,7 @@ public class StreamLineConstants {
     public static final String  LOADING_ERROR_MESSAGE       = "[!] An error has occurred:                                                      \n";
 
     public static final String  HOST_RESOURCE_PATH          = "/ApiInstanceList.txt";
+
+    public static final String  WINDOWS_LOG_CONFIG_CONTENTS = "writer = file\r\nwriter.file = " + WINDOWS_TEMP_DIR_PATH + "streamline.log\r\nlevel = info\r\nformat = {class_name}.{method}(): {message}";
+    public static final String  UNIX_LOG_CONFIG_CONTENTS    = "writer = file\nwriter.file = " + OTHER_OS_TEMP_DIR_PATH + "streamline.log\nlevel = info\nformat = {class_name}.{method}(): {message}";
 }

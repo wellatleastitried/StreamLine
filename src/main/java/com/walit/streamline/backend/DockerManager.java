@@ -16,8 +16,6 @@ import java.net.URL;
 import java.security.SecureRandom;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -25,6 +23,8 @@ import com.walit.streamline.Driver;
 import com.walit.streamline.utilities.internal.OS;
 import com.walit.streamline.utilities.internal.StreamLineConstants;
 import com.walit.streamline.utilities.internal.StreamLineMessages;
+
+import org.tinylog.Logger;
 
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
@@ -63,25 +63,25 @@ public class DockerManager {
     
     private DockerManager() {}
 
-    public static String startInvidiousContainer(Logger logger) {
+    public static String startInvidiousContainer() {
         try {
             if (!isDockerInstalled()) {
-                logger.log(Level.WARNING, StreamLineMessages.DockerNotInstalledError.getMessage());
+                Logger.warn(StreamLineMessages.DockerNotInstalledError.getMessage());
                 return null;
             } else if (!isDockerRunning()) {
-                logger.log(Level.WARNING, StreamLineMessages.DockerNotRunningError.getMessage());
+                Logger.warn(StreamLineMessages.DockerNotRunningError.getMessage());
                 return null;
             }
             if (invidiousDirectoryExists()) {
-                if (canConnectToContainer(logger, 2, 500)) {
+                if (canConnectToContainer(2, 500)) {
                     return StreamLineConstants.INVIDIOUS_INSTANCE_ADDRESS;
                 }
             } else {
-                logger.log(Level.WARNING, StreamLineMessages.InvidiousRepositoryHasNotBeenClonedWarning.getMessage());
+                Logger.warn(StreamLineMessages.InvidiousRepositoryHasNotBeenClonedWarning.getMessage());
                 return null;
             }
         } catch (InterruptedException iE) {
-            logger.log(Level.WARNING, "[!] An error occured while checking the state of the Invidious image in Docker.");
+            Logger.error("[!] An error occured while checking the state of the Invidious image in Docker.");
         }
 
         System.out.println("[*] Starting invidious instance through Docker...");
@@ -89,14 +89,14 @@ public class DockerManager {
         containerRuntime.start();
 
         try {
-            if (canConnectToContainer(logger)) {
+            if (canConnectToContainer()) {
                 System.out.println("[*] Invidious instance is now live at " + StreamLineConstants.INVIDIOUS_INSTANCE_ADDRESS);
                 return StreamLineConstants.INVIDIOUS_INSTANCE_ADDRESS;
             } else {
                 System.out.println("[*] Could not connect to Invidious instance at this time.");
             }
         } catch (InterruptedException iE) {
-            logger.log(Level.WARNING, "[!] An error occured while pinging instance!");
+            Logger.warn("[!] An error occured while pinging instance!");
         }
         return null;
     }
@@ -110,15 +110,15 @@ public class DockerManager {
         return Core.runCommand("git --version");
     }
 
-    public static void cloneInvidiousRepo(Logger logger) {
+    public static void cloneInvidiousRepo() {
         if (!gitIsInstalled()) {
-            logger.log(Level.WARNING, StreamLineMessages.GitNotInstalled.getMessage());
+            Logger.warn(StreamLineMessages.GitNotInstalled.getMessage());
             return;
         }
         if (!invidiousDirectoryExists()) {
             Process process = Core.runCommandExpectWait("git clone " + StreamLineConstants.INVIDIOUS_GITHUB_REPO_ADDRESS + " " + invidiousDirectoryPath); 
             try {
-                displayLoading(process, StreamLineConstants.CLONING_REPO_MESSAGE, logger);
+                displayLoading(process, StreamLineConstants.CLONING_REPO_MESSAGE);
             } catch (InterruptedException iE) {
                 System.out.println(StreamLineMessages.ErrorCloningRepository.getMessage());
             }
@@ -143,7 +143,7 @@ public class DockerManager {
         });
     }
 
-    private static int displayLoading(Process process, String message, Logger logger) throws InterruptedException {
+    private static int displayLoading(Process process, String message) throws InterruptedException {
         Thread loadingAnimation = getLoadingAnimationThread(process, message);
         loadingAnimation.setName("Loading Graphic");
         loadingAnimation.start();
@@ -159,15 +159,15 @@ public class DockerManager {
                     System.err.println(line);
                 }
             } catch (IOException e) {
-                logger.log(Level.WARNING, "Failed to read process error output", e);
+                Logger.warn("[!] Failed to read process error output", e);
             }
         }
         return exitCode;
     }
 
-    public static boolean writeDockerCompose(Logger logger) {
+    public static boolean writeDockerCompose() {
         try {
-            String[] tokens = retrieveTokensFromYoutubeValidator(logger);
+            String[] tokens = retrieveTokensFromYoutubeValidator();
             String hmacKey = generateHmacKey();
             String poToken = tokens[0];
             String visitorData = tokens[1];
@@ -220,18 +220,18 @@ public class DockerManager {
             writer.close();
             System.out.println(StreamLineConstants.LOADING_COMPLETE_SYMBOL + "docker-compose.yml has been successfully written!");
         } catch (IOException iE) {
-            logger.log(Level.WARNING, "[!] An error occured while writing the docker-compose.yml for the Invidious instance.");
+            Logger.warn("[!] An error occured while writing the docker-compose.yml for the Invidious instance.");
             return false;
         }
         return true;
     }
 
-    public static boolean buildInstance(Logger logger) {
+    public static boolean buildInstance() {
         Process process = Core.runCommandExpectWait(dockerComposeBuild);
         int exitCode;
         try {
-            exitCode = displayLoading(process, StreamLineConstants.BUILD_INVIDIOUS_IMAGE, logger);
-            String host = startInvidiousContainer(logger);
+            exitCode = displayLoading(process, StreamLineConstants.BUILD_INVIDIOUS_IMAGE);
+            String host = startInvidiousContainer();
             if (host == null) {
                 return false;
             }
@@ -252,12 +252,12 @@ public class DockerManager {
         return key;
     }
 
-    private static String[] retrieveTokensFromYoutubeValidator(Logger logger) {
+    private static String[] retrieveTokensFromYoutubeValidator() {
         String[] tokensToReturn = new String[3];
         try {
             ProcessBuilder pb = new ProcessBuilder(StreamLineConstants.GET_TOKENS_FOR_YOUTUBE_VALIDATOR.split(" "));
             Process process = pb.start();
-            displayLoading(process, StreamLineConstants.RETRIEVING_TOKENS_MESSAGE, logger);
+            displayLoading(process, StreamLineConstants.RETRIEVING_TOKENS_MESSAGE);
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
             StringBuilder commandOutput = new StringBuilder();
             String line;
@@ -296,7 +296,7 @@ public class DockerManager {
         return Core.runCommand("docker info");
     }
 
-    public static void stopContainer(Logger logger) {
+    public static void stopContainer() {
         containerRuntime.interrupt();
         Core.runCommand(dockerComposeStop);
     }
@@ -305,7 +305,7 @@ public class DockerManager {
         return containerRuntime.isAlive();
     }
 
-    public static boolean canConnectToContainer(Logger logger, int maxRetryAttempts, int timeout) throws InterruptedException {
+    public static boolean canConnectToContainer(int maxRetryAttempts, int timeout) throws InterruptedException {
         int attempts = 0;
         while (attempts < maxRetryAttempts) {
             try {
@@ -329,7 +329,7 @@ public class DockerManager {
     /*
      * By default: 30 maxRetryAttempts, 1 second timeout
      */
-    public static boolean canConnectToContainer(Logger logger) throws InterruptedException {
-        return canConnectToContainer(logger, 30, 1000);
+    public static boolean canConnectToContainer() throws InterruptedException {
+        return canConnectToContainer(30, 1000);
     }
 }

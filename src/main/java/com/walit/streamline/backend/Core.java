@@ -6,8 +6,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import com.walit.streamline.audio.AudioPlayer;
 import com.walit.streamline.audio.Song;
@@ -20,9 +18,9 @@ import com.walit.streamline.utilities.internal.Config;
 import com.walit.streamline.utilities.internal.StreamLineConstants;
 import com.walit.streamline.utilities.internal.StreamLineMessages;
 
-public final class Core {
+import org.tinylog.Logger;
 
-    private final Logger logger;
+public final class Core {
 
     public Thread audioThread;
 
@@ -38,17 +36,16 @@ public final class Core {
 
     public Core(Config config) {
         this.config = config;
-        this.logger = config.getLogger();
         this.cacheDirectory = getCacheDirectory();
         setShutdownHandler();
         this.audioThread = null;
-        this.queries = Core.getMapOfQueries(logger);
+        this.queries = Core.getMapOfQueries();
         this.dbLink = initializeDatabaseConnection();
-        this.dbRunner = new DatabaseRunner(dbLink.getConnection(), queries, logger);
+        this.dbRunner = new DatabaseRunner(dbLink.getConnection(), queries);
         if (config.getAudioSource() == 'd') {
-            config.setHandle(InvidiousHandle.getInstance(config, logger));
+            config.setHandle(InvidiousHandle.getInstance(config));
         } else {
-            config.setHandle(YoutubeHandle.getInstance(config, logger));
+            config.setHandle(YoutubeHandle.getInstance(config));
         }
         clearExpiredCacheOnStartup();
         if (config.getAudioSource() != 'y' && !config.getIsOnline()) {
@@ -57,7 +54,7 @@ public final class Core {
     }
 
     private DatabaseLinker initializeDatabaseConnection() {
-        return new DatabaseLinker(config.getOS(), queries.get("INITIALIZE_TABLES"), logger);
+        return new DatabaseLinker(config.getOS(), queries.get("INITIALIZE_TABLES"));
     }
 
     public void handleCacheManagement() {
@@ -73,16 +70,16 @@ public final class Core {
     }
 
     private boolean canReachDocker() throws InterruptedException {
-        return DockerManager.containerIsAlive() && DockerManager.canConnectToContainer(logger);
+        return DockerManager.containerIsAlive() && DockerManager.canConnectToContainer();
     }
 
     private void checkIfConnectionEstablished() {
         Thread connectionTesting = new Thread(() -> {
             try {
-                String reachableHost = InvidiousHandle.getWorkingHostnameFromApiOrDocker(logger);
+                String reachableHost = InvidiousHandle.getWorkingHostnameFromApiOrDocker();
                 boolean dockerIsResponding = canReachDocker();
                 while (reachableHost == null && !dockerIsResponding) {
-                    reachableHost = InvidiousHandle.getWorkingHostnameFromApiOrDocker(logger);
+                    reachableHost = InvidiousHandle.getWorkingHostnameFromApiOrDocker();
                     if (reachableHost == null) {
                         dockerIsResponding = canReachDocker();
                     }
@@ -96,7 +93,7 @@ public final class Core {
                     config.setIsOnline(true);
                 }
             } catch (InterruptedException iE) {
-                logger.log(Level.WARNING, StreamLineMessages.PeriodicConnectionTestingError.getMessage());
+                Logger.warn(StreamLineMessages.PeriodicConnectionTestingError.getMessage());
             }
 
         });
@@ -185,7 +182,7 @@ public final class Core {
      * Reaches out to the SQL files in the resources folder that house the queries needed at runtime.
      * @return Map containing the full queries with a key for easy access
      */
-    public static HashMap<String, String> getMapOfQueries(Logger logger) {
+    public static HashMap<String, String> getMapOfQueries() {
         HashMap<String, String> map = new HashMap<>();
         try {
             map.put("INITIALIZE_TABLES", StatementReader.readQueryFromFile("/sql/init/DatabaseInitialization.sql"));
@@ -204,7 +201,7 @@ public final class Core {
             System.exit(1);
         }
         if (map.isEmpty()) {
-            logger.log(Level.SEVERE, StreamLineMessages.DatabaseQueryCollectionError.getMessage());
+            Logger.error(StreamLineMessages.DatabaseQueryCollectionError.getMessage());
             System.exit(1);
         }
         return map;
@@ -212,7 +209,7 @@ public final class Core {
 
     // Temporary function for getting TUI figured out
     public String testStatsCall() {
-        InvidiousHandle handle = InvidiousHandle.getInstance(config, logger);
+        InvidiousHandle handle = InvidiousHandle.getInstance(config);
         return handle.retrieveStats();
     }
 
@@ -243,15 +240,15 @@ public final class Core {
     }
 
     public void logSevere(String message) {
-        logger.log(Level.SEVERE, message);
+        Logger.error(message);
     }
 
     public void logWarning(String message) {
-        logger.log(Level.WARNING, message);
+        Logger.warn(message);
     }
 
     public void logInfo(String message) {
-        logger.log(Level.INFO, message);
+        Logger.info(message);
     }
 
     public void shutdown() {
@@ -261,10 +258,10 @@ public final class Core {
             }
             try {
                 if (DockerManager.containerIsAlive()) {
-                    DockerManager.stopContainer(logger);
+                    DockerManager.stopContainer();
                 }
             } catch (IllegalStateException iE) {
-                logger.log(Level.WARNING, StreamLineMessages.IllegalStateExceptionInShutdown.getMessage() + iE.getMessage());
+                Logger.warn(StreamLineMessages.IllegalStateExceptionInShutdown.getMessage() + iE.getMessage());
             }
             if (audioThread != null && audioThread.isAlive()) {
                 audioThread.interrupt();

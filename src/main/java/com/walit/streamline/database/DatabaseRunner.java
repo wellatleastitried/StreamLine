@@ -11,27 +11,26 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
-import java.util.logging.*;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+import org.tinylog.Logger;
+
 public final class DatabaseRunner {
 
     private final Connection connection;
     private final HashMap<String, String> queryMap;
-    private final Logger logger;
 
-    public DatabaseRunner(Connection connection, HashMap<String, String> queryMap, Logger logger) {
+    public DatabaseRunner(Connection connection, HashMap<String, String> queryMap) {
         this.connection = connection;
         this.queryMap = queryMap;
-        this.logger = logger;
         try {
             this.connection.setAutoCommit(false);
         } catch (SQLException sE) {
-            logger.log(Level.SEVERE, StreamLineMessages.DisableAutoCommitFailure.getMessage());
+            Logger.error(StreamLineMessages.DisableAutoCommitFailure.getMessage());
             System.exit(1);
         }
     }
@@ -281,10 +280,10 @@ public final class DatabaseRunner {
             }
             return hexStringOfHash.toString();
         } catch (NoSuchAlgorithmException nA) {
-            logger.log(Level.WARNING, "There is a typo in the name of the hashing algorithm being used.");
+            Logger.warn("There is a typo in the name of the hashing algorithm being used.");
             System.exit(1);
         } catch (IOException iE) {
-            logger.log(Level.WARNING, StreamLineMessages.HashingFileInputStreamError.getMessage());
+            Logger.warn(StreamLineMessages.HashingFileInputStreamError.getMessage());
             System.exit(1);
         }
         return null;
@@ -363,12 +362,11 @@ public final class DatabaseRunner {
     }
 
     private void handleSQLException(SQLException sE) {
-        sE.printStackTrace();
-        logger.log(Level.WARNING, StreamLineMessages.SQLQueryError.getMessage());
+        Logger.warn(StreamLineMessages.SQLQueryError.getMessage());
         try {
             connection.rollback();
         } catch (SQLException rollbackException) {
-            logger.log(Level.SEVERE, StreamLineMessages.RollbackError.getMessage());
+            Logger.error(StreamLineMessages.RollbackError.getMessage());
             System.exit(1);
         }
     }
@@ -377,7 +375,7 @@ public final class DatabaseRunner {
         try {
             connection.setAutoCommit(true);
         } catch (SQLException sE) {
-            logger.log(Level.SEVERE, StreamLineMessages.AutoCommitRestoreFailure.getMessage());
+            Logger.error(StreamLineMessages.AutoCommitRestoreFailure.getMessage());
             System.exit(1);
         }
     }

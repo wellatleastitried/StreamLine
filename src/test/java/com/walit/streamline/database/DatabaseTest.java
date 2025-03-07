@@ -6,7 +6,6 @@ import org.junit.BeforeClass;
 import org.junit.AfterClass;
 import org.junit.Test;
 import org.hamcrest.MatcherAssert;
-import java.util.logging.*;
 import java.util.HashMap;
 
 import com.walit.streamline.utilities.internal.OS;
@@ -16,7 +15,6 @@ import com.walit.streamline.backend.Core;
 import com.walit.streamline.utilities.RetrievedStorage;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.mockito.Mockito.*;
 
 public class DatabaseTest {
 
@@ -24,22 +22,20 @@ public class DatabaseTest {
     private static DatabaseRunner runner;
     private static String testPath1;
     private static String testPath2;
-    private static Logger mockLogger;
     private static HashMap<String, String> queries;
 
     @BeforeClass
     public static void setup() {
-        mockLogger = mock(Logger.class);
         try {
-            linker = new DatabaseLinker(OS.TESTING, StatementReader.readQueryFromFile("/sql/init/DatabaseInitialization.sql"), mockLogger);
+            linker = new DatabaseLinker(OS.TESTING, StatementReader.readQueryFromFile("/sql/init/DatabaseInitialization.sql"));
         } catch (Exception e) {
             System.err.println("[!] Could not initialize test db.");
             throw new RuntimeException("[!] Could not initialize test db.");
         }
         testPath1 = ".config/notTheDatabase.db";
         testPath2 = linker.PATH;
-        queries = Core.getMapOfQueries(mockLogger);
-        runner = new DatabaseRunner(linker.getConnection(), queries, mockLogger);
+        queries = Core.getMapOfQueries();
+        runner = new DatabaseRunner(linker.getConnection(), queries);
         System.out.println("Setup complete.");
     }
 

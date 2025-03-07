@@ -9,20 +9,18 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.tinylog.Logger;
 
 public final class DatabaseLinker {
 
     protected final OS osName;
-    private final Logger logger;
     protected final String PATH;
     private Connection connection;
     private final boolean databaseExists;
 
-    public DatabaseLinker(OS osName, String tableCreationQuery, Logger logger) {
+    public DatabaseLinker(OS osName, String tableCreationQuery) {
         this.osName = osName;
-        this.logger = logger;
         this.PATH = setupPath(this.osName);
         new File(PATH).getParentFile().mkdirs();
         this.databaseExists = isDatabaseSetupAtPath(PATH);
@@ -32,7 +30,7 @@ public final class DatabaseLinker {
                 if (setupNewDatabase(tableCreationQuery)) {
                     System.out.println("[*] Database has been successfully set up.");
                 } else {
-                    logger.log(Level.SEVERE, StreamLineMessages.DBCreationFailure.getMessage());
+                    Logger.error(StreamLineMessages.DBCreationFailure.getMessage());
                     System.exit(0);
                 }
             }
@@ -56,10 +54,10 @@ public final class DatabaseLinker {
             statement.setQueryTimeout(30);
             statement.executeUpdate(query);
         } catch (SQLException sE) {
-            logger.log(Level.SEVERE, StreamLineMessages.DBCreationFailure.getMessage());
+            Logger.error(StreamLineMessages.DBCreationFailure.getMessage());
             System.exit(1);
         } catch (Exception e) {
-            logger.log(Level.SEVERE, StreamLineMessages.UnknownDBFatalError.getMessage());
+            Logger.error(StreamLineMessages.UnknownDBFatalError.getMessage());
             System.exit(1);
         }
         return true;

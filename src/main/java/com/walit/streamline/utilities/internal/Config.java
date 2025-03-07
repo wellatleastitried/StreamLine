@@ -10,7 +10,7 @@ public class Config {
     private OS os;
     private volatile boolean isOnline;
     private String host;
-    private Logger logger;
+    // private Logger logger;
     private char audioSource;
     private ConnectionHandle apiHandle;
     private String binaryPath;
@@ -33,10 +33,6 @@ public class Config {
         this.host = host;
     }
 
-    public Config(Logger logger) {
-        this.logger = logger;
-    }
-
     public Config(char audioSource) {
         this.audioSource = audioSource;
     }
@@ -49,7 +45,6 @@ public class Config {
         this.mode = mode;
         this.os = os;
         this.isOnline = isOnline;
-        this.logger = logger;
         this.audioSource = audioSource;
     }
 
@@ -83,14 +78,6 @@ public class Config {
 
     public synchronized String getHost() {
         return host;
-    }
-
-    public void setLogger(Logger logger) {
-        this.logger = logger;
-    }
-
-    public Logger getLogger() {
-        return logger;
     }
 
     public void setAudioSource(char audioSource) {

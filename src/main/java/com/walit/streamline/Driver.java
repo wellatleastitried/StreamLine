@@ -1,9 +1,11 @@
 package com.walit.streamline;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import java.util.Base64;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.FileHandler;
@@ -37,7 +39,10 @@ public final class Driver {
 
     static {
         os = getOSOfUser();
-        logger = initializeLogger(os);
+        if (!initializeLogger(os)) {
+            System.out.println(StreamLineMessages.LoggerInitializationFailure.getMessage());
+            System.exit(0);
+        }
     }
 
     private Driver() {}
@@ -178,7 +183,7 @@ public final class Driver {
             try {
                 RetrievedStorage results = new Core(config).doSearch("Cold - Give");
                 String videoId = results.getArrayOfSongs()[0].getSongVideoId();
-                String url = new YoutubeHandle(config, logger).getAudioUrlFromVideoId(videoId);
+                String url = new YoutubeHandle(config).getAudioUrlFromVideoId(videoId);
                 new AudioPlayer().playSongFromUrl(url);
             } catch (Exception e) {
                 System.out.println("[!] An error occured during song playback, please try restarting the app.");
@@ -188,12 +193,12 @@ public final class Driver {
     }
 
     public static void handleDockerSetup() {
-        DockerManager.cloneInvidiousRepo(logger);
-        boolean didWrite = DockerManager.writeDockerCompose(logger);
+        DockerManager.cloneInvidiousRepo();
+        boolean didWrite = DockerManager.writeDockerCompose();
         if (!didWrite) {
             System.out.println(StreamLineMessages.ErrorWritingToDockerCompose.getMessage());
         }
-        if (DockerManager.buildInstance(logger)) {
+        if (DockerManager.buildInstance()) {
             System.out.println("\nInvidious image built successfully!\n");
         } else {
             System.out.println(StreamLineMessages.InvidiousBuildError.getMessage());
@@ -217,13 +222,6 @@ public final class Driver {
 
         config.setOS(os);
 
-        if (logger == null) {
-            System.err.println(StreamLineMessages.LoggerInitializationFailure.getMessage());
-            System.exit(0);
-        } else {
-            config.setLogger(logger);
-        }
-
         config.setAudioSource('y');
         config.setBinaryPath(getBinaryPath(config));
 
@@ -238,10 +236,10 @@ public final class Driver {
             config.setHost(StreamLineConstants.YOUTUBE_HOST);
         } else {
             config.setAudioSource('d');
-            String apiHost = InvidiousHandle.getWorkingHostnameFromApiOrDocker(logger);
+            String apiHost = InvidiousHandle.getWorkingHostnameFromApiOrDocker();
             if (apiHost == null || apiHost.length() < 1) {
                 new Thread(() -> {
-                    DockerManager.startInvidiousContainer(logger);
+                    DockerManager.startInvidiousContainer();
                 }).start();
                 config.setIsOnline(false);
                 config.setHost(null);
@@ -266,39 +264,44 @@ public final class Driver {
         }
     }
 
-    private static Logger initializeLogger(OS os) {
-        Logger logger = Logger.getLogger("Streamline"); 
-        String logFileDir = switch (os) {
-            case WINDOWS -> StreamLineConstants.WINDOWS_TEMP_DIR_PATH;
-            default -> StreamLineConstants.OTHER_OS_TEMP_DIR_PATH;
+    private static boolean initializeLogger(OS os) {
+        String configurationPath;
+        String configurationFileContents;
+        switch (os) {
+            case WINDOWS -> {
+                configurationPath = StreamLineConstants.WINDOWS_LOG_CONFIG_DIR_PATH;
+                configurationFileContents = StreamLineConstants.WINDOWS_LOG_CONFIG_CONTENTS;
+            }
+            case MAC -> {
+                configurationPath = StreamLineConstants.MAC_LOG_CONFIG_DIR_PATH;
+                configurationFileContents = StreamLineConstants.UNIX_LOG_CONFIG_CONTENTS;
+            }
+            default -> {
+                configurationPath = StreamLineConstants.LINUX_LOG_CONFIG_DIR_PATH;
+                configurationFileContents = StreamLineConstants.UNIX_LOG_CONFIG_CONTENTS;
+            }
         };
-        String fileName = "streamline.log";
-        File logFile = new File(logFileDir);
-        if (!logFile.exists() && !logFile.mkdir()) {
-            System.err.println("Unable to create tmp directory for log file.");
-            return null;
-        }
-        logFile = new File(logFileDir + fileName);
-        FileHandler fileHandle;
-        try {
-            if (logFile.exists() && logFile.isFile()) {
-                new FileWriter(logFile, false).close();
+
+        File configDirectory = new File(configurationPath);
+        if (!configDirectory.exists()) {
+            if (!configDirectory.mkdirs()) {
+                return false;
             }
-            fileHandle = new FileHandler(logFile.getPath(), true);
-            while (logger.getHandlers().length > 0) {
-                logger.removeHandler(logger.getHandlers()[0]);
-            }
-            logger.addHandler(fileHandle);
-            fileHandle.setLevel(Level.INFO);
-            XMLFormatter xF = new XMLFormatter();
-            fileHandle.setFormatter(xF);
-            logger.log(Level.INFO, "Log initialized.");
-        } catch (IOException iE) {
-            iE.printStackTrace();
-            logger.log(Level.WARNING, "Could not properly setup logging for program.");
-            return null;
         }
-        return logger;
+
+        configurationPath = configurationPath + "tinylog.properties";
+        File configFile = new File(configurationPath);
+        if (!configFile.exists()) {
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(configFile))) {
+                writer.write(configurationFileContents);
+                writer.flush();
+            } catch (IOException iE) {
+                return false;
+            }
+        }
+
+        System.setProperty("tinylog.configuration", configurationPath);
+        return true;
     }
 
     private static String getBinaryPath(Config config) {

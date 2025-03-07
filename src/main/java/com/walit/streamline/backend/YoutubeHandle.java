@@ -22,24 +22,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.logging.Logger;
-import java.util.logging.Level;
+
+import org.tinylog.Logger;
 
 public final class YoutubeHandle implements ConnectionHandle {
 
     public static YoutubeHandle instance;
 
     private final Config config;
-    private final Logger logger;
 
-    public YoutubeHandle(Config config, Logger logger) {
+    public YoutubeHandle(Config config) {
         this.config = config;
-        this.logger = logger;
     }
 
-    public static YoutubeHandle getInstance(Config config, Logger logger) {
+    public static YoutubeHandle getInstance(Config config) {
         if (instance == null) {
-            instance = new YoutubeHandle(config, logger);
+            instance = new YoutubeHandle(config);
         }
         return instance;
     }
@@ -76,7 +74,7 @@ public final class YoutubeHandle implements ConnectionHandle {
                 }
                 process.waitFor();
             } catch (IOException | InterruptedException e) {
-                logger.log(Level.WARNING, StreamLineMessages.UnableToPullSearchResultsFromYtDlp.getMessage());
+                Logger.warn(StreamLineMessages.UnableToPullSearchResultsFromYtDlp.getMessage());
                 return null;
             }
             return results;
@@ -166,7 +164,7 @@ public final class YoutubeHandle implements ConnectionHandle {
             }
             return true;
         } catch (InterruptedException | IOException iE) {
-            iE.printStackTrace();
+            Logger.error(StreamLineMessages.YtDlpDownloadFailed.getMessage());
         }
         return false;
     }

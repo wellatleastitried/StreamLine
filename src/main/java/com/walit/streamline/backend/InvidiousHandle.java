@@ -10,31 +10,31 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.IOException;
+
 import java.net.HttpURLConnection;
 import java.net.URL;
+
 import java.nio.charset.StandardCharsets;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.logging.Logger;
-import java.util.logging.Level;
 
+import org.tinylog.Logger;
 
 public final class InvidiousHandle implements ConnectionHandle {
 
     public static InvidiousHandle instance;
 
     public final Config config;
-    public final Logger logger;
 
-    public InvidiousHandle(Config config, Logger logger) {
+    public InvidiousHandle(Config config) {
         this.config = config;
-        this.logger = logger;
     }
 
-    private static List<String> getPossibleHosts(Logger logger) {
+    private static List<String> getPossibleHosts() {
         try (InputStream inputStream = InvidiousHandle.class.getResourceAsStream(StreamLineConstants.HOST_RESOURCE_PATH);
                 BufferedReader bR = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
             List<String> hostnames = new ArrayList<>();
@@ -44,22 +44,22 @@ public final class InvidiousHandle implements ConnectionHandle {
             }
             return hostnames;
         } catch (IOException iE) {
-            logger.log(Level.WARNING, StreamLineMessages.ErrorReadingHostsFromResource.getMessage());
+            Logger.warn(StreamLineMessages.ErrorReadingHostsFromResource.getMessage());
         }
         return null;
     }
 
-    public static InvidiousHandle getInstance(Config config, Logger logger) {
+    public static InvidiousHandle getInstance(Config config) {
         if (instance == null) {
-            instance = new InvidiousHandle(config, logger);
+            instance = new InvidiousHandle(config);
         }
         return instance;
     }
 
 
-    public static String getWorkingHostnameFromApiOrDocker(Logger logger) {
+    public static String getWorkingHostnameFromApiOrDocker() {
         Map<String, Integer> workingHosts = new HashMap<>();
-        List<String> possibleHosts = getPossibleHosts(logger);
+        List<String> possibleHosts = getPossibleHosts();
         if (possibleHosts == null) {
             return null;
         }
@@ -97,7 +97,7 @@ public final class InvidiousHandle implements ConnectionHandle {
         }
         if (workingHosts.isEmpty()) {
             if (DockerManager.invidiousDirectoryExists()) {
-                String host = DockerManager.startInvidiousContainer(logger);
+                String host = DockerManager.startInvidiousContainer();
                 return host;
             }
             return null;
@@ -138,7 +138,7 @@ public final class InvidiousHandle implements ConnectionHandle {
                     return null;
                 }
             } catch (Exception e) {
-                logger.log(Level.WARNING, StreamLineMessages.UnableToCallAPIError.getMessage());
+                Logger.warn(StreamLineMessages.UnableToCallAPIError.getMessage());
                 return null;
             }
         });
@@ -190,7 +190,7 @@ public final class InvidiousHandle implements ConnectionHandle {
             return result.toString(); 
 
         } catch (Exception e) {
-            logger.log(Level.WARNING, StreamLineMessages.UnableToCallAPIError.getMessage());
+            Logger.warn(StreamLineMessages.UnableToCallAPIError.getMessage());
             return null;
         }
     }

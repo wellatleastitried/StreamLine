@@ -5,10 +5,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.hamcrest.MatcherAssert;
 
-import java.util.logging.Logger;
-
 import static org.hamcrest.CoreMatchers.*;
-import static org.mockito.Mockito.*;
 
 import com.walit.streamline.utilities.internal.Config;
 
@@ -16,19 +13,17 @@ public class ApiTest {
 
     static InvidiousHandle handle;
     static Config config;
-    static Logger mockLogger;
 
     @BeforeClass
     public static void setup() {
-        mockLogger = mock(Logger.class);
         config = new Config();
-        config.setHost(InvidiousHandle.getWorkingHostnameFromApiOrDocker(mockLogger));
-        handle = InvidiousHandle.getInstance(config, mockLogger);
+        config.setHost(InvidiousHandle.getWorkingHostnameFromApiOrDocker());
+        handle = InvidiousHandle.getInstance(config);
     }
 
     @Test
     public void checkHandleIsSingleton() {
-        InvidiousHandle testHandle = InvidiousHandle.getInstance(config, mockLogger);
+        InvidiousHandle testHandle = InvidiousHandle.getInstance(config);
         MatcherAssert.assertThat(handle, is(testHandle));
     }
 
@@ -80,8 +75,8 @@ public class ApiTest {
     @AfterClass
     public static void shutdown() {
         try {
-            if (DockerManager.containerIsAlive() && DockerManager.canConnectToContainer(mockLogger)) {
-                DockerManager.stopContainer(mockLogger);
+            if (DockerManager.containerIsAlive() && DockerManager.canConnectToContainer()) {
+                DockerManager.stopContainer();
             }
         } catch (InterruptedException iE) {
             System.err.println("InterruptedException occured while trying to stop docker instance.");

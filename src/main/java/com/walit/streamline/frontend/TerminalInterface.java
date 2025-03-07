@@ -18,6 +18,9 @@ import com.walit.streamline.utilities.internal.StreamLineMessages;
 
 import java.io.IOException;
 
+import java.util.LinkedHashSet;
+import java.util.Set;
+
 public final class TerminalInterface extends FrontendInterface {
 
     private WindowBasedTextGUI textGUI;
@@ -227,8 +230,6 @@ public final class TerminalInterface extends FrontendInterface {
         resultsBox.setLayoutManager(new GridLayout(/*2*/1));
         resultsBox.setPreferredSize(new TerminalSize(terminalSize.getColumns(), terminalSize.getRows() - panel.getSize().getRows() - 15));
         resultsBox.setFillColorOverride(TextColor.ANSI.BLACK_BRIGHT);
-        // Making sure that the api responses can be turned into the proper object for the TUI
-        resultsBox.addComponent(createLabel(backend.testStatsCall()));
 
         panel.setLayoutManager(new GridLayout(1));
         panel.setPreferredSize(new TerminalSize(40, 20)); panel.setFillColorOverride(TextColor.ANSI.BLACK);
@@ -236,6 +237,7 @@ public final class TerminalInterface extends FrontendInterface {
         panel.addComponent(generateNewSpace());
         panel.addComponent(createLabel(getString("Search:")));
 
+        Set<Button> currentButtons = new LinkedHashSet<>();
         panel.addComponent(new TextBox(new TerminalSize(terminalSize.getColumns() / 2, 1)) {
             @Override
             public synchronized Result handleKeyStroke(KeyStroke keyStroke) {
@@ -244,9 +246,17 @@ public final class TerminalInterface extends FrontendInterface {
                     RetrievedStorage results = backend.doSearch(enteredText);
                     Button[] buttons = resultsToButtons(results);
                     guiThread.invokeLater(() -> {
-                        for (Button button : buttons) {
-                            resultsBox.addComponent(button);
+                        for (Button button : currentButtons) {
+                            resultsBox.removeComponent(button);
                         }
+                        currentButtons.clear();
+
+                        for (Button button : buttons) {
+                            if (currentButtons.add(button)) {
+                                resultsBox.addComponent(button);
+                            }
+                        }
+
                         try {
                             textGUI.getScreen().refresh();
                         } catch (IOException iE) {
