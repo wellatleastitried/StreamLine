@@ -20,6 +20,9 @@ sync_repo:
     - git log --oneline --graph --all
     - git diff github/main
     - git reset --hard github/main
+    - git checkout HEAD -- .gitlab-ci.yml
+    - git add .gitlab-ci.yml
+    - git commit --amend --no-edit
     - git push --force gitlab main
   only:
     - main
