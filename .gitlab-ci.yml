@@ -12,7 +12,7 @@ sync_repo:
     - eval "$(ssh-agent -s)"
     - ssh-add ~/.ssh/id_rsa
     - git config --global user.name "GitLab Sync Bot"
-    - git config --global user.email "jackson1swindell@gmail.com"
+    - git config --global user.email "$GIT_USER_EMAIL"
     - git remote add github git@github.com:wellatleastitried/StreamLine.git || true
     - git remote add gitlab git@gitlab.com:wellatleastitried/streamline.git || true
     - git fetch github
