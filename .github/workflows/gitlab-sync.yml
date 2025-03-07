@@ -12,3 +12,4 @@ jobs:
       - name: Trigger GitLab Pipeline
         run: |
           curl -X POST "https://gitlab.com/api/v4/projects/${{ secrets.GITLAB_PROJECT_ID }}/pipeline" -H "Authorization: Bearer ${{ secrets.GITLAB_ACCESS_TOKEN }}" -H "Content-Type: application/json" --data '{"ref": "main"}' 
+          
