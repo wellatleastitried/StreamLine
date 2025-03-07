@@ -20,7 +20,7 @@ import com.walit.streamline.utilities.internal.StreamLineMessages;
 
 import org.tinylog.Logger;
 
-public final class Core {
+public final class Dispatcher {
 
     public Thread audioThread;
 
@@ -34,12 +34,12 @@ public final class Core {
 
     private final Config config;
 
-    public Core(Config config) {
+    public Dispatcher(Config config) {
         this.config = config;
         this.cacheDirectory = getCacheDirectory();
         setShutdownHandler();
         this.audioThread = null;
-        this.queries = Core.getMapOfQueries();
+        this.queries = Dispatcher.getMapOfQueries();
         this.dbLink = initializeDatabaseConnection();
         this.dbRunner = new DatabaseRunner(dbLink.getConnection(), queries);
         if (config.getAudioSource() == 'd') {

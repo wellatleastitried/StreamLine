@@ -1,14 +1,14 @@
 package com.walit.streamline.utilities;
 
-import com.walit.streamline.backend.Core;
+import com.walit.streamline.backend.Dispatcher;
 import com.walit.streamline.utilities.internal.Config;
 
 public class LibraryManager {
 
-    private final Core backend;
+    private final Dispatcher backend;
 
     public LibraryManager(Config config) {
-        this.backend = new Core(config);
+        this.backend = new Dispatcher(config);
     }
 
     public boolean importExistingLibrary(String pathOfLibrary) {

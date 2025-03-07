@@ -5,15 +5,9 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
-import java.util.Base64;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.logging.FileHandler;
-import java.util.logging.XMLFormatter;
-
 import com.walit.streamline.audio.AudioPlayer;
 import com.walit.streamline.audio.Song;
-import com.walit.streamline.backend.Core;
+import com.walit.streamline.backend.Dispatcher;
 import com.walit.streamline.backend.DockerManager;
 import com.walit.streamline.backend.InvidiousHandle;
 import com.walit.streamline.backend.YoutubeHandle;
@@ -32,9 +26,10 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
+import org.tinylog.Logger;
+
 public final class Driver {
 
-    private static Logger logger;
     private static OS os;
 
     static {
@@ -136,7 +131,7 @@ public final class Driver {
     }
 
     private static boolean handlePlayingSingleSong(Config config, String songName) {
-        Core streamlineBackend = new Core(config);
+        Dispatcher streamlineBackend = new Dispatcher(config);
         Song song = streamlineBackend.getSongFromName(songName);
         if (song == null) {
             return false;
@@ -146,7 +141,7 @@ public final class Driver {
                 streamlineBackend.audioThread.join();
                 return true;
             } catch (InterruptedException iE) {
-                logger.log(Level.WARNING, "[!] An error occured during playback, please try again.");
+                Logger.warn("[!] An error occured during playback, please try again.");
             }
         }
         return false;
@@ -159,7 +154,7 @@ public final class Driver {
         } else {
             configuration = getConfigurationForRuntime();
         }
-        Core streamlineBackend = new Core(configuration);
+        Dispatcher streamlineBackend = new Dispatcher(configuration);
         TerminalInterface tui = new TerminalInterface(streamlineBackend);
         if (!tui.run()) {
             System.err.println(StreamLineMessages.FatalStartError.getMessage());
@@ -171,7 +166,7 @@ public final class Driver {
         Config config = new Config();
         config.setMode(Mode.CACHE_MANAGEMENT);
         config.setOS(os);
-        Core streamlineBackend = new Core(config);
+        Dispatcher streamlineBackend = new Dispatcher(config);
         streamlineBackend.handleCacheManagement();
     }
 
@@ -181,7 +176,7 @@ public final class Driver {
         boolean songWasAlreadyAvailable = handlePlayingSingleSong(config, songName);
         if (!songWasAlreadyAvailable) {
             try {
-                RetrievedStorage results = new Core(config).doSearch("Cold - Give");
+                RetrievedStorage results = new Dispatcher(config).doSearch("Cold - Give");
                 String videoId = results.getArrayOfSongs()[0].getSongVideoId();
                 String url = new YoutubeHandle(config).getAudioUrlFromVideoId(videoId);
                 new AudioPlayer().playSongFromUrl(url);

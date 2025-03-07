@@ -53,7 +53,7 @@ public final class YoutubeHandle implements ConnectionHandle {
                 "%(title)s | %(uploader)s | %(duration>%M:%S)s | %(id)s"
             };
             try {
-                Process process = Core.runCommandExpectWait(command);
+                Process process = Dispatcher.runCommandExpectWait(command);
                 if (process == null) {
                     System.out.println("process was null");
                     return results;
@@ -104,7 +104,7 @@ public final class YoutubeHandle implements ConnectionHandle {
             "https://www.youtube.com/watch?v=" + id
         };
         try {
-            Process process = Core.runCommandExpectWait(command);
+            Process process = Dispatcher.runCommandExpectWait(command);
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
             String line;
             while ((line = reader.readLine()) != null) {
@@ -140,7 +140,7 @@ public final class YoutubeHandle implements ConnectionHandle {
         }
         String[] command = {"curl", "-fL", ytDlpUrl, "-o", ytDlpTargetLocation};
         try {
-            Process process = Core.runCommandExpectWait(command);
+            Process process = Dispatcher.runCommandExpectWait(command);
             process.waitFor();
             if (process.exitValue() != 0) {
                 System.out.println("Error: curl command failed with exit code " + process.exitValue());

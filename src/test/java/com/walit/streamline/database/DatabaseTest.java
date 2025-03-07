@@ -11,7 +11,7 @@ import java.util.HashMap;
 import com.walit.streamline.utilities.internal.OS;
 import com.walit.streamline.utilities.StatementReader;
 import com.walit.streamline.audio.Song;
-import com.walit.streamline.backend.Core;
+import com.walit.streamline.backend.Dispatcher;
 import com.walit.streamline.utilities.RetrievedStorage;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -34,7 +34,7 @@ public class DatabaseTest {
         }
         testPath1 = ".config/notTheDatabase.db";
         testPath2 = linker.PATH;
-        queries = Core.getMapOfQueries();
+        queries = Dispatcher.getMapOfQueries();
         runner = new DatabaseRunner(linker.getConnection(), queries);
         System.out.println("Setup complete.");
     }
