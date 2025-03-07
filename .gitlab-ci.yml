@@ -1,0 +1,25 @@
+stages:
+  - sync
+
+sync_repo:
+  stage: sync
+  script:
+    - mkdir -p ~/.ssh
+    - ssh-keyscan github.com >> ~/.ssh/known_hosts
+    - ssh-keyscan gitlab.com >> ~/.ssh/known_hosts
+    - echo "$GIT_SSH_PRIVATE_KEY" | base64 -d > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    - eval "$(ssh-agent -s)"
+    - ssh-add ~/.ssh/id_rsa
+    - git config --global user.name "GitLab Sync Bot"
+    - git config --global user.email "jackson1swindell@gmail.com"
+    - git remote add github git@github.com:wellatleastitried/StreamLine.git || true
+    - git remote add gitlab git@gitlab.com:wellatleastitried/streamline.git || true
+    - git fetch github
+    - git checkout -b main github/main || git checkout main
+    - git log --oneline --graph --all
+    - git diff github/main
+    - git reset --hard github/main
+    - git push --force gitlab main
+  only:
+    - main
