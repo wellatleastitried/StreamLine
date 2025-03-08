@@ -125,6 +125,15 @@ public final class YoutubeHandle implements ConnectionHandle {
         return true;
     }
 
+    private static void createMissingDirectories(String stringPath) {
+        File path = new File(stringPath);
+        if (!path.getParentFile().mkdirs()) {
+            System.out.println("[!] Could not create the necessary directories for binary executable's path.");
+            return;
+        }
+        System.out.println("[*] Path for binary has been set.");
+    }
+
     private static boolean downloadYtDlp(Config config) {
         String ytDlpUrl;
         String ytDlpTargetLocation;
@@ -138,12 +147,13 @@ public final class YoutubeHandle implements ConnectionHandle {
             ytDlpUrl = "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp";
             ytDlpTargetLocation = StreamLineConstants.YT_DLP_BIN_LOCATION_LINUX + "yt-dlp";
         }
+        createMissingDirectories(ytDlpTargetLocation);
         String[] command = {"curl", "-fL", ytDlpUrl, "-o", ytDlpTargetLocation};
         try {
             Process process = Dispatcher.runCommandExpectWait(command);
             process.waitFor();
             if (process.exitValue() != 0) {
-                System.out.println("Error: curl command failed with exit code " + process.exitValue());
+                System.out.println("[!] Error: curl command failed with exit code " + process.exitValue());
                 try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
                     String line;
                     while ((line = reader.readLine()) != null) {
@@ -156,9 +166,9 @@ public final class YoutubeHandle implements ConnectionHandle {
                 Path path = Paths.get(ytDlpTargetLocation);
                 if (Files.exists(path)) {
                     Files.setPosixFilePermissions(path, PosixFilePermissions.fromString("rwxr-xr-x"));
-                    System.out.println("Binary has been marked as executable.");
+                    System.out.println("[*] Binary has been marked as executable.");
                 } else {
-                    System.out.println("yt-dlp was not downloaded.");
+                    System.out.println("[!] yt-dlp was not downloaded.");
                     return false;
                 }
             }
@@ -180,5 +190,8 @@ public final class YoutubeHandle implements ConnectionHandle {
         }
         
         return binary.exists();
+    }
+
+    public static void clean(Config config) {
     }
 }

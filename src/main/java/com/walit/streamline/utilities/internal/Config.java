@@ -10,7 +10,6 @@ public class Config {
     private OS os;
     private volatile boolean isOnline;
     private String host;
-    // private Logger logger;
     private char audioSource;
     private ConnectionHandle apiHandle;
     private String binaryPath;

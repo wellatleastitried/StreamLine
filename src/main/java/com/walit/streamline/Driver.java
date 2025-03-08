@@ -62,7 +62,6 @@ public final class Driver {
         options.addOption("c", "clean", true, "Remove unwanted files from the Docker or Youtube install.\nExample:\n\tstreamline --Docker\t=> Removes the Invidious repository from the filesystem\n\n\tstreamline --YouTube\t=> Removes the binary for yt-dlp from the filesystem.");
         options.addOption("i", "import-library", true, "Import your music library from other devices into your current setup and then exit (e.g., --import-library=/path/to/library.json");
         options.addOption("e", "export-library", false, "Generate a file (library.json) that contains all of your music library that can be used to import this library on another device and then exit");
-        options.addOption("q", "quiet", true, "Headless start with ability to access the application at http://localhost:PORT");
         options.addOption("p", "play", true, "Play a single song (e.g., --play=\"songname\") and start headless with CLI commands available");
         options.addOption("cm", "cache-manager", false, "Choose whether to clear all cache or only expired cache and then exit");
         return options;
@@ -81,14 +80,14 @@ public final class Driver {
             else if (commandLine.hasOption("setup")) handleSetup(commandLine);
             else if (commandLine.hasOption("help")) printHelpCli(options);
             else if (commandLine.hasOption("docker") || commandLine.hasOption("youtube")) handleStandardRuntime(commandLine);
+            else if (commandLine.hasOption("clean")) handleCleaningProcess(commandLine);
             else if (commandLine.hasOption("import-library")) handleLibraryImport(commandLine);
             else if (commandLine.hasOption("export-library")) handleLibraryExport();
-            else if (commandLine.hasOption("quiet")) handleHeadlessMode(commandLine);
             else if (commandLine.hasOption("play")) handlePlay(commandLine);
             else if (commandLine.hasOption("cache-manager")) handleCacheManager();
-            else System.out.println("Invalid or no arguments provided. Use --help for usage information.");
+            else System.out.println("[!] Invalid or no arguments provided. Use --help for usage information.");
         } catch (ParseException pE) {
-            System.err.println("Error parsing command line arguments: " + pE.getMessage());
+            System.err.println("[!] Error parsing command line arguments: " + pE.getMessage());
             printHelpCli(options);
         }
     }
@@ -127,7 +126,25 @@ public final class Driver {
         System.exit(0);
     }
 
-    private static void handleHeadlessMode(CommandLine commandLine) { // Start headless and direct user to local site
+    private static void handleCleaningProcess(CommandLine commandLine) {
+        Config config = getConfigurationForRuntime();
+        String installToClean = commandLine.getOptionValue("clean");
+        if ("youtube".equals(installToClean)) {
+            cleanYoutubeInstall(config);
+        } else if ("docker".equals(installToClean)) {
+            cleanDockerInstall(config);
+        } else {
+            System.out.println("[!] Invalid argument passed for --clean. Please specify either \"youtube\" or \"docker\"");
+        }
+        System.exit(0);
+    }
+
+    private static void cleanYoutubeInstall(Config config) {
+        YoutubeHandle.clean(config);
+    }
+
+    private static void cleanDockerInstall(Config config) {
+        DockerManager.clean(config);
     }
 
     private static boolean handlePlayingSingleSong(Config config, String songName) {
@@ -194,7 +211,7 @@ public final class Driver {
             System.out.println(StreamLineMessages.ErrorWritingToDockerCompose.getMessage());
         }
         if (DockerManager.buildInstance()) {
-            System.out.println("\nInvidious image built successfully!\n");
+            System.out.println("\n[*] Invidious image built successfully!\n");
         } else {
             System.out.println(StreamLineMessages.InvidiousBuildError.getMessage());
         }
@@ -204,9 +221,9 @@ public final class Driver {
     public static void handleYoutubeSetup() {
         Config config = getConfigurationForRuntime();
         if (YoutubeHandle.setupYoutubeInterop(config)) {
-            System.out.println("yt-dlp has been downloaded.");
+            System.out.println("[*] yt-dlp has been successfully downloaded.");
         } else {
-            System.out.println("An error was encountered while setting up yt-dlp.");
+            System.out.println("[!] An error was encountered while setting up yt-dlp.");
         }
         System.exit(0);
     }

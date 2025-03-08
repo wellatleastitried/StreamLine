@@ -85,7 +85,7 @@ public final class DatabaseLinker {
         } else if (os == OS.MAC) {
             return StreamLineConstants.MAC_DB_ADDRESS;
         } else if (os == OS.TESTING) {
-            return StreamLineConstants.TESTING_DB_ADDRESS;
+            return StreamLineConstants.LINUX_TESTING_DB_ADDRESS;
         }
         return StreamLineConstants.LINUX_DB_ADDRESS;
     }

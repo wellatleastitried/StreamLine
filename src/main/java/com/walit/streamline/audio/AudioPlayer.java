@@ -1,9 +1,15 @@
 package com.walit.streamline.audio;
 
-import java.io.File;
+import com.walit.streamline.utilities.RetrievedStorage;
+import com.walit.streamline.utilities.internal.StreamLineMessages;
+
+import java.io.BufferedInputStream;
+import java.io.InputStream;
 import java.io.IOException;
+import java.io.File;
 
 import java.net.URL;
+import java.net.URLConnection;
 
 import java.util.Queue;
 import java.util.PriorityQueue;
@@ -16,8 +22,7 @@ import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
-import com.walit.streamline.utilities.RetrievedStorage;
-import com.walit.streamline.utilities.internal.StreamLineMessages;
+import org.tinylog.Logger;
 
 public class AudioPlayer implements Runnable {
 
@@ -50,12 +55,11 @@ public class AudioPlayer implements Runnable {
 
     @Override
     public void run() {
-        // Start playing songs
         Song song = null;
         try {
             for (int i = 0; i < songsToPlay.size(); i++) {
                 song = songsToPlay.poll();
-                // Display info on currently playing song
+                // TODO: Display info on currently playing song
                 if (song.isSongDownloaded() && checkDownloadIntegrity(song)) {
                     playSongFromFile(song.getDownloadPath());
                 } else {
@@ -77,6 +81,8 @@ public class AudioPlayer implements Runnable {
             if (songsToPlay.peek() != null) {
                 run();
             }
+        } catch (Exception e) {
+            Logger.warn("[!] An unknown error has occured during audio playback.");
         }
     }
 
@@ -105,24 +111,84 @@ public class AudioPlayer implements Runnable {
         audioInputStream.close();
     }
 
-    public void playSongFromUrl(String pathToAudio) throws UnsupportedAudioFileException, IOException, LineUnavailableException {
+    public void playSongFromUrl(String pathToAudio) throws Exception {
         URL audioUrl = new URL(pathToAudio);
-        AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(audioUrl);
-        AudioFormat format = audioInputStream.getFormat();
-        DataLine.Info info = new DataLine.Info(SourceDataLine.class, format);
-        SourceDataLine audioLine = (SourceDataLine) AudioSystem.getLine(info);
-        audioLine.open(format);
-        audioLine.start();
-        byte[] buffer = new byte[4096];
-        int bytesRead = -1;
-        while ((bytesRead = audioInputStream.read(buffer)) != -1) {
-            audioLine.write(buffer, 0, bytesRead);
+
+        URLConnection connection = audioUrl.openConnection();
+        connection.setRequestProperty("User-Agent", "Mozilla/5.0");
+        connection.setConnectTimeout(15000);
+        connection.setReadTimeout(15000);
+
+        // For debugging
+        System.out.println("Content-Type: " + connection.getContentType());
+
+        InputStream inputStream = connection.getInputStream();
+        BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
+
+        // Try to get audio input stream, with fallback for MP3
+        AudioInputStream audioInputStream;
+        try {
+            audioInputStream = AudioSystem.getAudioInputStream(bufferedInputStream);
+        } catch (UnsupportedAudioFileException e) {
+            Logger.info("[*] Standard format not recognized, trying MP3 conversion...");
+
+            // Note: For MP3 support, I need to add MP3SPI library to the project
+            // (http://www.javazoom.net/mp3spi/mp3spi.html)
+
+            // Reopen stream as it might have been partially consumed
+            inputStream = connection.getInputStream();
+            bufferedInputStream = new BufferedInputStream(inputStream);
+            audioInputStream = AudioSystem.getAudioInputStream(bufferedInputStream);
         }
-        audioLine.drain();
-        audioLine.close();
-        audioInputStream.close();
+        AudioFormat baseFormat = audioInputStream.getFormat();
+        System.out.println("Original format: " + baseFormat);
+
+        // Convert to PCM if needed
+        AudioFormat targetFormat = getOutFormat(baseFormat);
+        AudioInputStream convertedStream = AudioSystem.getAudioInputStream(targetFormat, audioInputStream);
+
+        DataLine.Info info = new DataLine.Info(SourceDataLine.class, targetFormat);
+        if (!AudioSystem.isLineSupported(info)) {
+            throw new LineUnavailableException("Line not supported for format: " + targetFormat);
+        }
+
+        SourceDataLine audioLine = (SourceDataLine) AudioSystem.getLine(info);
+        audioLine.open(targetFormat);
+        audioLine.start();
+
+        byte[] buffer = new byte[4096];
+        int bytesRead;
+        try {
+            while ((bytesRead = convertedStream.read(buffer, 0, buffer.length)) != -1) {
+                audioLine.write(buffer, 0, bytesRead);
+            }
+        } finally {
+            audioLine.drain();
+            audioLine.stop();
+            audioLine.close();
+            convertedStream.close();
+            audioInputStream.close();
+            bufferedInputStream.close();
+            inputStream.close();
+        }
     }
 
+    // Helper method to convert audio format to PCM which is widely supported
+    private AudioFormat getOutFormat(AudioFormat inFormat) {
+        final int sampleSizeInBits = 16;
+        final int channels = inFormat.getChannels();
+        final boolean signed = true;
+        final boolean bigEndian = false;
+        return new AudioFormat(
+                AudioFormat.Encoding.PCM_SIGNED,
+                inFormat.getSampleRate(),
+                sampleSizeInBits,
+                channels,
+                channels * (sampleSizeInBits / 8),
+                inFormat.getSampleRate(),
+                bigEndian
+        );
+    }
     private void pause() {
     }
 

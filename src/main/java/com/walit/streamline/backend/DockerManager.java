@@ -20,6 +20,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.walit.streamline.Driver;
+import com.walit.streamline.utilities.internal.Config;
 import com.walit.streamline.utilities.internal.OS;
 import com.walit.streamline.utilities.internal.StreamLineConstants;
 import com.walit.streamline.utilities.internal.StreamLineMessages;
@@ -125,6 +126,9 @@ public class DockerManager {
         } else {
             System.out.println("[*] Invidious repository has already been cloned.");
         }
+    }
+
+    public static void clean(Config config) {
     }
 
     private static Thread getLoadingAnimationThread(Process process, String message) {
