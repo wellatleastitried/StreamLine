@@ -50,6 +50,9 @@ public class StreamLineConstants {
 
     public static final String  HOST_RESOURCE_PATH          = "/ApiInstanceList.txt";
 
-    public static final String  WINDOWS_LOG_CONFIG_CONTENTS = "writer = file\r\nwriter.file = " + WINDOWS_TEMP_DIR_PATH + "streamline.log\r\nlevel = info\r\nformat = {class_name}#{method}(): {message}\r\nwritingmode = overwrite";
-    public static final String  UNIX_LOG_CONFIG_CONTENTS    = "writer = file\nwriter.file = " + OTHER_OS_TEMP_DIR_PATH + "streamline.log\nlevel = info\nformat = {class_name}#{method}(): {message}\nwritingmode = overwrite";
+    public static final String  WINDOWS_LOG_CONFIG_CONTENTS = "writer = file\r\nwriter.file = " + WINDOWS_TEMP_DIR_PATH + "streamline.log\r\nlevel = info\r\nformat = {class_name}#{method:-unknown}(): {message}\r\nwritingmode = overwrite";
+    public static final String  UNIX_LOG_CONFIG_CONTENTS    = "writer = file\nwriter.file = " + OTHER_OS_TEMP_DIR_PATH + "streamline.log\nlevel = info\nformat = {class_name}#{method:-unknown}(): {message}\nwritingmode = overwrite";
+
+    // Set cache expiration at 5 minutes
+    public static final long YOUTUBE_CACHE_EXPIRY_MS = 5 * 60 * 1000;
 }

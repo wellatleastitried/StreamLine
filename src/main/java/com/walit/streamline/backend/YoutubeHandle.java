@@ -22,6 +22,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 import org.tinylog.Logger;
 
@@ -30,6 +32,9 @@ public final class YoutubeHandle implements ConnectionHandle {
     public static YoutubeHandle instance;
 
     private final Config config;
+
+    private final Map<String, List<Song>> searchCache = new ConcurrentHashMap<>();
+    private final Map<String, Long> cacheTimestamps = new ConcurrentHashMap<>();
 
     public YoutubeHandle(Config config) {
         this.config = config;
@@ -44,20 +49,55 @@ public final class YoutubeHandle implements ConnectionHandle {
 
     @Override
     public CompletableFuture<List<Song>> retrieveSearchResults(String term) {
+        cleanupCache();
         return CompletableFuture.supplyAsync(() -> {
+            String cacheKey = term.toLowerCase().trim();
+            Long cacheTime = cacheTimestamps.get(cacheKey);
+            if (cacheTime != null && System.currentTimeMillis() - cacheTime < StreamLineConstants.YOUTUBE_CACHE_EXPIRY_MS) {
+                List<Song> cachedResults = searchCache.get(cacheKey);
+                if (cachedResults != null && !cachedResults.isEmpty()) {
+                    Logger.debug("Cache hit for search term: {}", term);
+                    return new ArrayList<>(cachedResults);
+                }
+            }
+            Logger.debug("Cache miss for search term: {}", term);
+
             List<Song> results = new ArrayList<>();
+
+            String sanitizedTerm = term.replace("'", "'\\''");
             String[] command = {
                 config.getBinaryPath(),
-                "ytsearch10:'" + term + "'",
+                "--no-warnings",
+                "--ignore-errors",
+                "--no-playlist",
+                "--flat-playlist",
+                "--socket-timeout", "5", // Remove if necessary
+                "ytsearch10:'" + sanitizedTerm + "'",
                 "--print",
                 "%(title)s | %(uploader)s | %(duration>%M:%S)s | %(id)s"
             };
+
+            Process process = null;
             try {
-                Process process = Dispatcher.runCommandExpectWait(command);
+                process = Dispatcher.runCommandExpectWait(command);
+
                 if (process == null) {
-                    System.out.println("process was null");
+                    Logger.warn("Process was null when searching for: {}, term");
                     return results;
                 }
+
+                final Process finalProcess = process;
+                CompletableFuture.runAsync(() -> {
+                    try (BufferedReader errorReader = new BufferedReader(new InputStreamReader(finalProcess.getErrorStream()))) {
+                        String line;
+                        while ((line = errorReader.readLine()) != null) {
+                            Logger.debug("yt-dlp error: {}", line);
+                        }
+                    } catch (IOException iE) {
+                        Logger.debug("Error reading stderr: {}", iE.getMessage());
+                    }
+                });
+
                 BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
                 String line;
                 while ((line = reader.readLine()) != null) {
@@ -72,10 +112,24 @@ public final class YoutubeHandle implements ConnectionHandle {
                         }
                     }
                 }
-                process.waitFor();
+
+                if (!process.waitFor(10, TimeUnit.SECONDS)) {
+                    process.destroyForcibly();
+                    Logger.warn("yt-dlp search timed out after 10 seconds for term: {}", term);
+                }
+
+                if (!results.isEmpty()) {
+                    searchCache.put(cacheKey, new ArrayList<>(results));
+                    cacheTimestamps.put(cacheKey, System.currentTimeMillis());
+                    Logger.debug("Cached {} results for term: {}", results.size(), term);
+                }
             } catch (IOException | InterruptedException e) {
                 Logger.warn(StreamLineMessages.UnableToPullSearchResultsFromYtDlp.getMessage());
                 return null;
+            } finally {
+                if (process != null && process.isAlive()) {
+                    process.destroyForcibly();
+                }
             }
             return results;
         });
@@ -98,13 +152,16 @@ public final class YoutubeHandle implements ConnectionHandle {
         String[] command = {
             config.getBinaryPath(),
             "--geo-bypass",
+            "--no-warnings",
+            "--ignore-errors",
             "-f",
             "ba",
             "--get-url",
             "https://www.youtube.com/watch?v=" + id
         };
+        Process process = null;
         try {
-            Process process = Dispatcher.runCommandExpectWait(command);
+            process = Dispatcher.runCommandExpectWait(command);
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
             String line;
             while ((line = reader.readLine()) != null) {
@@ -114,8 +171,28 @@ public final class YoutubeHandle implements ConnectionHandle {
             process.waitFor();
         } catch (InterruptedException | IOException iE) {
             return null;
+        } finally {
+            if (process != null && process.isAlive()) {
+                process.destroyForcibly();
+            }
         }
         return stringBuilder.toString().trim();
+    }
+
+    public void cleanupCache() {
+        long currentTime = System.currentTimeMillis();
+        List<String> keysToRemove = new ArrayList<>();
+        for (Map.Entry<String, Long> entry : cacheTimestamps.entrySet()) {
+            if (currentTime - entry.getValue() > StreamLineConstants.YOUTUBE_CACHE_EXPIRY_MS) {
+                keysToRemove.add(entry.getKey());
+            }
+        }
+
+        for (String key : keysToRemove) {
+            searchCache.remove(key);
+            cacheTimestamps.remove(key);
+        }
+        Logger.debug("[!] Cache cleanup remove {} expired entries", keysToRemove.size());
     }
 
     public static boolean setupYoutubeInterop(Config config) {
@@ -149,9 +226,14 @@ public final class YoutubeHandle implements ConnectionHandle {
         }
         createMissingDirectories(ytDlpTargetLocation);
         String[] command = {"curl", "-fL", ytDlpUrl, "-o", ytDlpTargetLocation};
+        Process process = null;
         try {
-            Process process = Dispatcher.runCommandExpectWait(command);
-            process.waitFor();
+            process = Dispatcher.runCommandExpectWait(command);
+            if (!process.waitFor(60, TimeUnit.SECONDS)) {
+                process.destroyForcibly();
+                Logger.error("[!] Download of yt-dlp timed out after 60 seconds.");
+                return false;
+            }
             if (process.exitValue() != 0) {
                 System.out.println("[!] Error: curl command failed with exit code " + process.exitValue());
                 try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
@@ -175,6 +257,10 @@ public final class YoutubeHandle implements ConnectionHandle {
             return true;
         } catch (InterruptedException | IOException iE) {
             Logger.error(StreamLineMessages.YtDlpDownloadFailed.getMessage());
+        } finally {
+            if (process != null && process.isAlive()) {
+                process.destroyForcibly();
+            }
         }
         return false;
     }
