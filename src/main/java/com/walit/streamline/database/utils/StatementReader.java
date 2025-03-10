@@ -1,4 +1,4 @@
-package com.walit.streamline.utilities;
+package com.walit.streamline.database.utils;
 
 import java.io.BufferedReader;
 import java.io.InputStream;

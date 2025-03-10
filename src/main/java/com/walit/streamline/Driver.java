@@ -244,15 +244,11 @@ public final class Driver {
         Config config = getConfigurationForRuntime();
         if (commandLine.hasOption("youtube")) {
             config.setAudioSource('y');
-            config.setIsOnline(true);
-            config.setHost(StreamLineConstants.YOUTUBE_HOST);
         } else {
             config.setAudioSource('d');
             String apiHost = InvidiousHandle.getWorkingHostnameFromApiOrDocker();
             if (apiHost == null || apiHost.length() < 1) {
-                new Thread(() -> {
-                    DockerManager.startInvidiousContainer();
-                }).start();
+                new Thread(() -> DockerManager.startInvidiousContainer()).start();
                 config.setIsOnline(false);
                 config.setHost(null);
             } else {
