@@ -1,5 +1,6 @@
-package com.walit.streamline.backend.job;
+package com.walit.streamline.backend.jobs;
 
+import com.walit.streamline.audio.AudioPlayer;
 import com.walit.streamline.utilities.RetrievedStorage;
 import com.walit.streamline.utilities.internal.Config;
 
@@ -12,5 +13,9 @@ public class QueuePlaybackJob extends StreamLineJob {
         this.queue = queue;
     }
 
-    public void execute() {}
+    public void execute() {
+        AudioPlayer audioPlayer = new AudioPlayer(queue);
+        audioPlayer.run();
+        finish();
+    }
 }

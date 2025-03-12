@@ -1,6 +1,8 @@
 package com.walit.streamline.utilities;
 
 import com.walit.streamline.audio.Song;
+import com.walit.streamline.utilities.internal.OS;
+import com.walit.streamline.utilities.internal.StreamLineConstants;
 import com.walit.streamline.utilities.internal.StreamLineMessages;
 
 import java.io.File;
@@ -40,6 +42,22 @@ public final class CacheManager {
             if (songFile.isFile()) {
                 songFile.delete();
             }
+        }
+    }
+
+    public static void clearExpiredCacheOnStartup(OS os, RetrievedStorage expiredSongs) {
+        clearExpiredCacheOnStartup(getCacheDirectory(os), expiredSongs);
+    }
+
+    public static String getCacheDirectory(OS os) {
+        switch (os) {
+            case WINDOWS:
+                return StreamLineConstants.WINDOWS_CACHE_ADDRESS;
+            case MAC:
+                return StreamLineConstants.MAC_CACHE_ADDRESS;
+            case LINUX:
+            default:
+                return StreamLineConstants.LINUX_CACHE_ADDRESS;
         }
     }
 }

@@ -1,5 +1,6 @@
-package com.walit.streamline.backend.job;
+package com.walit.streamline.backend.jobs;
 
+import com.walit.streamline.audio.AudioPlayer;
 import com.walit.streamline.audio.Song;
 import com.walit.streamline.utilities.internal.Config;
 
@@ -12,5 +13,9 @@ public class SongPlaybackJob extends StreamLineJob {
         this.song = song;
     }
 
-    public void execute() {}
+    public void execute() {
+        AudioPlayer audioPlayer = new AudioPlayer(song);
+        audioPlayer.run();
+        finish();
+    }
 }

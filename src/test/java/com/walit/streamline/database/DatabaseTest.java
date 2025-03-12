@@ -34,7 +34,7 @@ public class DatabaseTest {
         testPath1 = ".config/notTheDatabase.db";
         testPath2 = linker.PATH;
         queries = QueryLoader.getMapOfQueries();
-        runner = new DatabaseRunner(linker.getConnection(), queries);
+        runner = new DatabaseRunner(linker.getConnection(), queries, linker);
         System.out.println("Setup complete.");
     }
 

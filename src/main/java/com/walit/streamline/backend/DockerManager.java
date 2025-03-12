@@ -58,7 +58,7 @@ public class DockerManager {
             dockerComposeStop = String.format("docker compose -f %s/docker-compose.yml stop", StreamLineConstants.INVIDIOUS_LOCAL_LINUX_REPO_ADDRESS);
             dockerComposeBuild = String.format("docker compose -f %s/docker-compose.yml build", StreamLineConstants.INVIDIOUS_LOCAL_LINUX_REPO_ADDRESS);
         }
-        containerRuntime = new Thread(() -> Dispatcher.runCommand(dockerComposeUp));
+        containerRuntime = new Thread(() -> CommandExecutor.runCommand(dockerComposeUp));
         containerRuntime.setName("Invidious Runtime");
     }
     
@@ -108,7 +108,7 @@ public class DockerManager {
     }
 
     private static boolean gitIsInstalled() {
-        return Dispatcher.runCommand("git --version");
+        return CommandExecutor.runCommand("git --version");
     }
 
     public static void cloneInvidiousRepo() {
@@ -117,7 +117,7 @@ public class DockerManager {
             return;
         }
         if (!invidiousDirectoryExists()) {
-            Process process = Dispatcher.runCommandExpectWait("git clone " + StreamLineConstants.INVIDIOUS_GITHUB_REPO_ADDRESS + " " + invidiousDirectoryPath); 
+            Process process = CommandExecutor.runCommandExpectWait("git clone " + StreamLineConstants.INVIDIOUS_GITHUB_REPO_ADDRESS + " " + invidiousDirectoryPath); 
             try {
                 displayLoading(process, StreamLineConstants.CLONING_REPO_MESSAGE);
             } catch (InterruptedException iE) {
@@ -231,7 +231,7 @@ public class DockerManager {
     }
 
     public static boolean buildInstance() {
-        Process process = Dispatcher.runCommandExpectWait(dockerComposeBuild);
+        Process process = CommandExecutor.runCommandExpectWait(dockerComposeBuild);
         int exitCode;
         try {
             exitCode = displayLoading(process, StreamLineConstants.BUILD_INVIDIOUS_IMAGE);
@@ -289,20 +289,20 @@ public class DockerManager {
     }
 
     public static boolean userHasPermissionsForDocker() {
-        return Dispatcher.runCommand("docker ps");
+        return CommandExecutor.runCommand("docker ps");
     }
 
     private static boolean isDockerInstalled() {
-        return Dispatcher.runCommand("docker --version");
+        return CommandExecutor.runCommand("docker --version");
     }
 
     private static boolean isDockerRunning() {
-        return Dispatcher.runCommand("docker info");
+        return CommandExecutor.runCommand("docker info");
     }
 
     public static void stopContainer() {
         containerRuntime.interrupt();
-        Dispatcher.runCommand(dockerComposeStop);
+        CommandExecutor.runCommand(dockerComposeStop);
     }
 
     public static boolean containerIsAlive() {

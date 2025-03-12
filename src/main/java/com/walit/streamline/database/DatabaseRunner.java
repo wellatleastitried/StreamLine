@@ -23,10 +23,12 @@ public final class DatabaseRunner {
 
     private final Connection connection;
     private final HashMap<String, String> queryMap;
+    private final DatabaseLinker linker;
 
-    public DatabaseRunner(Connection connection, HashMap<String, String> queryMap) {
+    public DatabaseRunner(Connection connection, HashMap<String, String> queryMap, DatabaseLinker linker) {
         this.connection = connection;
         this.queryMap = queryMap;
+        this.linker = linker;
         try {
             this.connection.setAutoCommit(false);
         } catch (SQLException sE) {
@@ -378,5 +380,9 @@ public final class DatabaseRunner {
             Logger.error(StreamLineMessages.AutoCommitRestoreFailure.getMessage());
             System.exit(1);
         }
+    }
+
+    public void shutdown() {
+        linker.shutdown();
     }
 }

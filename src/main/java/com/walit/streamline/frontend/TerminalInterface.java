@@ -12,6 +12,7 @@ import com.googlecode.lanterna.terminal.Terminal;
 
 import com.walit.streamline.audio.Song;
 import com.walit.streamline.backend.Dispatcher;
+import com.walit.streamline.backend.JobDispatcher;
 import com.walit.streamline.utilities.RetrievedStorage;
 import com.walit.streamline.utilities.internal.HelpMessages;
 import com.walit.streamline.utilities.internal.StreamLineMessages;
@@ -20,6 +21,8 @@ import java.io.IOException;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
+
+import org.tinylog.Logger;
 
 public final class TerminalInterface extends FrontendInterface {
 
@@ -44,7 +47,7 @@ public final class TerminalInterface extends FrontendInterface {
     public int buttonWidth;
     public int buttonHeight;
 
-    public TerminalInterface(Dispatcher backend) {
+    public TerminalInterface(JobDispatcher backend) {
         super(backend);
         initializeUI();
     }
@@ -80,7 +83,7 @@ public final class TerminalInterface extends FrontendInterface {
             helpMenu = createHelpMenu();
             settingsMenu = createSettingsMenu();
         } catch (IOException iE) {
-            logSevere(StreamLineMessages.FatalStartError.getMessage());
+            Logger.error(StreamLineMessages.FatalStartError.getMessage());
             System.exit(0);
         }
     }
@@ -244,6 +247,9 @@ public final class TerminalInterface extends FrontendInterface {
                 if (keyStroke.getKeyType() == KeyType.Enter) {
                     String enteredText = this.getText();
                     RetrievedStorage results = backend.doSearch(enteredText);
+                    if (results == null) {
+                        return Result.HANDLED;
+                    }
                     Button[] buttons = resultsToButtons(results);
                     guiThread.invokeLater(() -> {
                         for (Button button : currentButtons) {
@@ -260,7 +266,7 @@ public final class TerminalInterface extends FrontendInterface {
                         try {
                             textGUI.getScreen().refresh();
                         } catch (IOException iE) {
-                            logSevere(StreamLineMessages.RedrawError.getMessage());
+                            Logger.error(StreamLineMessages.RedrawError.getMessage());
                             handleKeyStroke(keyStroke);
                         }
                     });
@@ -352,15 +358,15 @@ public final class TerminalInterface extends FrontendInterface {
                         textGUI.removeWindow(window);
                     }
                 } catch (IllegalStateException iE) {
-                    logWarning(StreamLineMessages.IllegalStateExceptionInShutdown.getMessage() + iE.getMessage());
+                    Logger.warn(StreamLineMessages.IllegalStateExceptionInShutdown.getMessage() + iE.getMessage());
                 }
             });
             screen.stopScreen();
             terminal.close();
         } catch (IOException iE) {
-            logSevere(StreamLineMessages.UnexpectedErrorInShutdown.getMessage());
+            Logger.error(StreamLineMessages.UnexpectedErrorInShutdown.getMessage());
         } catch (IllegalStateException iE) {
-            logWarning(StreamLineMessages.IllegalStateExceptionInShutdown.getMessage() + iE.getMessage());
+            Logger.warn(StreamLineMessages.IllegalStateExceptionInShutdown.getMessage() + iE.getMessage());
         }
     }
 }

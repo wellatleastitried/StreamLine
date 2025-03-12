@@ -105,7 +105,7 @@ public final class YoutubeHandle implements ConnectionHandle {
             String[] command = buildSearchCommand(term);
             Process process = null;
             try {
-                process = Dispatcher.runCommandExpectWait(command);
+                process = CommandExecutor.runCommandExpectWait(command);
                 if (process == null) {
                     Logger.warn("[!] Process was null when searching for: {}, term");
                     return results;
@@ -178,7 +178,7 @@ public final class YoutubeHandle implements ConnectionHandle {
         };
         Process process = null;
         try {
-            process = Dispatcher.runCommandExpectWait(command);
+            process = CommandExecutor.runCommandExpectWait(command);
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
             String line;
             while ((line = reader.readLine()) != null) {
@@ -229,7 +229,7 @@ public final class YoutubeHandle implements ConnectionHandle {
 
     private static Process downloadBinaryUsingCurl(YtDlpBinaryInfo binaryInfo) throws IOException {
         String[] command = {"curl", "-fL", binaryInfo.url, "-o", binaryInfo.targetLocation};
-        return Dispatcher.runCommandExpectWait(command);
+        return CommandExecutor.runCommandExpectWait(command);
     }
 
     private static void printErrorStream(Process process) throws IOException {

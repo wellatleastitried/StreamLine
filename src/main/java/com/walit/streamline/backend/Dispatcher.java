@@ -12,7 +12,6 @@ import com.walit.streamline.audio.Song;
 import com.walit.streamline.database.DatabaseLinker;
 import com.walit.streamline.database.DatabaseRunner;
 import com.walit.streamline.database.utils.QueryLoader;
-import com.walit.streamline.database.utils.StatementReader;
 import com.walit.streamline.utilities.CacheManager;
 import com.walit.streamline.utilities.RetrievedStorage;
 import com.walit.streamline.utilities.internal.Config;
@@ -25,7 +24,6 @@ public final class Dispatcher {
 
     public Thread audioThread;
 
-    private final DatabaseLinker dbLink;
     private final DatabaseRunner dbRunner;
     private HashMap<String, String> queries;
 
@@ -41,8 +39,8 @@ public final class Dispatcher {
         setShutdownHandler();
         this.audioThread = null;
         this.queries = QueryLoader.getMapOfQueries();
-        this.dbLink = initializeDatabaseConnection();
-        this.dbRunner = new DatabaseRunner(dbLink.getConnection(), queries);
+        DatabaseLinker dbLink = initializeDatabaseConnection();
+        this.dbRunner = new DatabaseRunner(dbLink.getConnection(), queries, dbLink);
         if (config.getAudioSource() == 'd') {
             config.setHandle(InvidiousHandle.getInstance(config));
         } else {
@@ -167,15 +165,7 @@ public final class Dispatcher {
     }
 
     protected String getCacheDirectory() {
-        switch (config.getOS()) {
-            case WINDOWS:
-                return StreamLineConstants.WINDOWS_CACHE_ADDRESS;
-            case MAC:
-                return StreamLineConstants.MAC_CACHE_ADDRESS;
-            case LINUX:
-            default:
-                return StreamLineConstants.LINUX_CACHE_ADDRESS;
-        }
+        return CacheManager.getCacheDirectory(config.getOS());
     }
         
     // Temporary function for getting TUI figured out
@@ -224,8 +214,8 @@ public final class Dispatcher {
 
     public void shutdown() {
         if (!exitedGracefully) {
-            if (dbLink != null) {
-                dbLink.shutdown();
+            if (dbRunner != null) {
+                dbRunner.shutdown();
             }
             try {
                 if (DockerManager.containerIsAlive()) {

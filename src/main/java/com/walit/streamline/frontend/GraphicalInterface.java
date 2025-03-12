@@ -1,10 +1,10 @@
 package com.walit.streamline.frontend;
 
-import com.walit.streamline.backend.Dispatcher;
+import com.walit.streamline.backend.JobDispatcher;
 
 public final class GraphicalInterface extends FrontendInterface {
 
-    public GraphicalInterface(Dispatcher backend) {
+    public GraphicalInterface(JobDispatcher backend) {
         super(backend);
     }
 

@@ -8,6 +8,7 @@ import java.io.IOException;
 import com.walit.streamline.audio.AudioPlayer;
 import com.walit.streamline.audio.Song;
 import com.walit.streamline.backend.Dispatcher;
+import com.walit.streamline.backend.JobDispatcher;
 import com.walit.streamline.backend.DockerManager;
 import com.walit.streamline.backend.InvidiousHandle;
 import com.walit.streamline.backend.YoutubeHandle;
@@ -171,7 +172,7 @@ public final class Driver {
         } else {
             configuration = getConfigurationForRuntime();
         }
-        Dispatcher streamlineBackend = new Dispatcher(configuration);
+        JobDispatcher streamlineBackend = new JobDispatcher(configuration);
         TerminalInterface tui = new TerminalInterface(streamlineBackend);
         if (!tui.run()) {
             System.err.println(StreamLineMessages.FatalStartError.getMessage());
