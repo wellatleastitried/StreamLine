@@ -1,5 +1,5 @@
 # StreamLine 🎵
-StreamLine is a terminal-based (TUI) music player built in Java using the [Lanterna](https://github.com/mabe02/lanterna) library. It integrates with the [Invidious API](https://docs.invidious.io/) to provide a free, lightweight alternative to traditional music streaming platforms.
+StreamLine is a terminal-based (TUI) music player built in Java using the [Lanterna](https://github.com/mabe02/lanterna) library. It integrates with the [Invidious API](https://docs.invidious.io/) and [yt-dlp](https://github.com/yt-dlp/yt-dlp) to provide a free, lightweight alternative to traditional music streaming platforms.
 
 ## Table of Contents
 - [Features](#features)
