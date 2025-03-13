@@ -1,14 +1,13 @@
 package com.walit.streamline.frontend;
 
 import com.walit.streamline.backend.Dispatcher;
-import com.walit.streamline.backend.JobDispatcher;
 import com.walit.streamline.utilities.RetrievedStorage;
 
 abstract class FrontendInterface {
 
-    public final JobDispatcher backend;
+    public final Dispatcher backend;
 
-    public FrontendInterface(JobDispatcher backend) {
+    public FrontendInterface(Dispatcher backend) {
         this.backend = backend;
     }
 

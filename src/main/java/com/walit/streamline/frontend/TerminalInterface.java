@@ -12,7 +12,6 @@ import com.googlecode.lanterna.terminal.Terminal;
 
 import com.walit.streamline.audio.Song;
 import com.walit.streamline.backend.Dispatcher;
-import com.walit.streamline.backend.JobDispatcher;
 import com.walit.streamline.utilities.RetrievedStorage;
 import com.walit.streamline.utilities.internal.HelpMessages;
 import com.walit.streamline.utilities.internal.StreamLineMessages;
@@ -47,7 +46,7 @@ public final class TerminalInterface extends FrontendInterface {
     public int buttonWidth;
     public int buttonHeight;
 
-    public TerminalInterface(JobDispatcher backend) {
+    public TerminalInterface(Dispatcher backend) {
         super(backend);
         initializeUI();
     }

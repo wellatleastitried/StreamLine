@@ -4,6 +4,7 @@ import com.walit.streamline.utilities.internal.Config;
 
 /**
  * Base class for backend jobs that will be needed during runtime.
+ * @author wellatleastitried
  */
 public abstract class StreamLineJob {
 
@@ -14,7 +15,7 @@ public abstract class StreamLineJob {
 
     /**
      * Set configuration and job id.
-     * @param Config The configuration being used for the user's runtime.
+     * @param config The configuration being used for the user's runtime.
      */
     public StreamLineJob(Config config) {
         this.config = config;

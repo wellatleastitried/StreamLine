@@ -5,10 +5,11 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import java.util.Scanner;
+
 import com.walit.streamline.audio.AudioPlayer;
 import com.walit.streamline.audio.Song;
 import com.walit.streamline.backend.Dispatcher;
-import com.walit.streamline.backend.JobDispatcher;
 import com.walit.streamline.backend.DockerManager;
 import com.walit.streamline.backend.InvidiousHandle;
 import com.walit.streamline.backend.YoutubeHandle;
@@ -64,7 +65,7 @@ public final class Driver {
         options.addOption("i", "import-library", true, "Import your music library from other devices into your current setup and then exit (e.g., --import-library=/path/to/library.json");
         options.addOption("e", "export-library", false, "Generate a file (library.json) that contains all of your music library that can be used to import this library on another device and then exit");
         options.addOption("p", "play", true, "Play a single song (e.g., --play=\"songname\") and start headless with CLI commands available");
-        options.addOption("cm", "cache-manager", false, "Choose whether to clear all cache or only expired cache and then exit");
+        options.addOption("cm", "cache-manager", false, "Clear the application's cache from the system to free up storage.");
         return options;
     }
 
@@ -155,12 +156,14 @@ public final class Driver {
             return false;
         } else {
             streamlineBackend.playSong(song);
+            /*
             try {
                 streamlineBackend.audioThread.join();
                 return true;
             } catch (InterruptedException iE) {
                 Logger.warn("[!] An error occured during playback, please try again.");
             }
+            */
         }
         return false;
     }
@@ -172,7 +175,7 @@ public final class Driver {
         } else {
             configuration = getConfigurationForRuntime();
         }
-        JobDispatcher streamlineBackend = new JobDispatcher(configuration);
+        Dispatcher streamlineBackend = new Dispatcher(configuration);
         TerminalInterface tui = new TerminalInterface(streamlineBackend);
         if (!tui.run()) {
             System.err.println(StreamLineMessages.FatalStartError.getMessage());
@@ -181,12 +184,18 @@ public final class Driver {
     }
 
     private static void handleCacheManager() {
-        Config config = new Config();
-        config.setMode(Mode.CACHE_MANAGEMENT);
-        config.setOS(os);
-        Dispatcher streamlineBackend = new Dispatcher(config);
-        streamlineBackend.handleCacheManagement();
+        try (Scanner scanner = new Scanner(System.in)) {
+            System.out.print("Would you like to clear the existing cache? Enter y or n: ");
+            String response = scanner.nextLine();
+            if (response.toLowerCase().trim().equals("y")) {
+                Config config = new Config();
+                config.setMode(Mode.CACHE_MANAGEMENT);
+                config.setOS(os);
+                new Dispatcher(config).clearCache();
+            }
+        }
     }
+
 
     private static void handlePlay(CommandLine commandLine) {
         Config config = getConfigurationForRuntime();

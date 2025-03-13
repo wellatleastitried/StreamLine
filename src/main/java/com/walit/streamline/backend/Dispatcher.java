@@ -1,232 +1,141 @@
 package com.walit.streamline.backend;
 
-import java.io.IOException;
-
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Scanner;
-
-import com.walit.streamline.audio.AudioPlayer;
 import com.walit.streamline.audio.Song;
+import com.walit.streamline.backend.jobs.*;
 import com.walit.streamline.database.DatabaseLinker;
 import com.walit.streamline.database.DatabaseRunner;
 import com.walit.streamline.database.utils.QueryLoader;
 import com.walit.streamline.utilities.CacheManager;
 import com.walit.streamline.utilities.RetrievedStorage;
 import com.walit.streamline.utilities.internal.Config;
-import com.walit.streamline.utilities.internal.StreamLineConstants;
-import com.walit.streamline.utilities.internal.StreamLineMessages;
+import com.walit.streamline.utilities.internal.*;
+
+import java.util.Map;
+import java.util.Scanner;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
 
 import org.tinylog.Logger;
 
 public final class Dispatcher {
-
-    public Thread audioThread;
+    
+    private final Config config;
+    private final ConcurrentHashMap<String, StreamLineJob> activeJobs;
+    private final ExecutorService jobExecutor;
 
     private final DatabaseRunner dbRunner;
-    private HashMap<String, String> queries;
 
-    private final String cacheDirectory;
+    private String audioJobId = null;
 
     private boolean exitedGracefully = false;
 
-    private final Config config;
-
     public Dispatcher(Config config) {
         this.config = config;
-        this.cacheDirectory = getCacheDirectory();
+        this.activeJobs = new ConcurrentHashMap<>();
+        this.jobExecutor = Executors.newCachedThreadPool();
+        this.dbRunner = initializeDatabaseConnection();
+        initializeServices();
+    }
+
+    private void initializeServices() {
+        submitJob(new CacheInitializationJob(config, dbRunner));
         setShutdownHandler();
-        this.audioThread = null;
-        this.queries = QueryLoader.getMapOfQueries();
-        DatabaseLinker dbLink = initializeDatabaseConnection();
-        this.dbRunner = new DatabaseRunner(dbLink.getConnection(), queries, dbLink);
+        config.setHandle(getConnectionHandle());
+        submitJob(new ConnectionMonitorJob(config));
+    }
+
+    private ConnectionHandle getConnectionHandle() {
         if (config.getAudioSource() == 'd') {
-            config.setHandle(InvidiousHandle.getInstance(config));
-        } else {
-            config.setHandle(YoutubeHandle.getInstance(config));
+            return new InvidiousHandle(config);
         }
-        clearExpiredCacheOnStartup();
-        if (config.getAudioSource() != 'y' && !config.getIsOnline()) {
-            checkIfConnectionEstablished();
-        }
+        return new YoutubeHandle(config);
     }
 
-    private DatabaseLinker initializeDatabaseConnection() {
-        return new DatabaseLinker(config.getOS(), queries.get("INITIALIZE_TABLES"));
+    private DatabaseRunner initializeDatabaseConnection() {
+        Map<String, String> queries = QueryLoader.getMapOfQueries();
+        DatabaseLinker linker = new DatabaseLinker(config.getOS(), queries.get("INITIALIZE_TABLES"));
+        return new DatabaseRunner(linker.getConnection(), QueryLoader.getMapOfQueries(), linker);
     }
 
-    public void handleCacheManagement() {
-        try (Scanner scanner = new Scanner(System.in)) {
-            System.out.print("Would you like to:\n1) Clear all existing cache\n2) Clear expired cache\nEnter a 1 or 2 to choose: ");
-            String response = scanner.nextLine();
-            if (response.trim().equals("1")) {
-                clearCache();
-            } else if (response.trim().equals("2")) {
-                clearExpiredCacheOnStartup();
-            }
-        }
-    }
-
-    private boolean canReachDocker() throws InterruptedException {
-        return DockerManager.containerIsAlive() && DockerManager.canConnectToContainer();
-    }
-
-    private void checkIfConnectionEstablished() {
-        Thread connectionTesting = new Thread(() -> {
+    public <T extends StreamLineJob> String submitJob(T job) {
+        String id = job.getJobId();
+        activeJobs.put(id, job);
+        jobExecutor.submit(() -> {
             try {
-                String reachableHost = InvidiousHandle.getWorkingHostnameFromApiOrDocker();
-                boolean dockerIsResponding = canReachDocker();
-                while (reachableHost == null && !dockerIsResponding) {
-                    reachableHost = InvidiousHandle.getWorkingHostnameFromApiOrDocker();
-                    if (reachableHost == null) {
-                        dockerIsResponding = canReachDocker();
-                    }
-                    Thread.sleep(1000);
+                job.start();
+            } finally {
+                if (job.isCompleted()) {
+                    activeJobs.remove(job.getJobId());
+                    Logger.debug("Remove job: {}", job.getJobId());
                 }
-                if (reachableHost != null) {
-                    config.setHost(reachableHost);
-                    config.setIsOnline(true);
-                } else if (dockerIsResponding) {
-                    config.setHost(StreamLineConstants.INVIDIOUS_INSTANCE_ADDRESS);
-                    config.setIsOnline(true);
-                }
-            } catch (InterruptedException iE) {
-                Logger.warn(StreamLineMessages.PeriodicConnectionTestingError.getMessage());
             }
         });
-        connectionTesting.setDaemon(true);
-        connectionTesting.start();
+        return id;
     }
 
     public RetrievedStorage doSearch(String searchTerm) {
-        RetrievedStorage finalResults = new RetrievedStorage();
-        config.getHandle().retrieveSearchResults(searchTerm).thenAccept(searchResults -> {
-            if (searchResults != null) {
-                for (int i = 0; i < searchResults.size(); i++) {
-                    finalResults.add(i, searchResults.get(i));
-                }
-            } else {
-                System.out.println("Unable to retrieve search results at this time.");
+        SearchJob searchJob = new SearchJob(config, searchTerm);
+        submitJob(searchJob);
+
+        while (!searchJob.resultsAreReady()) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
             }
-        }).join();
-        return finalResults.size() > 0 ? finalResults : null;
-    }
-
-    public static Process runCommandExpectWait(String command) {
-        try {
-            Process process = new ProcessBuilder(command.split(" ")).start();
-            return process;
-        } catch (IOException iE) {
-            System.out.println(StreamLineMessages.CommandRunFailure.getMessage() + command);
-            return null;
         }
-    }
+        Logger.debug("Job is no longer running.");
 
-    public static Process runCommandExpectWait(String[] splitCommand) {
-        try {
-            Process process = new ProcessBuilder(splitCommand).start();
-            return process;
-        } catch (IOException iE) {
-            StringBuilder sB = new StringBuilder();
-            Arrays.stream(splitCommand).forEach(str -> sB.append(str + " "));
-            System.out.println(StreamLineMessages.CommandRunFailure.getMessage() + sB.toString().trim());
-            iE.printStackTrace();
-            return null;
-        }
-    }
-    
-    public static boolean runCommand(String command) {
-        try {
-            Process process = new ProcessBuilder(command.split(" ")).start();
-            int exitCode = process.waitFor();
-            return exitCode == 0;
-        } catch (InterruptedException | IOException iE) {
-            System.out.println(StreamLineMessages.CommandRunFailure.getMessage() + command);
-            return false;
-        }
-    }
-
-    public static boolean runCommand(String[] splitCommand) {
-        try {
-            Process process = new ProcessBuilder(splitCommand).start();
-            int exitCode = process.waitFor();
-            return exitCode == 0;
-        } catch (InterruptedException | IOException iE) {
-            StringBuilder sB = new StringBuilder();
-            Arrays.stream(splitCommand).forEach(str -> sB.append(str));
-            System.out.println(StreamLineMessages.CommandRunFailure.getMessage() + sB.toString());
-            return false;
-        }
-    }
-
-    private void setShutdownHandler() {
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> shutdown()));
-    }
-
-    protected String getCacheDirectory() {
-        return CacheManager.getCacheDirectory(config.getOS());
-    }
-        
-    // Temporary function for getting TUI figured out
-    public String testStatsCall() {
-        InvidiousHandle handle = InvidiousHandle.getInstance(config);
-        return handle.retrieveStats();
+        RetrievedStorage test = searchJob.getResults();
+        org.tinylog.Logger.debug(test != null ? "results contains data" : "results is null");
+        return test;
     }
 
     public Song getSongFromName(String songName) {
         return dbRunner.searchForSongName(songName);
     }
+    
+    private void killCurrentAudioJobIfExists() {
+        if (audioJobId != null) {
+            StreamLineJob currentAudioJob = activeJobs.get(audioJobId);
+            currentAudioJob.cancel();
+        }
+    }
 
     public void playSong(Song song) {
-        AudioPlayer audioPlayer = new AudioPlayer(song);
-        audioThread = new Thread(audioPlayer);
-        audioThread.start();
+        killCurrentAudioJobIfExists();
+        audioJobId = submitJob(new SongPlaybackJob(config, song));;
     }
 
     public void playQueue(RetrievedStorage songQueue) {
-        AudioPlayer audioPlayer = new AudioPlayer(songQueue);
-        audioThread = new Thread(audioPlayer);
-        audioThread.start();
+        killCurrentAudioJobIfExists();
+        audioJobId = submitJob(new QueuePlaybackJob(config, songQueue));
     }
 
     public void clearCache() {
-        CacheManager.clearCache(cacheDirectory);
-        dbRunner.clearCachedSongs();
+        submitJob(new CacheClearJob(config, dbRunner, CacheManager.getCacheDirectory(config.getOS())));
     }
 
-    private void clearExpiredCacheOnStartup() {
-        CacheManager.clearExpiredCacheOnStartup(cacheDirectory, dbRunner.getExpiredCache());
-        dbRunner.clearExpiredCache();
-    }
-
-    public void logSevere(String message) {
-        Logger.error(message);
-    }
-
-    public void logWarning(String message) {
-        Logger.warn(message);
-    }
-
-    public void logInfo(String message) {
-        Logger.info(message);
+    private void setShutdownHandler() {
+        Runtime.getRuntime().addShutdownHook(new Thread(this::shutdown));
     }
 
     public void shutdown() {
+        // getThreadStates();
         if (!exitedGracefully) {
-            if (dbRunner != null) {
-                dbRunner.shutdown();
+            for (StreamLineJob job : activeJobs.values()) {
+                job.cancel();
             }
-            try {
-                if (DockerManager.containerIsAlive()) {
-                    DockerManager.stopContainer();
-                }
-            } catch (IllegalStateException iE) {
-                Logger.warn(StreamLineMessages.IllegalStateExceptionInShutdown.getMessage() + iE.getMessage());
+
+            dbRunner.shutdown();
+
+            if (DockerManager.containerIsAlive()) {
+                DockerManager.stopContainer();
             }
-            if (audioThread != null && audioThread.isAlive()) {
-                audioThread.interrupt();
-            }
+
+            jobExecutor.shutdown();
             exitedGracefully = true;
             System.out.println(StreamLineMessages.Farewell.getMessage());
         }
