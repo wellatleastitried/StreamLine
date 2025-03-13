@@ -1,0 +1,11 @@
+com.walit.streamline
+com.walit.streamline.audio
+com.walit.streamline.backend
+com.walit.streamline.backend.jobs
+com.walit.streamline.communicate
+com.walit.streamline.communicate.jsonobjects
+com.walit.streamline.database
+com.walit.streamline.database.utils
+com.walit.streamline.frontend
+com.walit.streamline.utilities
+com.walit.streamline.utilities.internal
