@@ -121,6 +121,27 @@
                 </executions>
 			</plugin>
             <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>post-build-script</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <executable>/bin/bash</executable>
+                    <arguments>
+                        <argument>${project.basedir}/scripts/moveJar.sh</argument>
+                    </arguments>
+                    <failOnError>false</failOnError>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>com.h3xstream.findsecbugs</groupId>
                 <artifactId>findsecbugs-plugin</artifactId>
                 <version>1.13.0</version>
