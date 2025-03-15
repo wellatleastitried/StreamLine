@@ -15,7 +15,12 @@
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
-		<clojure.version>1.11.1</clojure.version>
+        <clojure.version>1.11.1</clojure.version>
+        <bash.executable>/bin/bash</bash.executable>
+        <skip.bash.script>${os.windows}</skip.bash.script>
+        <skip.windows.script>${os.unix}</skip.windows.script>
+        <os.windows>false</os.windows>
+        <os.unix>true</os.unix>
     </properties>
     <dependencies>
         <dependency>
@@ -131,15 +136,30 @@
                         <goals>
                             <goal>exec</goal>
                         </goals>
+                        <configuration>
+                            <executable>${bash.executable}</executable>
+                            <arguments>
+                                <argument>${project.basedir}/scripts/moveJar.sh</argument>
+                            </arguments>
+                            <skip>${skip.bash.script}</skip>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>post-build-script-windows</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>cmd</executable>
+                            <arguments>
+                                <argument>/c</argument>
+                                <argument>${project.basedir}/scripts/moveJar.bat</argument>
+                            </arguments>
+                            <skip>${skip.windows.script}</skip>
+                        </configuration>
                     </execution>
                 </executions>
-                <configuration>
-                    <executable>/bin/bash</executable>
-                    <arguments>
-                        <argument>${project.basedir}/scripts/moveJar.sh</argument>
-                    </arguments>
-                    <failOnError>false</failOnError>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>com.h3xstream.findsecbugs</groupId>
@@ -168,4 +188,18 @@
             </plugin>
         </plugins>
     </build>
+    <profiles>
+        <profile>
+            <id>windows</id>
+            <activation>
+                <os>
+                    <family>windows</family>
+                </os>
+            </activation>
+            <properties>
+                <os.windows>true</os.windows>
+                <os.unix>false</os.unix>
+            </properties>
+        </profile>
+    </profiles>
 </project>
