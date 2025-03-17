@@ -1,6 +1,9 @@
 package com.walit.streamline.utilities.internal;
 
-
+/**
+ * Constant values that are needed through the codebase.
+ * @author wellatleastitried
+ */
 public class StreamLineConstants {
 
     public static final String  GET_TOKENS_FOR_YOUTUBE_VALIDATOR        = "docker run quay.io/invidious/youtube-trusted-session-generator";

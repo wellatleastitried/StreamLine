@@ -2,6 +2,7 @@ package com.walit.streamline.utilities.internal;
 
 /**
  * Messages that will be displayed on the help menu of the program during runtime.
+ * @author wellatleastitried
  */
 public enum HelpMessages {
 

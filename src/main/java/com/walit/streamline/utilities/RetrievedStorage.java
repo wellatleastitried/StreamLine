@@ -5,6 +5,7 @@ import java.util.HashMap;
 
 /**
  * One-to-one map for the songs and their indices to make listing them in the app much easier and convenient.
+ * @author wellatleastitried
  */
 public class RetrievedStorage {
 

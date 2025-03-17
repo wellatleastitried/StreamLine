@@ -11,6 +11,7 @@ public final class CacheManager {
 
     /**
      * Check the cache directory for any files that were downloaded and delete them to clear up disk space.
+     * @param dirName The name of the directory where the cache is located.
      */
     public static void clearCache(String dirName) {
         if (dirName == null || dirName.isEmpty()) {
@@ -31,6 +32,8 @@ public final class CacheManager {
 
     /**
      * Check the cache directory for any files that haven't been played in 30 days or more and delete them to clear up disk space.
+     * @param dirName The name of the directory where the cache is located.
+     * @param expiredSongs The collection of {@link Song} objects that have not been played in at least 30 days.
      */
     public static void clearExpiredCacheOnStartup(String dirName, RetrievedStorage expiredSongs) {
         if (dirName == null || dirName.isEmpty()) {
