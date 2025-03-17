@@ -19,6 +19,10 @@ import java.security.NoSuchAlgorithmException;
 
 import org.tinylog.Logger;
 
+/**
+ * Runs queries with the local database and returns the results in a more convenient format. {@link RetrievedStorage}
+ * @author wellatleastitried
+ */
 public final class DatabaseRunner {
 
     private final Connection connection;

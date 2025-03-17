@@ -1,5 +1,9 @@
 package com.walit.streamline.audio;
 
+/**
+ * Object to house basic information on songs that are being interacted with.
+ * @author wellatleastitried
+ */
 public class Song {
 
     private int songId;
@@ -146,12 +150,6 @@ public class Song {
     }
 
     public void printDetails() {
-        /*
-        if (title == null || artist == null || url == null || videoId == null) {
-            System.out.println("NULL SONG");
-            return;
-        }
-        */
         System.out.println("Song title: " + title);
         System.out.println("Song artist: " + artist);
         System.out.println("Song url: " + url);

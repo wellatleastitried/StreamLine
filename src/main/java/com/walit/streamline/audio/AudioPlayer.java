@@ -24,6 +24,10 @@ import javax.sound.sampled.UnsupportedAudioFileException;
 
 import org.tinylog.Logger;
 
+/**
+ * This is the engine for playing audio from the {@link Song} objects.
+ * @author wellatleastitried
+ */
 public class AudioPlayer implements Runnable {
 
     public Queue<Song> songsToPlay;
@@ -46,6 +50,10 @@ public class AudioPlayer implements Runnable {
         }
     }
 
+    /**
+     * Fill the {@link PriorityQueue} with Song objects to playback.
+     * @param queriedSongs {@link RetrievedStorage} that contains the Song objects and their indices.
+     */
     public void fillQueue(RetrievedStorage queriedSongs) {
         songsToPlay = new PriorityQueue<Song>();
         for (int i = 1; i <= queriedSongs.size(); i++) {
@@ -94,6 +102,13 @@ public class AudioPlayer implements Runnable {
         return true;
     }
 
+    /**
+     * Stream the audio from the given file path.
+     * @param pathToAudio The file path of the audio file.
+     * @throws UnsupportedAudioFileException The file path does not point to a file that contains audio.
+     * @throws IOException
+     * @throws LineUnavailableException
+     */
     public void playSongFromFile(String pathToAudio) throws UnsupportedAudioFileException, IOException, LineUnavailableException {
         AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(new File(pathToAudio));
         AudioFormat format = audioInputStream.getFormat();
@@ -111,6 +126,11 @@ public class AudioPlayer implements Runnable {
         audioInputStream.close();
     }
 
+    /**
+     * Stream the audio from the given URL.
+     * @param pathToAudio The URL that points to the audio stream.
+     * @throws Exception
+     */
     public void playSongFromUrl(String pathToAudio) throws Exception {
         URL audioUrl = new URL(pathToAudio);
 
@@ -173,7 +193,11 @@ public class AudioPlayer implements Runnable {
         }
     }
 
-    // Helper method to convert audio format to PCM which is widely supported
+    /**
+     * Helper method to convert audio format to PCM which is widely supported
+     * @param inFormat The {@link AudioFormat} of the audio stream.
+     * @return The new {@link AudioFormat} converted to PCM.
+     */
     private AudioFormat getOutFormat(AudioFormat inFormat) {
         final int sampleSizeInBits = 16;
         final int channels = inFormat.getChannels();

@@ -11,13 +11,16 @@ import com.walit.streamline.utilities.internal.Config;
 import com.walit.streamline.utilities.internal.*;
 
 import java.util.Map;
-import java.util.Scanner;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
 
 import org.tinylog.Logger;
 
+/**
+ * Schedules various jobs to act as runners for the front-end.
+ * @author wellatleastitried
+ */
 public final class Dispatcher {
     
     private final Config config;

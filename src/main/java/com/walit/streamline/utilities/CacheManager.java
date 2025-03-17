@@ -7,6 +7,10 @@ import com.walit.streamline.utilities.internal.StreamLineMessages;
 
 import java.io.File;
 
+/**
+ * Handles clearing both expired and/or unwanted cached data.
+ * @author wellatleastitried
+ */
 public final class CacheManager {
 
     /**

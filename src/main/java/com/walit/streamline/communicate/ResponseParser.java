@@ -11,8 +11,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Parse API responses from Invidious and validate JSON strings.
+ * @author wellatleastitried
+ */
 public class ResponseParser {
 
+    /**
+     * Parse the incoming JSON response into a List of {@link Song}.
+     * @param jsonResponse The JSON response from the API in String format.
+     * @return The List of {@link Song} for the backend to manage.
+     */
     public static List<Song> listFromInvidiousSearchResponse(String jsonResponse) {
         try {
             if (!isValidJson(jsonResponse)) {
@@ -37,6 +46,11 @@ public class ResponseParser {
         return null;
     }
 
+    /**
+     * Validate whether the incoming string is valid JSON.
+     * @param jsonString The string needing validation.
+     * @return True if the string is valid JSON, False otherwise.
+     */
     public static boolean isValidJson(String jsonString) {
         try {
             JsonFactory factory = new JsonFactory();
@@ -47,6 +61,11 @@ public class ResponseParser {
         }
     }
 
+    /**
+     * Parse the JSON object {@link VideoSearchResult} into a {@link Song} object.
+     * @param toConvert The {@link VideoSearchResult} object to convert.
+     * @return The {@link Song} object with the attributes of the {@link VideoSearchResult}.
+     */
     public static Song searchResultToSong(VideoSearchResult toConvert) {
         return new Song(
                 -1,
@@ -57,6 +76,11 @@ public class ResponseParser {
                 );
     }
 
+    /**
+     * Retrieves the best audio URL from the passed JSON response. This method prioritizes mp4 audio files.
+     * @param jsonResponse The JSON response to parse for the URLs.
+     * @return The audio URL for the given song with the best quality.
+     */
     public static String urlFromInvidividualVideoResponse(String jsonResponse) {
         try {
             if (!isValidJson(jsonResponse)) {

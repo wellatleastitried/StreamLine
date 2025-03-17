@@ -12,6 +12,10 @@ import java.sql.Statement;
 
 import org.tinylog.Logger;
 
+/**
+ * Handles the creation of the database and generates a connection.
+ * @author wellatleastitried
+ */
 public final class DatabaseLinker {
 
     protected final OS osName;

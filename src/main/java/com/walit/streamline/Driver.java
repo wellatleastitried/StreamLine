@@ -30,6 +30,10 @@ import org.apache.commons.cli.ParseException;
 
 import org.tinylog.Logger;
 
+/**
+ * Entry point for the app. Handles the user input and determines the appropriate runtime configuration for the app.
+ * @author wellatleastitried
+ */
 public final class Driver {
 
     private static OS os;
