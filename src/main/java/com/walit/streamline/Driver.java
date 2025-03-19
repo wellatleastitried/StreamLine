@@ -51,18 +51,21 @@ public final class Driver {
     private Driver() {}
 
     private static void checkExistenceOfConfiguration() {
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(createLine("language", LanguagePeer.getSystemLocale()));
-        writeConfigurationFile(stringBuilder.toString());
-    }
-
-    private static void writeConfigurationFile(String text) {
         String path = switch (os) {
             case WINDOWS -> StreamLineConstants.STREAMLINE_CONFIG_PATH_WINDOWS;
             case MAC -> StreamLineConstants.STREAMLINE_CONFIG_PATH_MAC;
             default -> StreamLineConstants.STREAMLINE_CONFIG_PATH_LINUX;
         };
+        if (new File(path).exists()) {
+            return;
+        }
 
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(createLine("language", LanguagePeer.getSystemLocale()));
+        writeConfigurationFile(path, stringBuilder.toString());
+    }
+
+    private static void writeConfigurationFile(String path, String text) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(path))) {
             writer.write(text);
         } catch (IOException iE) {
