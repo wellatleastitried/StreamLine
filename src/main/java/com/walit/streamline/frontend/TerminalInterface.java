@@ -12,8 +12,8 @@ import com.googlecode.lanterna.terminal.Terminal;
 
 import com.walit.streamline.audio.Song;
 import com.walit.streamline.backend.Dispatcher;
+import com.walit.streamline.utilities.LanguagePeer;
 import com.walit.streamline.utilities.RetrievedStorage;
-import com.walit.streamline.utilities.internal.HelpMessages;
 import com.walit.streamline.utilities.internal.StreamLineMessages;
 
 import java.io.IOException;
@@ -118,7 +118,7 @@ public final class TerminalInterface extends FrontendInterface {
     }
 
     public BasicWindow createMainMenuWindow() {
-        BasicWindow window = new BasicWindow("StreamLine Music Player");
+        BasicWindow window = new BasicWindow(LanguagePeer.getText("app.title"));
 
         window.setHints(java.util.Arrays.asList(Window.Hint.FULL_SCREEN));
 
@@ -128,17 +128,17 @@ public final class TerminalInterface extends FrontendInterface {
         panel.setFillColorOverride(TextColor.ANSI.BLACK);
 
         // CREATE LABELS AND BUTTONS
-        Label titleLabel = createLabel("    Welcome to StreamLine    ");
+        Label titleLabel = createLabel(getString(getString(LanguagePeer.getText("label.greeting"))));
         panel.addComponent(generateNewSpace());
         panel.addComponent(titleLabel);
-        panel.addComponent(createButton("Search for a song", () -> transitionMenus(searchPage)));
-        panel.addComponent(createButton("View liked music", () -> transitionMenus(likedMusicPage)));
-        panel.addComponent(createButton("Playlists", () -> transitionMenus(playlistPage)));
-        panel.addComponent(createButton("Recently Played", () -> transitionMenus(recentlyPlayedPage)));
-        panel.addComponent(createButton("Downloaded Music", () -> transitionMenus(downloadedPage)));
-        panel.addComponent(createButton("Help", () -> transitionMenus(helpMenu)));
-        panel.addComponent(createButton("Settings", () -> transitionMenus(settingsMenu)));
-        panel.addComponent(createButton("Quit", () -> {
+        panel.addComponent(createButton(LanguagePeer.getText("button.searchForSong"), () -> transitionMenus(searchPage)));
+        panel.addComponent(createButton(LanguagePeer.getText("button.viewLikedSong"), () -> transitionMenus(likedMusicPage)));
+        panel.addComponent(createButton(LanguagePeer.getText("button.playlists"), () -> transitionMenus(playlistPage)));
+        panel.addComponent(createButton(LanguagePeer.getText("button.recentlyPlayed"), () -> transitionMenus(recentlyPlayedPage)));
+        panel.addComponent(createButton(LanguagePeer.getText("button.downloadedMusic"), () -> transitionMenus(downloadedPage)));
+        panel.addComponent(createButton(LanguagePeer.getText("button.help"), () -> transitionMenus(helpMenu)));
+        panel.addComponent(createButton(LanguagePeer.getText("button.settings"), () -> transitionMenus(settingsMenu)));
+        panel.addComponent(createButton(LanguagePeer.getText("button.quit"), () -> {
             shutdown();
             backend.shutdown();
         }));
@@ -147,7 +147,7 @@ public final class TerminalInterface extends FrontendInterface {
     }
 
     public BasicWindow createHelpMenu() {
-        BasicWindow window = new BasicWindow("StreamLine Help Menu");
+        BasicWindow window = new BasicWindow(LanguagePeer.getText("window.helpTitle"));
 
         window.setHints(java.util.Arrays.asList(Window.Hint.FULL_SCREEN));
 
@@ -157,14 +157,14 @@ public final class TerminalInterface extends FrontendInterface {
         panel.setFillColorOverride(TextColor.ANSI.BLACK);
 
         panel.addComponent(generateNewSpace());
-        panel.addComponent(createLabelWithSize("Search help"));
-        panel.addComponent(createLabel(HelpMessages.SearchInformation.getMessage()));
+        panel.addComponent(createLabelWithSize(LanguagePeer.getText("label.searchHelpTitle")));
+        panel.addComponent(createLabel(getString(LanguagePeer.getText("label.searchHelpBody"))));
         panel.addComponent(generateNewSpace());
-        panel.addComponent(createLabelWithSize("Liked music help"));
-        panel.addComponent(createLabel(getString(HelpMessages.LikedMusicInformation.getMessage())));
+        panel.addComponent(createLabelWithSize(LanguagePeer.getText("label.likedMusicTitle")));
+        panel.addComponent(createLabel(getString(LanguagePeer.getText("label.likedMusicBody"))));
         panel.addComponent(generateNewSpace());
         panel.addComponent(generateNewSpace());
-        panel.addComponent(createButton("  <- Back  ", () -> {
+        panel.addComponent(createButton(getString(LanguagePeer.getText("button.back")), () -> {
             guiThread.invokeLater(() -> {
                 dropWindow(helpMenu);
                 runMainWindow();
@@ -176,7 +176,7 @@ public final class TerminalInterface extends FrontendInterface {
     }
 
     public BasicWindow createSettingsMenu() {
-        BasicWindow window = new BasicWindow("StreamLine Settings");
+        BasicWindow window = new BasicWindow(LanguagePeer.getText("window.settingsTitle"));
 
         window.setHints(java.util.Arrays.asList(Window.Hint.FULL_SCREEN));
 
@@ -186,11 +186,11 @@ public final class TerminalInterface extends FrontendInterface {
         panel.setFillColorOverride(TextColor.ANSI.BLACK);
 
         panel.addComponent(generateNewSpace());
-        panel.addComponent(createButton(getString("Clear cache"), () -> {
+        panel.addComponent(createButton(getString(LanguagePeer.getText("button.clearCache")), () -> {
             backend.clearCache();
         }));
         panel.addComponent(generateNewSpace());
-        panel.addComponent(createButton("  <- Back  ", () -> {
+        panel.addComponent(createButton(getString(LanguagePeer.getText("button.back")), () -> {
             guiThread.invokeLater(() -> {
                 dropWindow(settingsMenu);
                 runMainWindow();

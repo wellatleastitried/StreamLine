@@ -6,6 +6,11 @@ package com.walit.streamline.utilities.internal;
  */
 public class StreamLineConstants {
 
+    public static final String  STREAMLINE_CONFIG_PATH_LINUX            = System.getProperty("user.home") + "/.local/share/StreamLine/config/config.properties";
+    public static final String  STREAMLINE_CONFIG_PATH_WINDOWS          = System.getenv("APPDATA") + "\\Local\\StreamLine\\config\\config.properties";
+    public static final String  STREAMLINE_CONFIG_PATH_MAC              = System.getProperty("user.home") + "/Library/Application Support/StreamLine/config/config.properties";
+
+
     public static final String  GET_TOKENS_FOR_YOUTUBE_VALIDATOR        = "docker run quay.io/invidious/youtube-trusted-session-generator";
     public static final String  INVIDIOUS_INSTANCE_ADDRESS              = "http://localhost:3000/";
     public static final String  INVIDIOUS_GITHUB_REPO_ADDRESS           = "https://github.com/iv-org/invidious.git";

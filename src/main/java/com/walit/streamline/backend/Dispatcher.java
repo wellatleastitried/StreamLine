@@ -6,9 +6,9 @@ import com.walit.streamline.database.DatabaseLinker;
 import com.walit.streamline.database.DatabaseRunner;
 import com.walit.streamline.database.utils.QueryLoader;
 import com.walit.streamline.utilities.CacheManager;
+import com.walit.streamline.utilities.LanguagePeer;
 import com.walit.streamline.utilities.RetrievedStorage;
 import com.walit.streamline.utilities.internal.Config;
-import com.walit.streamline.utilities.internal.*;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -92,7 +92,7 @@ public final class Dispatcher {
         Logger.debug("Job is no longer running.");
 
         RetrievedStorage test = searchJob.getResults();
-        org.tinylog.Logger.debug(test != null ? "results contains data" : "results is null");
+        Logger.debug(test != null ? "results contains data" : "results is null");
         return test;
     }
 
@@ -140,7 +140,7 @@ public final class Dispatcher {
 
             jobExecutor.shutdown();
             exitedGracefully = true;
-            System.out.println(StreamLineMessages.Farewell.getMessage());
+            System.out.println("[*] " + LanguagePeer.getText("app.goodbye"));
         }
     }
 

@@ -14,6 +14,7 @@ import com.walit.streamline.backend.DockerManager;
 import com.walit.streamline.backend.InvidiousHandle;
 import com.walit.streamline.backend.YoutubeHandle;
 import com.walit.streamline.frontend.TerminalInterface;
+import com.walit.streamline.utilities.LanguagePeer;
 import com.walit.streamline.utilities.LibraryManager;
 import com.walit.streamline.utilities.RetrievedStorage;
 import com.walit.streamline.utilities.internal.Config;
@@ -44,9 +45,34 @@ public final class Driver {
             System.out.println(StreamLineMessages.LoggerInitializationFailure.getMessage());
             System.exit(0);
         }
+        checkExistenceOfConfiguration();
     }
 
     private Driver() {}
+
+    private static void checkExistenceOfConfiguration() {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(createLine("language", LanguagePeer.getSystemLocale()));
+        writeConfigurationFile(stringBuilder.toString());
+    }
+
+    private static void writeConfigurationFile(String text) {
+        String path = switch (os) {
+            case WINDOWS -> StreamLineConstants.STREAMLINE_CONFIG_PATH_WINDOWS;
+            case MAC -> StreamLineConstants.STREAMLINE_CONFIG_PATH_MAC;
+            default -> StreamLineConstants.STREAMLINE_CONFIG_PATH_LINUX;
+        };
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(path))) {
+            writer.write(text);
+        } catch (IOException iE) {
+            Logger.warn("Error writing configuration file, check permissions and try again.");
+        }
+    }
+
+    private static String createLine(String id, String value) {
+        return String.format("%s=%s\n", id, value);
+    }
 
     private static void printHelpCli(Options options) {
         System.out.println("\nUsage:\n\tstreamline [--OPTION] [ARGUMENT]\n");

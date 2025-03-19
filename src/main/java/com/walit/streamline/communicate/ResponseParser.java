@@ -6,6 +6,7 @@ import com.walit.streamline.utilities.internal.StreamLineMessages;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.List;
@@ -52,9 +53,18 @@ public class ResponseParser {
      * @return True if the string is valid JSON, False otherwise.
      */
     public static boolean isValidJson(String jsonString) {
+        if (jsonString == null || jsonString.trim().isEmpty()) {
+            return false;
+        }
+
         try {
             JsonFactory factory = new JsonFactory();
-            factory.createParser(jsonString).nextToken();
+            JsonParser parser = factory.createParser(jsonString);
+            parser.nextToken();
+            while (parser.nextToken() != null) {
+                // Keep parsing until the end of the input
+            }
+
             return true;
         } catch (Exception e) {
             return false;
@@ -86,57 +96,48 @@ public class ResponseParser {
             if (!isValidJson(jsonResponse)) {
                 return null;
             }
+
             ObjectMapper objectMapper = new ObjectMapper();
             VideoResult result = objectMapper.readValue(
                     jsonResponse,
                     new TypeReference<VideoResult>() {}
                     );
-            String url = null;
-            String audioType = null;
-            int bestQuality = 0;
-                // 0 => Unknown
-                // 1 => LOW
-                // 2 => MEDIUM
-                // 3 => HIGH
+
+            String mp4BestUrl = null;
+            int mp4BestQuality = 0;
+
+            String otherBestUrl = null;
+            int otherBestQuality = 0;
+
             for (VideoResult.AdaptiveFormat format : result.getAdaptiveFormats()) {
                 if (format.getType().contains("video")) {
                     continue;
                 }
-                if (format.getAudioQuality().contains("LOW") && bestQuality < 1
-                        || (audioType != null && !audioType.contains("audio/mp4"))) {
 
-                    url = format.getUrl();
-                    audioType = format.getType().split(";")[0].split("/")[1];
-                    bestQuality = 1;
+                String mimeType = format.getType().split(";")[0];
+                boolean isMp4 = mimeType.contains("audio/mp4");
 
-                } else if (format.getAudioQuality().contains("MEDIUM") && bestQuality < 2
-                        || (audioType != null && !audioType.contains("audio/mp4"))) {
+                int qualityLevel = 0;
+                String quality = format.getAudioQuality();
+                if (quality.contains("LOW")) {
+                    qualityLevel = 1;
+                } else if (quality.contains("MEDIUM")) {
+                    qualityLevel = 2;
+                } else if (quality.contains("HIGH")) {
+                    qualityLevel = 3;
+                }
 
-                    url = format.getUrl();
-                    audioType = format.getType().split(";")[0].split("/")[1];
-                    bestQuality = 2;
-
-                } else if (format.getAudioQuality().contains("HIGH") && bestQuality < 3
-                        || (audioType != null && !audioType.contains("audio/mp4"))) {
-
-                    url = format.getUrl();
-                    audioType = format.getType().split(";")[0].split("/")[1];
-                    bestQuality = 3;
-
-                } else if (url == null && audioType == null && bestQuality == 0) {
-                    url = format.getUrl();
-                    audioType = format.getType().split(";")[0].split("/")[1];
-                    String quality = format.getAudioQuality();
-                    bestQuality = quality.contains("LOW") ? 1 : quality.contains("MEDIUM") ? 2 : quality.contains("HIGH") ? 3 : 0;
-                } else {
-                    return null;
+                if (isMp4 && qualityLevel > mp4BestQuality) {
+                    mp4BestUrl = format.getUrl();
+                    mp4BestQuality = qualityLevel;
+                } else if (!isMp4 && qualityLevel > otherBestQuality) {
+                    otherBestUrl = format.getUrl();
+                    otherBestQuality = qualityLevel;
                 }
             }
-            if (url != null && audioType != null && bestQuality > 0) {
-                return url;
-            } else {
-                return null;
-            }
+
+            return mp4BestUrl != null ? mp4BestUrl : otherBestUrl;
+
         } catch (Exception e) {
             e.printStackTrace();
         }
