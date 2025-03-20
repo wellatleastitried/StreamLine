@@ -14,6 +14,7 @@ import com.walit.streamline.backend.DockerManager;
 import com.walit.streamline.backend.InvidiousHandle;
 import com.walit.streamline.backend.YoutubeHandle;
 import com.walit.streamline.frontend.TerminalInterface;
+import com.walit.streamline.utilities.LanguagePeer;
 import com.walit.streamline.utilities.LibraryManager;
 import com.walit.streamline.utilities.RetrievedStorage;
 import com.walit.streamline.utilities.internal.Config;
@@ -30,6 +31,10 @@ import org.apache.commons.cli.ParseException;
 
 import org.tinylog.Logger;
 
+/**
+ * Entry point for the app. Handles the user input and determines the appropriate runtime configuration for the app.
+ * @author wellatleastitried
+ */
 public final class Driver {
 
     private static OS os;
@@ -40,9 +45,37 @@ public final class Driver {
             System.out.println(StreamLineMessages.LoggerInitializationFailure.getMessage());
             System.exit(0);
         }
+        checkExistenceOfConfiguration();
     }
 
     private Driver() {}
+
+    private static void checkExistenceOfConfiguration() {
+        String path = switch (os) {
+            case WINDOWS -> StreamLineConstants.STREAMLINE_CONFIG_PATH_WINDOWS;
+            case MAC -> StreamLineConstants.STREAMLINE_CONFIG_PATH_MAC;
+            default -> StreamLineConstants.STREAMLINE_CONFIG_PATH_LINUX;
+        };
+        if (new File(path).exists()) {
+            return;
+        }
+
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(createLine("language", LanguagePeer.getSystemLocale()));
+        writeConfigurationFile(path, stringBuilder.toString());
+    }
+
+    private static void writeConfigurationFile(String path, String text) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(path))) {
+            writer.write(text);
+        } catch (IOException iE) {
+            Logger.warn("Error writing configuration file, check permissions and try again.");
+        }
+    }
+
+    private static String createLine(String id, String value) {
+        return String.format("%s=%s\n", id, value);
+    }
 
     private static void printHelpCli(Options options) {
         System.out.println("\nUsage:\n\tstreamline [--OPTION] [ARGUMENT]\n");
@@ -61,6 +94,7 @@ public final class Driver {
         options.addOption("s", "setup", true, "Initialize the configuration for:\n\t- \"--Docker\" for a locally hosted Invidious instance\n\t- \"--YouTube\" for audio conversion from YouTube videos");
         options.addOption("d", "docker", false, "Start StreamLine with an Invidious docker instance being used in the backend.");
         options.addOption("y", "youtube", false, "Start StreamLine with yt-dlp being used in the backend. [THIS IS THE DEFAULT IF NO BACKEND IS SPECIFIED]");
+        options.addOption("np", "now-playing", false, "Return the name and artist of the song that is currently playing (no output if there is no song playing).");
         options.addOption("c", "clean", true, "Remove unwanted files from the Docker or Youtube install.\nExample:\n\tstreamline --Docker\t=> Removes the Invidious repository from the filesystem\n\n\tstreamline --YouTube\t=> Removes the binary for yt-dlp from the filesystem.");
         options.addOption("i", "import-library", true, "Import your music library from other devices into your current setup and then exit (e.g., --import-library=/path/to/library.json");
         options.addOption("e", "export-library", false, "Generate a file (library.json) that contains all of your music library that can be used to import this library on another device and then exit");
@@ -83,6 +117,7 @@ public final class Driver {
             else if (commandLine.hasOption("help")) printHelpCli(options);
             else if (commandLine.hasOption("docker") || commandLine.hasOption("youtube")) handleStandardRuntime(commandLine);
             else if (commandLine.hasOption("clean")) handleCleaningProcess(commandLine);
+            else if (commandLine.hasOption("np")) displayCurrentlyPlayingSong();
             else if (commandLine.hasOption("import-library")) handleLibraryImport(commandLine);
             else if (commandLine.hasOption("export-library")) handleLibraryExport();
             else if (commandLine.hasOption("play")) handlePlay(commandLine);
@@ -92,6 +127,11 @@ public final class Driver {
             System.err.println("[!] Error parsing command line arguments: " + pE.getMessage());
             printHelpCli(options);
         }
+    }
+
+    private static void displayCurrentlyPlayingSong() {
+        // Get the name and artist of the currently playing song
+        System.out.println("Not yet implemented.");
     }
     
     private static void handleSetup(CommandLine commandLine) {

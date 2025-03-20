@@ -6,6 +6,10 @@ import java.io.IOException;
 
 import java.util.Arrays;
 
+/**
+ * Run shell commands to simplify repeated operations.
+ * @author wellatleastitried
+ */
 public final class CommandExecutor {
 
     private CommandExecutor() {

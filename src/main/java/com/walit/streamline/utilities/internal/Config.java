@@ -4,6 +4,10 @@ import com.walit.streamline.backend.ConnectionHandle;
 
 import java.util.logging.Logger;
 
+/**
+ * The app's core configuration settings.
+ * @author wellatleastitried
+ */
 public class Config {
 
     private Mode mode;

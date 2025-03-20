@@ -30,6 +30,10 @@ import org.tinylog.Logger;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
+/**
+ * Allows for the easy management of the Invidious container.
+ * @author wellatleastitried
+ */
 public class DockerManager {
 
     private static OS os;

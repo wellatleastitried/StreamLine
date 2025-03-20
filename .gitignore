@@ -1,5 +1,6 @@
 target/**
 invidious/**
+logs/**
 
 # IntelliJ IDEA
 .idea/
@@ -18,5 +19,4 @@ out/
 nbproject/private/
 build/
 nbbuild/
-dist/
 nbdist/

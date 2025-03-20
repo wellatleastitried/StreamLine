@@ -2,6 +2,7 @@ package com.walit.streamline.utilities.internal;
 
 /**
  * Error messages to be used throughout the program as needed.
+ * @author wellatleastitried
  */
 public enum StreamLineMessages {
 

@@ -1,7 +1,15 @@
 package com.walit.streamline.utilities.internal;
 
-
+/**
+ * Constant values that are needed through the codebase.
+ * @author wellatleastitried
+ */
 public class StreamLineConstants {
+
+    public static final String  STREAMLINE_CONFIG_PATH_LINUX            = System.getProperty("user.home") + "/.local/share/StreamLine/config/config.properties";
+    public static final String  STREAMLINE_CONFIG_PATH_WINDOWS          = System.getenv("APPDATA") + "\\Local\\StreamLine\\config\\config.properties";
+    public static final String  STREAMLINE_CONFIG_PATH_MAC              = System.getProperty("user.home") + "/Library/Application Support/StreamLine/config/config.properties";
+
 
     public static final String  GET_TOKENS_FOR_YOUTUBE_VALIDATOR        = "docker run quay.io/invidious/youtube-trusted-session-generator";
     public static final String  INVIDIOUS_INSTANCE_ADDRESS              = "http://localhost:3000/";
@@ -37,8 +45,8 @@ public class StreamLineConstants {
     public static final String  WINDOWS_DB_ADDRESS          = System.getenv("APPDATA") + "\\Local\\StreamLine\\storage\\streamline.db";
     public static final String  LINUX_DB_ADDRESS            = System.getProperty("user.home") + "/.local/share/StreamLine/storage/streamline.db";
     public static final String  MAC_DB_ADDRESS              = System.getProperty("user.home") + "/Library/Application Support/StreamLine/storage/streamline.db";
-    public static final String  LINUX_TESTING_DB_ADDRESS    = "/tmp/StreamLine/TEST.db";
-    public static final String  WINDOWS_TESTING_DB_ADDRESS  = System.getenv("TEMP") + "\\StreamLine\\TEST.db";
+    public static final String  LINUX_TESTING_DB_ADDRESS    = "/tmp/StreamLine/test.db";
+    public static final String  WINDOWS_TESTING_DB_ADDRESS  = System.getenv("TEMP") + "\\StreamLine\\test.db";
 
     public static final char[]  SPINNER_SYMBOLS             = {'-', '\\', '|', '/'};
 

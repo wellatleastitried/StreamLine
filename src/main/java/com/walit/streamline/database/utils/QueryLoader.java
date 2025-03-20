@@ -8,6 +8,10 @@ import java.util.HashMap;
 
 import org.tinylog.Logger;
 
+/**
+ * Generates the {@link HashMap} of queries to be used throughout the runtime in the backend.
+ * @author wellatleastitried
+ */
 public final class QueryLoader {
 
     private QueryLoader() {

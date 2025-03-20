@@ -7,6 +7,10 @@ import java.nio.charset.StandardCharsets;
 
 import com.walit.streamline.utilities.internal.StreamLineMessages;
 
+/**
+ * Parses the pre-made queries from the resource folder so that the queries can be loaded into in the backend.
+ * @author wellatleastitried
+ */
 public class StatementReader {
 
     protected static boolean validatePath(String path) throws Exception {
@@ -30,7 +34,7 @@ public class StatementReader {
         }
         try (InputStream inputStream = StatementReader.class.getResourceAsStream(pathToFile);
                 BufferedReader bR = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
-            // Read the file and return the string of its contents (minus the first warning line)
+            /* Read the file and return the string of its contents (minus the first warning line) */
             StringBuilder query = new StringBuilder();
             String line;
             while ((line = bR.readLine()) != null) {
