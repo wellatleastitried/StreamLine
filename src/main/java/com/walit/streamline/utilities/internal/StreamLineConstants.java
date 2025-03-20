@@ -45,8 +45,8 @@ public class StreamLineConstants {
     public static final String  WINDOWS_DB_ADDRESS          = System.getenv("APPDATA") + "\\Local\\StreamLine\\storage\\streamline.db";
     public static final String  LINUX_DB_ADDRESS            = System.getProperty("user.home") + "/.local/share/StreamLine/storage/streamline.db";
     public static final String  MAC_DB_ADDRESS              = System.getProperty("user.home") + "/Library/Application Support/StreamLine/storage/streamline.db";
-    public static final String  LINUX_TESTING_DB_ADDRESS    = "/tmp/StreamLine/TEST.db";
-    public static final String  WINDOWS_TESTING_DB_ADDRESS  = System.getenv("TEMP") + "\\StreamLine\\TEST.db";
+    public static final String  LINUX_TESTING_DB_ADDRESS    = "/tmp/StreamLine/test.db";
+    public static final String  WINDOWS_TESTING_DB_ADDRESS  = System.getenv("TEMP") + "\\StreamLine\\test.db";
 
     public static final char[]  SPINNER_SYMBOLS             = {'-', '\\', '|', '/'};
 

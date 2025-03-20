@@ -113,31 +113,31 @@ public final class DatabaseRunner {
     }
 
     public Song searchForSongName(String songName) {
-        final String searchQuery = "SELECT * FROM Songs s WHERE s.title like '%" + songName + "%'";
-        Song song = null;
-        boolean hasResult = false;
-        try (final Statement statement = connection.createStatement()) {
+        final String searchQuery = "SELECT * FROM Songs s WHERE s.title LIKE ?;";
+        try (PreparedStatement statement = connection.prepareStatement(searchQuery)) {
+            statement.setString(1, "%" + songName + "%");
             statement.setQueryTimeout(10);
-            final ResultSet rs = statement.executeQuery(searchQuery);
-            while (rs.next()) {
-                if (hasResult) {
-                    song = null;
-                    break;
-                }
-                song = new Song(
-                        rs.getInt("id"),
-                        rs.getString("title"),
-                        rs.getString("artist"),
-                        rs.getString("url"),
-                        rs.getString("videoId")
-                );
-                hasResult = true;
+            ResultSet rs = statement.executeQuery();
+
+            if (!rs.isBeforeFirst()) {
+                return null;
             }
-        } catch (SQLException sE) {
-            handleSQLException(sE);
-            song = null;
+            
+            rs.first();
+            int id = rs.getInt("id");
+            String title = rs.getString("title");
+            String artist = rs.getString("artist");
+            String url = rs.getString("url");
+            String videoId = rs.getString("videoId");
+            
+            Song song = new Song(id, title, artist, url, videoId);
+            
+            rs.close();
+            return song;
+        } catch (SQLException e) {
+            handleSQLException(e);
+            return null;
         }
-        return song;
     }
 
     public RetrievedStorage getSongsFromPlaylist(String playlistName) {
@@ -212,7 +212,6 @@ public final class DatabaseRunner {
                 songId = insertSongIntoSongs(song);
             }
             insertSongIntoLikedTable(songId);
-            connection.commit();
         } catch (SQLException sE) {
             handleSQLException(sE);
         } finally {
@@ -229,7 +228,6 @@ public final class DatabaseRunner {
             }
             final Song storedSong = download(song);
             insertSongIntoDownloadTable(songId, storedSong.getDownloadPath(), storedSong.getFileHash());
-            connection.commit();
         } catch (SQLException sE) {
             handleSQLException(sE);
         } finally {
@@ -245,7 +243,6 @@ public final class DatabaseRunner {
                 songId = insertSongIntoSongs(song);
             }
             insertSongIntoRecentlyPlayed(songId);
-            connection.commit();
         } catch (SQLException sE) {
             handleSQLException(sE);
         } finally {
@@ -253,10 +250,11 @@ public final class DatabaseRunner {
         }
     }
 
-    private Song download(Song song) {
+    protected Song download(Song song) {
         // Convert video to mp3 and download
         final String filePath = String.format("%s-%s.mp3", song.getSongName(), song.getSongArtist()); 
         final String fileHash = generateHashFromFile(filePath);
+        // TODO: Actually download the song
         return new Song(
                 song.getSongId(),
                 song.getSongName(),
@@ -286,16 +284,14 @@ public final class DatabaseRunner {
             }
             return hexStringOfHash.toString();
         } catch (NoSuchAlgorithmException nA) {
-            Logger.warn("There is a typo in the name of the hashing algorithm being used.");
-            System.exit(1);
+            Logger.error("There is a typo in the name of the hashing algorithm being used or Java no longer supports the used algorithm. Either way, it needs to be changed.");
         } catch (IOException iE) {
-            Logger.warn(StreamLineMessages.HashingFileInputStreamError.getMessage());
-            System.exit(1);
+            Logger.error(StreamLineMessages.HashingFileInputStreamError.getMessage());
         }
         return null;
     }
 
-    private int getSongId(String title, String artist) throws SQLException {
+    protected int getSongId(String title, String artist) throws SQLException {
         final String checkIfSongExists = "SELECT id FROM Songs WHERE title = ? AND artist = ?;";
         try (PreparedStatement checkSong = connection.prepareStatement(checkIfSongExists)) {
             checkSong.setString(1, title);

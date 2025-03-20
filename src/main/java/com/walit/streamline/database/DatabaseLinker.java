@@ -21,7 +21,7 @@ public final class DatabaseLinker {
     protected final OS osName;
     protected final String PATH;
     private Connection connection;
-    private final boolean databaseExists;
+    protected final boolean databaseExists;
 
     public DatabaseLinker(OS osName, String tableCreationQuery) {
         this.osName = osName;

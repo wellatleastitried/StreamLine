@@ -17,12 +17,16 @@ public class RetrievedStorage {
         songToIndex = new HashMap<Song, Integer>();
     }
 
+    /*
+     * In just about every use case, the first index that will be passed into the
+     * two add() methods will be '1'. This is so that the index will be easier to
+     * refer to from within the UI.
+     */
     public void add(int index, Song song) {
         indexToSong.put(index, song);
         songToIndex.put(song, index);
         assert(indexToSong.size() == songToIndex.size());
     }
-
     public void add(Song song, int index) {
         indexToSong.put(index, song);
         songToIndex.put(song, index);
