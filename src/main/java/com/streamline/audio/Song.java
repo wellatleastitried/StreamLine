@@ -150,9 +150,30 @@ public class Song {
     }
 
     public void printDetails() {
-        System.out.println("Song title: " + title);
-        System.out.println("Song artist: " + artist);
-        System.out.println("Song url: " + url);
-        System.out.println("Song videoId: " + videoId);
+        System.out.println("== Song Details ==");
+        if (songId != -1) {
+            System.out.println("    Song ID: " + songId);
+        }
+        if (title != null) {
+            System.out.println("    Title: " + title);
+        }
+        if (artist != null) {
+            System.out.println("    Artist: " + artist);
+        }
+        if (isLiked) {
+            System.out.println("    Is the song liked?: " + Boolean.toString(isLiked));
+        }
+        if (videoId != null) {
+            System.out.println("    Video ID: " + videoId);
+        }
+        if (downloadPath != null) {
+            System.out.println("    Download Path: " + downloadPath);
+        }
+        if (fileHash != null) {
+            System.out.println("    File Hash: " + fileHash);
+        }
+        if (duration != null) {
+            System.out.println("    Duration: " + duration);
+        }
     }
 }

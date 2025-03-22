@@ -748,7 +748,6 @@ public class VideoResult {
         private int lengthSeconds;
         private String viewCountText;
 
-        // Getters and Setters...
         public String getVideoId() {
             return videoId;
         }
