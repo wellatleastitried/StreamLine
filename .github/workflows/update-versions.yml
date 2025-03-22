@@ -1,0 +1,76 @@
+name: Update All README Versions
+
+on:
+  push:
+    paths:
+      - 'pom.xml'  # Only trigger when pom.xml changes
+    branches:
+      - main       # Or your default branch name
+
+jobs:
+  update-readmes:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: ${{ matrix.java-version }}
+      
+      - name: Extract version from pom.xml
+        id: get-version
+        run: |
+          VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Extracted version: $VERSION"
+      
+      - name: Find and update all README.md files
+        id: update-files
+        run: |
+          README_FILES=$(find . -name "README.md" -type f)
+          echo "Found README files: $README_FILES"
+          
+          CHANGES_MADE=false
+          
+          for file in $README_FILES; do
+            echo "Processing $file"
+            
+            cp "$file" "${file}.bak"
+            
+            sed -i -E 's/streamline(-[0-9]+\.[0-9]+\.[0-9]+)?\.jar/streamline-${{ steps.get-version.outputs.version }}.jar/g' "$file"
+            
+            if ! cmp -s "$file" "${file}.bak"; then
+              echo "Updated version references in $file"
+              CHANGES_MADE=true
+            else
+              echo "No changes needed in $file"
+            fi
+            
+            rm "${file}.bak"
+          done
+          
+          # Set output variable for next step
+          echo "changes_made=$CHANGES_MADE" >> $GITHUB_OUTPUT
+      
+      - name: Commit and push changes
+        if: steps.update-files.outputs.changes_made == 'true'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          
+          # Stage all modified README files
+          git add -A -- '**/README.md'
+          
+          # Commit and push the changes
+          git commit -m "Update version references to ${{ steps.get-version.outputs.version }} in all README files"
+          git push
+        
+      - name: No changes needed
+        if: steps.update-files.outputs.changes_made != 'true'
+        run: echo "No README files needed version updates"
