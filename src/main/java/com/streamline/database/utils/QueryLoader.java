@@ -1,7 +1,5 @@
 package com.streamline.database.utils;
 
-import com.streamline.utilities.internal.StreamLineMessages;
-
 import java.io.IOException;
 
 import java.util.HashMap;
@@ -34,14 +32,14 @@ public final class QueryLoader {
             map.put("GET_RECENTLY_PLAYED_SONGS", StatementReader.readQueryFromFile("/sql/queries/GetSongForRecPlayedScreen.sql"));
             map.put("ENSURE_RECENTLY_PLAYED_SONG_COUNT", StatementReader.readQueryFromFile("/sql/updates/UpdateRecentlyPlayed.sql"));
         } catch (IOException iE) {
-            System.err.println(StreamLineMessages.SQLFileReadError.getMessage());
+            System.err.println("[!] A fatal error has occured while reading premade SQL queries from configuration files.");
             System.exit(1);
         } catch (Exception e) {
-            System.err.println(StreamLineMessages.MissingConfigurationFiles.getMessage());
+            System.err.println("[!] Missing configuration files! You may need to rebuild the project.");
             System.exit(1);
         }
         if (map.isEmpty()) {
-            Logger.error(StreamLineMessages.DatabaseQueryCollectionError.getMessage());
+            Logger.error("[!] Encountered an error while retrieving queries from internal files. This is either due to the files being modified outside of the programs runtime, or a corrupted install.");
             System.exit(1);
         }
         return map;

@@ -2,7 +2,7 @@ package com.streamline.frontend.terminal;
 
 import com.googlecode.lanterna.gui2.*;
 import com.streamline.backend.Dispatcher;
-import com.streamline.utilities.internal.StreamLineMessages;
+
 import org.tinylog.Logger;
 
 import java.util.Collection;
@@ -75,7 +75,7 @@ public class TerminalWindowManager {
                     textGUI.removeWindow(window);
                 }
             } catch (IllegalStateException iE) {
-                Logger.warn(StreamLineMessages.IllegalStateExceptionInShutdown.getMessage() + iE.getMessage());
+                Logger.warn("[!] There was an exception while cleaning up the terminal interface:\n" + iE.getMessage());
             }
         });
     }

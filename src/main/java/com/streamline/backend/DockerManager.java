@@ -23,7 +23,6 @@ import com.streamline.Driver;
 import com.streamline.utilities.internal.Config;
 import com.streamline.utilities.internal.OS;
 import com.streamline.utilities.internal.StreamLineConstants;
-import com.streamline.utilities.internal.StreamLineMessages;
 
 import org.tinylog.Logger;
 
@@ -71,10 +70,10 @@ public class DockerManager {
     public static String startInvidiousContainer() {
         try {
             if (!isDockerInstalled()) {
-                Logger.warn(StreamLineMessages.DockerNotInstalledError.getMessage());
+                Logger.warn("[!] Docker does not appear to be installed on this machine, only offline functionality will be available.");
                 return null;
             } else if (!isDockerRunning()) {
-                Logger.warn(StreamLineMessages.DockerNotRunningError.getMessage());
+                Logger.warn("[!] Docker is not currently running on your machine, only offline functionality will be available.");
                 return null;
             }
             if (invidiousDirectoryExists()) {
@@ -82,7 +81,7 @@ public class DockerManager {
                     return StreamLineConstants.INVIDIOUS_INSTANCE_ADDRESS;
                 }
             } else {
-                Logger.warn(StreamLineMessages.InvidiousRepositoryHasNotBeenClonedWarning.getMessage());
+                Logger.warn("[*] The Invidious repository has not been cloned, docker will not be able to produce an Invidious instance without it. Reload the application with the --setup flag to locally clone the repository.");
                 return null;
             }
         } catch (InterruptedException iE) {
@@ -117,7 +116,7 @@ public class DockerManager {
 
     public static void cloneInvidiousRepo() {
         if (!gitIsInstalled()) {
-            Logger.warn(StreamLineMessages.GitNotInstalled.getMessage());
+            Logger.warn("[!] Git is not installed on this device. Git must be installed before running setup!");
             return;
         }
         if (!invidiousDirectoryExists()) {
@@ -125,7 +124,7 @@ public class DockerManager {
             try {
                 displayLoading(process, StreamLineConstants.CLONING_REPO_MESSAGE);
             } catch (InterruptedException iE) {
-                System.out.println(StreamLineMessages.ErrorCloningRepository.getMessage());
+                System.out.println("[!] There was an error while trying to clone the Invidious repository, please try re-running the app with the --setup flag.");
             }
         } else {
             System.out.println("[*] Invidious repository has already been cloned.");
@@ -279,7 +278,7 @@ public class DockerManager {
             tokensToReturn[1] = extractValue(outputText, "visitor_data:\\s*(\\S+)");
             System.out.println(StreamLineConstants.LOADING_COMPLETE_SYMBOL + "Successfully retrieved tokens from Youtube validator.");
         } catch (InterruptedException | IOException iE) {
-            System.out.println(StreamLineMessages.ErrorRetrievingTokensForDockerCompose.getMessage());
+            System.out.println("[!] There was an error while retrieving the youtube validator tokens, please try again later.");
             return null;
         }
 

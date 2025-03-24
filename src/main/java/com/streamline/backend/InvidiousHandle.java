@@ -3,7 +3,6 @@ package com.streamline.backend;
 import com.streamline.audio.Song;
 import com.streamline.communicate.ResponseParser;
 import com.streamline.utilities.internal.Config;
-import com.streamline.utilities.internal.StreamLineMessages;
 import com.streamline.utilities.internal.StreamLineConstants;
 
 import java.io.BufferedReader;
@@ -44,7 +43,7 @@ public final class InvidiousHandle implements ConnectionHandle {
             }
             return hostnames;
         } catch (IOException iE) {
-            Logger.warn(StreamLineMessages.ErrorReadingHostsFromResource.getMessage());
+            Logger.warn("[!] Could not read hostnames from internal resource file, the installation may be corrupted!");
         }
         return null;
     }
@@ -138,7 +137,7 @@ public final class InvidiousHandle implements ConnectionHandle {
                     return null;
                 }
             } catch (Exception e) {
-                Logger.warn(StreamLineMessages.UnableToCallAPIError.getMessage());
+                Logger.warn("[!] Unable to connect to API at this time, please try again later.");
                 return null;
             }
         });
@@ -190,7 +189,7 @@ public final class InvidiousHandle implements ConnectionHandle {
             return result.toString(); 
 
         } catch (Exception e) {
-            Logger.warn(StreamLineMessages.UnableToCallAPIError.getMessage());
+            Logger.warn("[!] Unable to connect to API at this time, please try again later.");
             return null;
         }
     }

@@ -4,7 +4,6 @@ import com.streamline.backend.DockerManager;
 import com.streamline.backend.InvidiousHandle;
 import com.streamline.utilities.internal.Config;
 import com.streamline.utilities.internal.StreamLineConstants;
-import com.streamline.utilities.internal.StreamLineMessages;
 
 import org.tinylog.Logger;
 
@@ -40,7 +39,7 @@ public class ConnectionMonitorJob extends StreamLineJob {
             }
             finish();
         } catch (InterruptedException iE) {
-            Logger.warn(StreamLineMessages.PeriodicConnectionTestingError.getMessage());
+            Logger.warn("[!] Encountered an error while attempting to establish a network connection in the background.");
             cancel();
         }
     }

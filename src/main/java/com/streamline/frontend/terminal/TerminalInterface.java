@@ -14,7 +14,6 @@ import com.streamline.audio.Song;
 import com.streamline.backend.Dispatcher;
 import com.streamline.utilities.LanguagePeer;
 import com.streamline.utilities.RetrievedStorage;
-import com.streamline.utilities.internal.StreamLineMessages;
 
 import java.io.IOException;
 
@@ -82,7 +81,7 @@ public final class TerminalInterface extends com.streamline.frontend.FrontendInt
             helpMenu = createHelpMenu();
             settingsMenu = createSettingsMenu();
         } catch (IOException iE) {
-            Logger.error(StreamLineMessages.FatalStartError.getMessage());
+            Logger.error("[!] A fatal error has occured while starting StreamLine, please try reloading the app.");
             System.exit(0);
         }
     }
@@ -265,7 +264,7 @@ public final class TerminalInterface extends com.streamline.frontend.FrontendInt
                         try {
                             textGUI.getScreen().refresh();
                         } catch (IOException iE) {
-                            Logger.error(StreamLineMessages.RedrawError.getMessage());
+                            Logger.error("[!] Error while redrawing screen, please restart the app.");
                             handleKeyStroke(keyStroke);
                         }
                     });
@@ -357,15 +356,15 @@ public final class TerminalInterface extends com.streamline.frontend.FrontendInt
                         textGUI.removeWindow(window);
                     }
                 } catch (IllegalStateException iE) {
-                    Logger.warn(StreamLineMessages.IllegalStateExceptionInShutdown.getMessage() + iE.getMessage());
+                    Logger.warn("[!] There was an exception while cleaning up the terminal interface:\n" + iE.getMessage());
                 }
             });
             screen.stopScreen();
             terminal.close();
         } catch (IOException iE) {
-            Logger.error(StreamLineMessages.UnexpectedErrorInShutdown.getMessage());
+            Logger.error("[!] An unexpected error occured during shutdown, forcing shutdown...");
         } catch (IllegalStateException iE) {
-            Logger.warn(StreamLineMessages.IllegalStateExceptionInShutdown.getMessage() + iE.getMessage());
+            Logger.warn("[!] There was an exception while cleaning up the terminal interface:\n" + iE.getMessage());
         }
     }
 }

@@ -8,7 +8,6 @@ import com.googlecode.lanterna.input.KeyType;
 import com.streamline.audio.Song;
 import com.streamline.backend.Dispatcher;
 import com.streamline.utilities.RetrievedStorage;
-import com.streamline.utilities.internal.StreamLineMessages;
 import org.tinylog.Logger;
 
 import java.io.IOException;
@@ -114,7 +113,7 @@ public class SearchPageWindow extends BaseWindow {
                     try {
                         textGUI.getScreen().refresh();
                     } catch (IOException iE) {
-                        Logger.error(StreamLineMessages.RedrawError.getMessage());
+                        Logger.error("[!] Error while redrawing screen, please restart the app.");
                     }
                 });
             }

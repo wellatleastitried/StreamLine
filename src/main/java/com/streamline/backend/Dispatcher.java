@@ -145,7 +145,7 @@ public final class Dispatcher {
     }
 
     /*
-     * This is a method I am leaving for potential debugging in the future.
+     * This is a method that I am leaving for potential debugging in the future.
      */
     private void getThreadStates() {
         Map<Thread, StackTraceElement[]> threads = Thread.getAllStackTraces();

@@ -3,7 +3,6 @@ package com.streamline.utilities;
 import com.streamline.audio.Song;
 import com.streamline.utilities.internal.OS;
 import com.streamline.utilities.internal.StreamLineConstants;
-import com.streamline.utilities.internal.StreamLineMessages;
 
 import java.io.File;
 
@@ -19,7 +18,7 @@ public final class CacheManager {
      */
     public static void clearCache(String dirName) {
         if (dirName == null || dirName.isEmpty()) {
-            System.err.println(StreamLineMessages.CacheDirectoryCleanupFailure.getMessage());
+            System.err.println("[*] Error trying to clean cached songs.");
             return;
         }
         File cacheDirectory = new File(dirName);
@@ -41,7 +40,7 @@ public final class CacheManager {
      */
     public static void clearExpiredCacheOnStartup(String dirName, RetrievedStorage expiredSongs) {
         if (dirName == null || dirName.isEmpty()) {
-            System.err.println(StreamLineMessages.CacheDirectoryCleanupFailure.getMessage());
+            System.err.println("[*] Error trying to clean cached songs.");
             return;
         }
         for (Song song: expiredSongs.getArrayOfSongs()) {

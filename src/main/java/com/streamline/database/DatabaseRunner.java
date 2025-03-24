@@ -1,6 +1,5 @@
 package com.streamline.database;
 
-import com.streamline.utilities.internal.StreamLineMessages;
 import com.streamline.audio.Song;
 import com.streamline.utilities.RetrievedStorage;
 
@@ -36,7 +35,7 @@ public final class DatabaseRunner {
         try {
             this.connection.setAutoCommit(false);
         } catch (SQLException sE) {
-            Logger.error(StreamLineMessages.DisableAutoCommitFailure.getMessage());
+            Logger.error("[!] Unable to disable auto-commit feature with connection, please restart the app.");
             System.exit(1);
         }
     }
@@ -286,7 +285,7 @@ public final class DatabaseRunner {
         } catch (NoSuchAlgorithmException nA) {
             Logger.error("There is a typo in the name of the hashing algorithm being used or Java no longer supports the used algorithm. Either way, it needs to be changed.");
         } catch (IOException iE) {
-            Logger.error(StreamLineMessages.HashingFileInputStreamError.getMessage());
+            Logger.error("[!] There has been an error reading the bytes from the configuration file, please try reloading the app.");
         }
         return null;
     }
@@ -364,11 +363,11 @@ public final class DatabaseRunner {
     }
 
     private void handleSQLException(SQLException sE) {
-        Logger.warn(StreamLineMessages.SQLQueryError.getMessage());
+        Logger.warn("[!] Unable to execute query on the database, please try restarting the app.");
         try {
             connection.rollback();
         } catch (SQLException rollbackException) {
-            Logger.error(StreamLineMessages.RollbackError.getMessage());
+            Logger.error("[!] Unable to rollback changes to database after an error.");
             System.exit(1);
         }
     }
@@ -377,7 +376,7 @@ public final class DatabaseRunner {
         try {
             connection.setAutoCommit(true);
         } catch (SQLException sE) {
-            Logger.error(StreamLineMessages.AutoCommitRestoreFailure.getMessage());
+            Logger.error("[!] Failed to restore auto-commit feature to connection, please restart the app.");
             System.exit(1);
         }
     }

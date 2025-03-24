@@ -4,7 +4,6 @@ import com.googlecode.lanterna.SGR;
 import com.googlecode.lanterna.TerminalSize;
 import com.googlecode.lanterna.TextColor;
 import com.googlecode.lanterna.gui2.*;
-import com.streamline.utilities.LanguagePeer;
 
 /**
  * Factory for creating consistently styled UI components. Centralizes styling and component creation logic.

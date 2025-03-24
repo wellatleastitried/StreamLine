@@ -15,13 +15,12 @@ import com.streamline.backend.InvidiousHandle;
 import com.streamline.backend.YoutubeHandle;
 import com.streamline.frontend.terminal.TerminalInterface;
 import com.streamline.utilities.LanguagePeer;
-import com.streamline.utilities.LibraryManager;
+import com.streamline.utilities.LibraryPeer;
 import com.streamline.utilities.RetrievedStorage;
 import com.streamline.utilities.internal.Config;
 import com.streamline.utilities.internal.Mode;
 import com.streamline.utilities.internal.OS;
 import com.streamline.utilities.internal.StreamLineConstants;
-import com.streamline.utilities.internal.StreamLineMessages;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
@@ -42,7 +41,7 @@ public final class Driver {
     static {
         os = getOSOfUser();
         if (!initializeLogger(os)) {
-            System.out.println(StreamLineMessages.LoggerInitializationFailure.getMessage());
+            System.out.println("[!] There was an error while initializing the logger, please try reloading the app!");
             System.exit(0);
         }
         checkExistenceOfConfiguration();
@@ -109,7 +108,7 @@ public final class Driver {
         try {
             commandLine = new DefaultParser().parse(options, arguments);
             if (arguments.length > 2 && !commandLine.hasOption("delete")) {
-                System.out.println(StreamLineMessages.TooManyArgumentsProvided.getMessage());
+                System.out.println("[!] There were too many arguments provided. Only one option can be chosen at a time.\n\tUsage:\n\t\tstreamline [--OPTION] [ARGUMENT]\n");
                 System.exit(0);
             }
             if (arguments.length < 1) handleStandardRuntime(commandLine);
@@ -147,7 +146,7 @@ public final class Driver {
 
     private static void handleLibraryExport() { // Transfer database entries to JSON file
         Config config = getConfigurationForRuntime();
-        LibraryManager libManager = new LibraryManager(config);
+        LibraryPeer libManager = new LibraryPeer(config);
         String exportPath = libManager.exportExistingLibrary();
         if (exportPath != null) {
             System.out.println("[*] Your library has been exported to the file: " + exportPath);
@@ -160,7 +159,7 @@ public final class Driver {
     private static void handleLibraryImport(CommandLine commandLine) { // Take in JSON file and fill database with entries
         Config config = getConfigurationForRuntime();
         String filename = commandLine.getOptionValue("import-library");
-        LibraryManager libManager = new LibraryManager(config);
+        LibraryPeer libManager = new LibraryPeer(config);
         boolean success = libManager.importExistingLibrary(filename);
         if (!success) {
             System.out.println("[!] An error occured while importing your library, please try again.");
@@ -218,7 +217,7 @@ public final class Driver {
         Dispatcher streamlineBackend = new Dispatcher(configuration);
         TerminalInterface tui = new TerminalInterface(streamlineBackend);
         if (!tui.run()) {
-            System.err.println(StreamLineMessages.FatalStartError.getMessage());
+            System.err.println("[!] A fatal error has occured while starting StreamLine, please try reloading the app.");
             return;
         }
     }
@@ -258,12 +257,12 @@ public final class Driver {
         DockerManager.cloneInvidiousRepo();
         boolean didWrite = DockerManager.writeDockerCompose();
         if (!didWrite) {
-            System.out.println(StreamLineMessages.ErrorWritingToDockerCompose.getMessage());
+            System.out.println("[!] There was an error while parsing and writing docker-compose.yml, please re-run the app with the --setup flag");
         }
         if (DockerManager.buildInstance()) {
             System.out.println("\n[*] Invidious image built successfully!\n");
         } else {
-            System.out.println(StreamLineMessages.InvidiousBuildError.getMessage());
+            System.out.println("[!] An error occured while building the image for Invidious with Docker. Please try re-running the app with the --setup flag.");
         }
         System.exit(0);
     }

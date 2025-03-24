@@ -1,7 +1,5 @@
 package com.streamline.backend;
 
-import com.streamline.utilities.internal.StreamLineMessages;
-
 import java.io.IOException;
 
 import java.util.Arrays;
@@ -21,7 +19,7 @@ public final class CommandExecutor {
             Process process = new ProcessBuilder(command.split(" ")).start();
             return process;
         } catch (IOException iE) {
-            System.out.println(StreamLineMessages.CommandRunFailure.getMessage() + command);
+            System.out.println("[!] The system encountered an error while running the following command: " + command);
             return null;
         }
     }
@@ -33,7 +31,7 @@ public final class CommandExecutor {
         } catch (IOException iE) {
             StringBuilder sB = new StringBuilder();
             Arrays.stream(splitCommand).forEach(str -> sB.append(str + " "));
-            System.out.println(StreamLineMessages.CommandRunFailure.getMessage() + sB.toString().trim());
+            System.out.println("[!] The system encountered an error while running the following command: " + sB.toString().trim());
             iE.printStackTrace();
             return null;
         }
@@ -45,7 +43,7 @@ public final class CommandExecutor {
             int exitCode = process.waitFor();
             return exitCode == 0;
         } catch (InterruptedException | IOException iE) {
-            System.out.println(StreamLineMessages.CommandRunFailure.getMessage() + command);
+            System.out.println("[!] The system encountered an error while running the following command: " + command);
             return false;
         }
     }
@@ -58,7 +56,7 @@ public final class CommandExecutor {
         } catch (InterruptedException | IOException iE) {
             StringBuilder sB = new StringBuilder();
             Arrays.stream(splitCommand).forEach(str -> sB.append(str));
-            System.out.println(StreamLineMessages.CommandRunFailure.getMessage() + sB.toString());
+            System.out.println("[!] The system encountered an error while running the following command: " + sB.toString());
             return false;
         }
     }

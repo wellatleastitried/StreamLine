@@ -4,7 +4,6 @@ import com.streamline.audio.Song;
 import com.streamline.utilities.internal.Config;
 import com.streamline.utilities.internal.OS;
 import com.streamline.utilities.internal.StreamLineConstants;
-import com.streamline.utilities.internal.StreamLineMessages;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -114,7 +113,7 @@ public final class YoutubeHandle implements ConnectionHandle {
                 results = processCommandOutput(process);
                 saveToCache(term, results);
             } catch (IOException | InterruptedException e) {
-                Logger.warn(StreamLineMessages.UnableToPullSearchResultsFromYtDlp.getMessage());
+                Logger.warn("[!] There was an error while using yt-dlp to gather results from the search query, please try again.");
                 return null;
             } finally {
                 cleanupProcess(process);
@@ -290,7 +289,7 @@ public final class YoutubeHandle implements ConnectionHandle {
             }
             return true;
         } catch (InterruptedException | IOException iE) {
-            Logger.error(StreamLineMessages.YtDlpDownloadFailed.getMessage());
+            Logger.error("[!] An error occured while downloading yt-dlp, please try again.");
         } finally {
             cleanupProcess(process);
         }

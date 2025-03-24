@@ -2,7 +2,6 @@ package com.streamline.communicate;
 
 import com.streamline.audio.Song;
 import com.streamline.communicate.jsonobjects.*;
-import com.streamline.utilities.internal.StreamLineMessages;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.core.JsonFactory;
@@ -42,7 +41,7 @@ public class ResponseParser {
                 .map(x -> searchResultToSong(x))
                 .collect(Collectors.toList());
         } catch (Exception e) {
-            System.err.println(StreamLineMessages.JsonParsingException.getMessage());
+            System.err.println("[!] Unable to parse JSON response from API, please try again later.");
         }
         return null;
     }

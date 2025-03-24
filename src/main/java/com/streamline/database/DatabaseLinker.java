@@ -1,7 +1,6 @@
 package com.streamline.database;
 
 import com.streamline.utilities.internal.StreamLineConstants;
-import com.streamline.utilities.internal.StreamLineMessages;
 import com.streamline.utilities.internal.OS;
 
 import java.io.File;
@@ -34,12 +33,12 @@ public final class DatabaseLinker {
                 if (setupNewDatabase(tableCreationQuery)) {
                     System.out.println("[*] Database has been successfully set up.");
                 } else {
-                    Logger.error(StreamLineMessages.DBCreationFailure.getMessage());
+                    Logger.error("[!] A fatal error has occured while generating the schema of the database, please try reloading the app.");
                     System.exit(0);
                 }
             }
         } catch (SQLException sE) {
-            System.err.println(StreamLineMessages.GetDBConnectionFailure.getMessage());
+            System.err.println("[!] A fatal error has occured while establishing a connection to the database.");
             System.exit(1);
         }
     }
@@ -58,10 +57,10 @@ public final class DatabaseLinker {
             statement.setQueryTimeout(30);
             statement.executeUpdate(query);
         } catch (SQLException sE) {
-            Logger.error(StreamLineMessages.DBCreationFailure.getMessage());
+            Logger.error("[!] A fatal error has occured while generating the schema of the database, please try reloading the app.");
             System.exit(1);
         } catch (Exception e) {
-            Logger.error(StreamLineMessages.UnknownDBFatalError.getMessage());
+            Logger.error("[!] There has been an unknown fatal error while connecting to the database, please try reloading the app.");
             System.exit(1);
         }
         return true;
@@ -73,7 +72,7 @@ public final class DatabaseLinker {
                 connection.close();
             }
         } catch (SQLException sE) {
-            System.err.println(StreamLineMessages.DBCloseError.getMessage());
+            System.err.println("[!] A fatal error has occured while closing the connection to the database.");
             return false;
         }
         return true;

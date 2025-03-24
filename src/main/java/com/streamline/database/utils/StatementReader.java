@@ -5,8 +5,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 
-import com.streamline.utilities.internal.StreamLineMessages;
-
 /**
  * Parses the pre-made queries from the resource folder so that the queries can be loaded into in the backend.
  * @author wellatleastitried
@@ -29,7 +27,7 @@ public class StatementReader {
      */
     public static String readQueryFromFile(String pathToFile) throws Exception {
         if (!validatePath(pathToFile)) {
-            System.err.println(StreamLineMessages.InvalidPathForConfiguration.getMessage());
+            System.err.println("[!] The SQL configuration files are unable to be found! You may need to rebuild the project.");
             System.exit(1);
         }
         try (InputStream inputStream = StatementReader.class.getResourceAsStream(pathToFile);
