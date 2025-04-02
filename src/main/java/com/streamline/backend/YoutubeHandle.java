@@ -171,8 +171,9 @@ public final class YoutubeHandle implements ConnectionHandle {
             "--no-warnings",
             "--ignore-errors",
             "-f",
-            "ba",
-            "--get-url",
+            "bestaudio[ext=m4a]/best[ext-m4a]/bestaudio",
+            "-g",
+            "--no-playlist",
             "https://www.youtube.com/watch?v=" + id
         };
         Process process = null;

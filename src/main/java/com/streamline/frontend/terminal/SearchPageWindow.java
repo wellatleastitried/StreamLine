@@ -11,7 +11,9 @@ import com.streamline.utilities.RetrievedStorage;
 import org.tinylog.Logger;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -21,6 +23,8 @@ import java.util.Set;
 public class SearchPageWindow extends BaseWindow {
 
     private final TextGUI textGUI;
+
+    private Map<Integer, Button> searchResultButtons;
 
     public SearchPageWindow(TerminalWindowManager windowManager, Dispatcher backend, TextGUIThread guiThread, TerminalComponentFactory componentFactory, TextGUI textGUI) {
         super(windowManager, backend, guiThread, componentFactory);
@@ -73,15 +77,15 @@ public class SearchPageWindow extends BaseWindow {
                         return Result.HANDLED;
                     }
 
-                    Button[] buttons = resultsToButtons(results);
-                    updateResultsDisplay(resultsBox, currentButtons, buttons);
+                    resultsToButtons(results);
+                    updateResultsDisplay(resultsBox, currentButtons);
                     return Result.HANDLED;
                 }
                 return super.handleKeyStroke(keyStroke);
             }
 
-            private Button[] resultsToButtons(RetrievedStorage results) {
-                Button[] buttons = new Button[results.size()];
+            private void resultsToButtons(RetrievedStorage results) {
+                searchResultButtons = new HashMap<>();
                 for (int i = 0; i < results.size(); i++) {
                     Song song = results.getSongFromIndex(i);
                     String text = String.format(
@@ -92,21 +96,21 @@ public class SearchPageWindow extends BaseWindow {
                             song.getSongArtist(),
                             song.getDuration()
                             );
-                    buttons[i] = new Button(text, () -> handleSongSelection(song));
+                    final int key = i;
+                    searchResultButtons.put(i, new Button(text, () -> handleSongSelection(song, key)));
                 }
-                return buttons;
             }
 
-            private void updateResultsDisplay(Panel resultsBox, Set<Button> currentButtons, Button[] buttons) {
+            private void updateResultsDisplay(Panel resultsBox, Set<Button> currentButtons) {
                 guiThread.invokeLater(() -> {
                     for (Button button : currentButtons) {
                         resultsBox.removeComponent(button);
                     }
                     currentButtons.clear();
 
-                    for (Button button : buttons) {
-                        if (currentButtons.add(button)) {
-                            resultsBox.addComponent(button);
+                    for (Map.Entry<Integer, Button> entry : searchResultButtons.entrySet()) {
+                        if (currentButtons.add(entry.getValue())) {
+                            resultsBox.addComponent(entry.getValue());
                         }
                     }
 
@@ -118,8 +122,8 @@ public class SearchPageWindow extends BaseWindow {
                 });
             }
 
-            private void handleSongSelection(Song song) {
-                // Implementation for handling song selection
+            private void handleSongSelection(Song song, int key) {
+
             }
 
             private String getOffsetForSongButton(int digits) {

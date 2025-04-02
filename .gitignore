@@ -1,6 +1,7 @@
 target/**
 invidious/**
 logs/**
+dist/
 
 # IntelliJ IDEA
 .idea/

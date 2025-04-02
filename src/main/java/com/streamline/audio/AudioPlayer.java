@@ -28,6 +28,7 @@ import org.tinylog.Logger;
 public final class AudioPlayer extends AbstractMusicQueue implements Runnable {
 
     private SourceDataLine currentAudioLine;
+
     private boolean isPlaying = false;
     private boolean isPaused = false;
 
