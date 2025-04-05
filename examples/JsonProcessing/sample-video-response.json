@@ -1,0 +1,25 @@
+{
+  "adaptiveFormats": [
+    {
+      "type": "audio/mp4; codecs=\"mp4a.40.2\"",
+      "url": "https://example.com/audio/bohemian-rhapsody-high.mp4",
+      "audioQuality": "AUDIO_QUALITY_HIGH"
+    },
+    {
+      "type": "audio/webm; codecs=\"opus\"",
+      "url": "https://example.com/audio/bohemian-rhapsody-medium.webm",
+      "audioQuality": "AUDIO_QUALITY_MEDIUM"
+    },
+    {
+      "type": "video/mp4; codecs=\"avc1.42001E\"",
+      "url": "https://example.com/video/bohemian-rhapsody-high.mp4",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "type": "audio/mp4; codecs=\"mp4a.40.2\"",
+      "url": "https://example.com/audio/bohemian-rhapsody-low.mp4",
+      "audioQuality": "AUDIO_QUALITY_LOW"
+    }
+  ]
+}
