@@ -1,0 +1,92 @@
+[
+  {
+    "type": "video",
+    "title": "Bohemian Rhapsody",
+    "videoId": "fJ9rUzIMcZQ",
+    "author": "Queen",
+    "authorUrl": "https://youtube.com/channel/Queen",
+    "videoThumbnails": [
+      {
+        "quality": "medium",
+        "url": "https://i.ytimg.com/vi/fJ9rUzIMcZQ/mqdefault.jpg",
+        "width": 320,
+        "height": 180
+      },
+      {
+        "quality": "high",
+        "url": "https://i.ytimg.com/vi/fJ9rUzIMcZQ/hqdefault.jpg",
+        "width": 480,
+        "height": 360
+      }
+    ],
+    "description": "Official music video for Bohemian Rhapsody by Queen.",
+    "descriptionHtml": "<p>Official music video for Bohemian Rhapsody by Queen.</p>",
+    "viewCount": 1650000000,
+    "published": 1384156800,
+    "publishedText": "10 years ago",
+    "lengthSeconds": 355,
+    "liveNow": false,
+    "paid": false,
+    "premium": false
+  },
+  {
+    "type": "video",
+    "title": "Hotel California",
+    "videoId": "EqPtz5qN7HM",
+    "author": "Eagles",
+    "authorUrl": "https://youtube.com/channel/Eagles",
+    "videoThumbnails": [
+      {
+        "quality": "medium",
+        "url": "https://i.ytimg.com/vi/EqPtz5qN7HM/mqdefault.jpg",
+        "width": 320,
+        "height": 180
+      },
+      {
+        "quality": "high",
+        "url": "https://i.ytimg.com/vi/EqPtz5qN7HM/hqdefault.jpg",
+        "width": 480,
+        "height": 360
+      }
+    ],
+    "description": "Eagles performing their classic hit Hotel California.",
+    "descriptionHtml": "<p>Eagles performing their classic hit Hotel California.</p>",
+    "viewCount": 780000000,
+    "published": 1417737600,
+    "publishedText": "9 years ago",
+    "lengthSeconds": 432,
+    "liveNow": false,
+    "paid": false,
+    "premium": false
+  },
+  {
+    "type": "video",
+    "title": "Stairway to Heaven",
+    "videoId": "QkF3oxziUI4",
+    "author": "Led Zeppelin",
+    "authorUrl": "https://youtube.com/channel/LedZeppelin",
+    "videoThumbnails": [
+      {
+        "quality": "medium",
+        "url": "https://i.ytimg.com/vi/QkF3oxziUI4/mqdefault.jpg",
+        "width": 320,
+        "height": 180
+      },
+      {
+        "quality": "high",
+        "url": "https://i.ytimg.com/vi/QkF3oxziUI4/hqdefault.jpg",
+        "width": 480,
+        "height": 360
+      }
+    ],
+    "description": "Led Zeppelin's epic masterpiece Stairway to Heaven.",
+    "descriptionHtml": "<p>Led Zeppelin's epic masterpiece Stairway to Heaven.</p>",
+    "viewCount": 890000000,
+    "published": 1400000000,
+    "publishedText": "8 years ago",
+    "lengthSeconds": 482,
+    "liveNow": false,
+    "paid": false,
+    "premium": false
+  }
+]
