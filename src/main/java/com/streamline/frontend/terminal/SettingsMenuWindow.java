@@ -26,7 +26,13 @@ public class SettingsMenuWindow extends BaseWindow {
         panel.addComponent(componentFactory.createButton(
                     LanguagePeer.getText("button.clearCache"),
                     () -> backend.clearCache()
-                    ));
+        ));
+        /*
+        panel.addComponent(componentFactory.createButton(
+                    LanguagePeer.getText("button.chooseLanguage"),
+                    () -> windowManager.transitionTo(window)
+        ));
+        */
 
         panel.addComponent(componentFactory.createEmptySpace());
 
@@ -36,7 +42,7 @@ public class SettingsMenuWindow extends BaseWindow {
                     () -> windowManager.returnToMainMenu(window),
                     componentFactory.getButtonWidth() / 3,
                     componentFactory.getButtonHeight() / 2
-                    ));
+        ));
 
         window.setComponent(panel);
         return window;

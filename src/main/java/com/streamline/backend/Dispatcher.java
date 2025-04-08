@@ -96,6 +96,10 @@ public final class Dispatcher {
         return test;
     }
 
+    public void changeLanguage(String languageCode) {
+        submitJob(new LanguageJob(config, languageCode));
+    }
+
     public Song getSongFromName(String songName) {
         return dbRunner.searchForSongName(songName);
     }

@@ -17,6 +17,8 @@ import com.streamline.utilities.RetrievedStorage;
 
 import java.io.IOException;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -35,6 +37,7 @@ public final class TerminalInterface extends com.streamline.frontend.FrontendInt
     private BasicWindow downloadedPage;
     private BasicWindow playlistPage;
     private BasicWindow likedMusicPage;
+    private BasicWindow languagePage;
 
     public TerminalScreen screen;
 
@@ -72,7 +75,17 @@ public final class TerminalInterface extends com.streamline.frontend.FrontendInt
             buttonWidth = terminalSize.getColumns() / 4;
             textGUI = new MultiWindowTextGUI(screen);
             guiThread = textGUI.getGUIThread();
+            initializeWindows();
+        } catch (IOException iE) {
+            Logger.error("[!] A fatal error has occured while starting StreamLine, please try reloading the app.");
+            System.exit(0);
+        }
+    }
+
+    private void initializeWindows() {
+        try {
             mainMenu = createMainMenuWindow();
+            languagePage = createLanguagePage();
             searchPage = createSearchPage();
             likedMusicPage = createLikeMusicPage();
             playlistPage = createPlaylistPage();
@@ -80,11 +93,11 @@ public final class TerminalInterface extends com.streamline.frontend.FrontendInt
             downloadedPage = createDownloadedMusicPage();
             helpMenu = createHelpMenu();
             settingsMenu = createSettingsMenu();
-        } catch (IOException iE) {
-            Logger.error("[!] A fatal error has occured while starting StreamLine, please try reloading the app.");
-            System.exit(0);
+        } catch (Exception e) {
+            Logger.error("[!] There was an error while initializing the windows for the terminal interface.");
         }
     }
+
 
     public Label createLabelWithSize(String text) {
         return createLabelWithSize(text, buttonWidth, buttonHeight);
@@ -188,6 +201,9 @@ public final class TerminalInterface extends com.streamline.frontend.FrontendInt
         panel.addComponent(createButton(getString(LanguagePeer.getText("button.clearCache")), () -> {
             backend.clearCache();
         }));
+        panel.addComponent(createButton(getString(LanguagePeer.getText("button.chooseLanguage")), () -> {
+            transitionMenus(languagePage);
+        }));
         panel.addComponent(generateNewSpace());
         panel.addComponent(createButton(getString(LanguagePeer.getText("button.back")), () -> {
             guiThread.invokeLater(() -> {
@@ -199,6 +215,42 @@ public final class TerminalInterface extends com.streamline.frontend.FrontendInt
         window.setComponent(panel);
         return window;
     }
+
+    public BasicWindow createLanguagePage() {
+        BasicWindow window = new BasicWindow(LanguagePeer.getText("window.languageTitle"));
+
+        window.setHints(java.util.Arrays.asList(Window.Hint.FULL_SCREEN));
+
+        Panel panel = new Panel();
+        panel.setLayoutManager(new GridLayout(1));
+        panel.setPreferredSize(new TerminalSize(40, 20));
+        panel.setFillColorOverride(TextColor.ANSI.BLACK);
+
+        panel.addComponent(generateNewSpace());
+        panel.addComponent(createButton(getString(LanguagePeer.getText("button.english")), () -> {
+            backend.changeLanguage("en");
+            guiThread.invokeLater(() -> initializeWindows());
+        }));
+        panel.addComponent(createButton(getString(LanguagePeer.getText("button.spanish")), () -> {
+            LanguagePeer.setLanguage("es");
+            guiThread.invokeLater(() -> initializeWindows());
+        }));
+        panel.addComponent(createButton(getString(LanguagePeer.getText("button.russian")), () -> {
+            backend.changeLanguage("ru");
+            guiThread.invokeLater(() -> initializeWindows());
+        }));
+        panel.addComponent(generateNewSpace());
+        panel.addComponent(createButton(getString(LanguagePeer.getText("button.back")), () -> {
+            guiThread.invokeLater(() -> {
+                dropWindow(languagePage);
+                runMainWindow();
+            });
+        }, buttonWidth / 3, buttonHeight / 2));
+
+        window.setComponent(panel);
+        return window;
+    }
+
     public BasicWindow createPlaylistPage() {
         BasicWindow window = new BasicWindow("Playlists");
         return window;
@@ -220,7 +272,7 @@ public final class TerminalInterface extends com.streamline.frontend.FrontendInt
     }
 
     public BasicWindow createSearchPage() {
-        BasicWindow window = new BasicWindow("Search");
+        BasicWindow window = new BasicWindow(LanguagePeer.getText("window.searchTitle"));
 
         window.setHints(java.util.Arrays.asList(Window.Hint.FULL_SCREEN));
 
@@ -236,7 +288,7 @@ public final class TerminalInterface extends com.streamline.frontend.FrontendInt
         panel.setPreferredSize(new TerminalSize(40, 20)); panel.setFillColorOverride(TextColor.ANSI.BLACK);
 
         panel.addComponent(generateNewSpace());
-        panel.addComponent(createLabel(getString("Search:")));
+        panel.addComponent(createLabel(getString(LanguagePeer.getText("label.search"))));
 
         Set<Button> currentButtons = new LinkedHashSet<>();
         panel.addComponent(new TextBox(new TerminalSize(terminalSize.getColumns() / 2, 1)) {
@@ -352,7 +404,7 @@ public final class TerminalInterface extends com.streamline.frontend.FrontendInt
         try {
             guiThread.invokeLater(() -> {
                 try {
-                    for (Window window : textGUI.getWindows()) {
+                    for (Window window : new ArrayList<>(textGUI.getWindows())) {
                         textGUI.removeWindow(window);
                     }
                 } catch (IllegalStateException iE) {
