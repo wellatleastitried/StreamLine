@@ -27,12 +27,12 @@ public class SettingsMenuWindow extends BaseWindow {
                     LanguagePeer.getText("button.clearCache"),
                     () -> backend.clearCache()
         ));
-        /*
+
+        // Language selection button
         panel.addComponent(componentFactory.createButton(
                     LanguagePeer.getText("button.chooseLanguage"),
-                    () -> windowManager.transitionTo(window)
+                    () -> windowManager.transitionTo(windowManager.languagePage)
         ));
-        */
 
         panel.addComponent(componentFactory.createEmptySpace());
 

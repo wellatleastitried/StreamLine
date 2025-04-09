@@ -16,12 +16,12 @@ public class DownloadedMusicWindow extends BaseWindow {
 
     @Override
     public BasicWindow createWindow() {
-        BasicWindow window = createStandardWindow("Downloaded Music");
+        BasicWindow window = createStandardWindow(LanguagePeer.getText("window.downloadedMusicTitle"));
         
         Panel panel = componentFactory.createStandardPanel();
         
         panel.addComponent(componentFactory.createEmptySpace());
-        panel.addComponent(componentFactory.createLabel("Your Downloaded Songs"));
+        panel.addComponent(componentFactory.createLabel(LanguagePeer.getText("label.downloadedMusicTitle")));
         panel.addComponent(componentFactory.createEmptySpace());
         
         // Back button

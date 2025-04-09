@@ -16,12 +16,12 @@ public class PlaylistWindow extends BaseWindow {
 
     @Override
     public BasicWindow createWindow() {
-        BasicWindow window = createStandardWindow("Playlists");
+        BasicWindow window = createStandardWindow(LanguagePeer.getText("window.playlistsTitle"));
         
         Panel panel = componentFactory.createStandardPanel();
         
         panel.addComponent(componentFactory.createEmptySpace());
-        panel.addComponent(componentFactory.createLabel("Playlists Feature"));
+        panel.addComponent(componentFactory.createLabel(LanguagePeer.getText("label.playlistsFeature")));
         panel.addComponent(componentFactory.createEmptySpace());
         
         // Back button

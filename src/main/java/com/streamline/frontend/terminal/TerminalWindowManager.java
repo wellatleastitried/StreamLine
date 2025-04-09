@@ -26,6 +26,7 @@ public class TerminalWindowManager {
     protected final BasicWindow downloadedPage;
     protected final BasicWindow playlistPage;
     protected final BasicWindow likedMusicPage;
+    protected final BasicWindow languagePage;
 
     public TerminalWindowManager(WindowBasedTextGUI textGUI, TextGUIThread guiThread, Dispatcher backend, TerminalComponentFactory componentFactory) {
         this.textGUI = textGUI;
@@ -42,6 +43,7 @@ public class TerminalWindowManager {
         this.playlistPage = new PlaylistWindow(this, backend, guiThread, componentFactory).createWindow();
         this.recentlyPlayedPage = new RecentlyPlayedWindow(this, backend, guiThread, componentFactory).createWindow();
         this.downloadedPage = new DownloadedMusicWindow(this, backend, guiThread, componentFactory).createWindow();
+        this.languagePage = new LanguagePageWindow(this, backend, guiThread, componentFactory).createWindow();
     }
 
     public void showMainMenu() {

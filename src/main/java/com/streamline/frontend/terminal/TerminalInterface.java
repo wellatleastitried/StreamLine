@@ -84,20 +84,20 @@ public final class TerminalInterface extends com.streamline.frontend.FrontendInt
 
     private void initializeWindows() {
         try {
-            mainMenu = createMainMenuWindow();
-            languagePage = createLanguagePage();
-            searchPage = createSearchPage();
-            likedMusicPage = createLikeMusicPage();
-            playlistPage = createPlaylistPage();
-            recentlyPlayedPage = createRecentlyPlayedPage();
-            downloadedPage = createDownloadedMusicPage();
-            helpMenu = createHelpMenu();
-            settingsMenu = createSettingsMenu();
+            TerminalWindowManager windowManager = new TerminalWindowManager(textGUI, guiThread, backend, new TerminalComponentFactory(terminalSize));
+            mainMenu = windowManager.mainMenu;
+            languagePage = windowManager.languagePage;
+            searchPage = windowManager.searchPage;
+            likedMusicPage = windowManager.likedMusicPage;
+            playlistPage = windowManager.playlistPage;
+            recentlyPlayedPage = windowManager.recentlyPlayedPage;
+            downloadedPage = windowManager.downloadedPage;
+            helpMenu = windowManager.helpMenu;
+            settingsMenu = windowManager.settingsMenu;
         } catch (Exception e) {
             Logger.error("[!] There was an error while initializing the windows for the terminal interface.");
         }
     }
-
 
     public Label createLabelWithSize(String text) {
         return createLabelWithSize(text, buttonWidth, buttonHeight);
@@ -129,266 +129,18 @@ public final class TerminalInterface extends com.streamline.frontend.FrontendInt
         return new TerminalSize(bWidth, bHeight);
     }
 
-    public BasicWindow createMainMenuWindow() {
-        BasicWindow window = new BasicWindow(LanguagePeer.getText("app.title"));
-
-        window.setHints(java.util.Arrays.asList(Window.Hint.FULL_SCREEN));
-
-        Panel panel = new Panel();
-        panel.setLayoutManager(new GridLayout(1));
-        panel.setPreferredSize(new TerminalSize(40, 20));
-        panel.setFillColorOverride(TextColor.ANSI.BLACK);
-
-        // CREATE LABELS AND BUTTONS
-        Label titleLabel = createLabel(getString(getString(LanguagePeer.getText("label.greeting"))));
-        panel.addComponent(generateNewSpace());
-        panel.addComponent(titleLabel);
-        panel.addComponent(createButton(LanguagePeer.getText("button.searchForSong"), () -> transitionMenus(searchPage)));
-        panel.addComponent(createButton(LanguagePeer.getText("button.viewLikedSong"), () -> transitionMenus(likedMusicPage)));
-        panel.addComponent(createButton(LanguagePeer.getText("button.playlists"), () -> transitionMenus(playlistPage)));
-        panel.addComponent(createButton(LanguagePeer.getText("button.recentlyPlayed"), () -> transitionMenus(recentlyPlayedPage)));
-        panel.addComponent(createButton(LanguagePeer.getText("button.downloadedMusic"), () -> transitionMenus(downloadedPage)));
-        panel.addComponent(createButton(LanguagePeer.getText("button.help"), () -> transitionMenus(helpMenu)));
-        panel.addComponent(createButton(LanguagePeer.getText("button.settings"), () -> transitionMenus(settingsMenu)));
-        panel.addComponent(createButton(LanguagePeer.getText("button.quit"), () -> {
-            shutdown();
-            backend.shutdown();
-        }));
-        window.setComponent(panel);
-        return window;
-    }
-
-    public BasicWindow createHelpMenu() {
-        BasicWindow window = new BasicWindow(LanguagePeer.getText("window.helpTitle"));
-
-        window.setHints(java.util.Arrays.asList(Window.Hint.FULL_SCREEN));
-
-        Panel panel = new Panel();
-        panel.setLayoutManager(new GridLayout(1));
-        panel.setPreferredSize(new TerminalSize(40, 20));
-        panel.setFillColorOverride(TextColor.ANSI.BLACK);
-
-        panel.addComponent(generateNewSpace());
-        panel.addComponent(createLabelWithSize(LanguagePeer.getText("label.searchHelpTitle")));
-        panel.addComponent(createLabel(getString(LanguagePeer.getText("label.searchHelpBody"))));
-        panel.addComponent(generateNewSpace());
-        panel.addComponent(createLabelWithSize(LanguagePeer.getText("label.likedMusicTitle")));
-        panel.addComponent(createLabel(getString(LanguagePeer.getText("label.likedMusicBody"))));
-        panel.addComponent(generateNewSpace());
-        panel.addComponent(generateNewSpace());
-        panel.addComponent(createButton(getString(LanguagePeer.getText("button.back")), () -> {
-            guiThread.invokeLater(() -> {
-                dropWindow(helpMenu);
-                runMainWindow();
-            });
-        }, buttonWidth / 3, buttonHeight / 2));
-
-        window.setComponent(panel);
-        return window;
-    }
-
-    public BasicWindow createSettingsMenu() {
-        BasicWindow window = new BasicWindow(LanguagePeer.getText("window.settingsTitle"));
-
-        window.setHints(java.util.Arrays.asList(Window.Hint.FULL_SCREEN));
-
-        Panel panel = new Panel();
-        panel.setLayoutManager(new GridLayout(1));
-        panel.setPreferredSize(new TerminalSize(40, 20));
-        panel.setFillColorOverride(TextColor.ANSI.BLACK);
-
-        panel.addComponent(generateNewSpace());
-        panel.addComponent(createButton(getString(LanguagePeer.getText("button.clearCache")), () -> {
-            backend.clearCache();
-        }));
-        panel.addComponent(createButton(getString(LanguagePeer.getText("button.chooseLanguage")), () -> {
-            transitionMenus(languagePage);
-        }));
-        panel.addComponent(generateNewSpace());
-        panel.addComponent(createButton(getString(LanguagePeer.getText("button.back")), () -> {
-            guiThread.invokeLater(() -> {
-                dropWindow(settingsMenu);
-                runMainWindow();
-            });
-        }, buttonWidth / 3, buttonHeight / 2));
-
-        window.setComponent(panel);
-        return window;
-    }
-
-    public BasicWindow createLanguagePage() {
-        BasicWindow window = new BasicWindow(LanguagePeer.getText("window.languageTitle"));
-
-        window.setHints(java.util.Arrays.asList(Window.Hint.FULL_SCREEN));
-
-        Panel panel = new Panel();
-        panel.setLayoutManager(new GridLayout(1));
-        panel.setPreferredSize(new TerminalSize(40, 20));
-        panel.setFillColorOverride(TextColor.ANSI.BLACK);
-
-        panel.addComponent(generateNewSpace());
-        panel.addComponent(createButton(getString(LanguagePeer.getText("button.english")), () -> {
-            backend.changeLanguage("en");
-            guiThread.invokeLater(() -> initializeWindows());
-        }));
-        panel.addComponent(createButton(getString(LanguagePeer.getText("button.spanish")), () -> {
-            LanguagePeer.setLanguage("es");
-            guiThread.invokeLater(() -> initializeWindows());
-        }));
-        panel.addComponent(createButton(getString(LanguagePeer.getText("button.russian")), () -> {
-            backend.changeLanguage("ru");
-            guiThread.invokeLater(() -> initializeWindows());
-        }));
-        panel.addComponent(generateNewSpace());
-        panel.addComponent(createButton(getString(LanguagePeer.getText("button.back")), () -> {
-            guiThread.invokeLater(() -> {
-                dropWindow(languagePage);
-                runMainWindow();
-            });
-        }, buttonWidth / 3, buttonHeight / 2));
-
-        window.setComponent(panel);
-        return window;
-    }
-
-    public BasicWindow createPlaylistPage() {
-        BasicWindow window = new BasicWindow("Playlists");
-        return window;
-    }
-
-    public BasicWindow createRecentlyPlayedPage() {
-        BasicWindow window = new BasicWindow("Recently Played");
-        return window;
-    }
-
-    public BasicWindow createLikeMusicPage() {
-        BasicWindow window = new BasicWindow("Liked Music");
-        return window;
-    }
-
-    public BasicWindow createDownloadedMusicPage() {
-        BasicWindow window = new BasicWindow("Downloaded Music");
-        return window;
-    }
-
-    public BasicWindow createSearchPage() {
-        BasicWindow window = new BasicWindow(LanguagePeer.getText("window.searchTitle"));
-
-        window.setHints(java.util.Arrays.asList(Window.Hint.FULL_SCREEN));
-
-        Panel panel = new Panel();
-
-        // This is the box that will store the search results in the form of <button button> where the first button contains the song information, and the second contains options on what to do with the song
-        Panel resultsBox = new Panel();
-        resultsBox.setLayoutManager(new GridLayout(/*2*/1));
-        resultsBox.setPreferredSize(new TerminalSize(terminalSize.getColumns(), terminalSize.getRows() - panel.getSize().getRows() - 15));
-        resultsBox.setFillColorOverride(TextColor.ANSI.BLACK_BRIGHT);
-
-        panel.setLayoutManager(new GridLayout(1));
-        panel.setPreferredSize(new TerminalSize(40, 20)); panel.setFillColorOverride(TextColor.ANSI.BLACK);
-
-        panel.addComponent(generateNewSpace());
-        panel.addComponent(createLabel(getString(LanguagePeer.getText("label.search"))));
-
-        Set<Button> currentButtons = new LinkedHashSet<>();
-        panel.addComponent(new TextBox(new TerminalSize(terminalSize.getColumns() / 2, 1)) {
-            @Override
-            public synchronized Result handleKeyStroke(KeyStroke keyStroke) {
-                if (keyStroke.getKeyType() == KeyType.Enter) {
-                    String enteredText = this.getText();
-                    RetrievedStorage results = backend.doSearch(enteredText);
-                    if (results == null) {
-                        return Result.HANDLED;
-                    }
-                    Button[] buttons = resultsToButtons(results);
-                    guiThread.invokeLater(() -> {
-                        for (Button button : currentButtons) {
-                            resultsBox.removeComponent(button);
-                        }
-                        currentButtons.clear();
-
-                        for (Button button : buttons) {
-                            if (currentButtons.add(button)) {
-                                resultsBox.addComponent(button);
-                            }
-                        }
-
-                        try {
-                            textGUI.getScreen().refresh();
-                        } catch (IOException iE) {
-                            Logger.error("[!] Error while redrawing screen, please restart the app.");
-                            handleKeyStroke(keyStroke);
-                        }
-                    });
-                    return Result.HANDLED;
-                }
-                return super.handleKeyStroke(keyStroke);
-            }
-
-            public Button[] resultsToButtons(RetrievedStorage results) {
-                Button[] buttons = new Button[results.size()];
-                for (int i = 0; i < results.size(); i++) {
-                    Song song = results.getSongFromIndex(i);
-                    String text = String.format(
-                            "%d%s%s - %s   %s",
-                            results.getIndexFromSong(song) + 1,
-                            getOffsetForSongButton(results.getIndexFromSong(song)),
-                            song.getSongName(),
-                            song.getSongArtist(),
-                            song.getDuration()
-                            );
-                    buttons[i] = new Button(text, () -> menuForSongInUI());
-                }
-                return buttons;
-            }
-
-            private void menuForSongInUI() {}
-
-            private String getOffsetForSongButton(int digits) {
-                StringBuilder sB = new StringBuilder();
-                for (int i = 0; i < 7 - String.valueOf(digits).length(); i++) {
-                    sB.append(" ");
-                }
-                return sB.toString();
-            }
-
-        });
-        panel.addComponent(generateNewSpace());
-
-        panel.addComponent(resultsBox);
-        panel.addComponent(createButton("  <- Back  ", () -> {
-            guiThread.invokeLater(() -> {
-                dropWindow(searchPage);
-                runMainWindow();
-            });
-        }, buttonWidth / 3, buttonHeight / 2));
-
-        window.setComponent(panel);
-
-        return window;
-    }
-
     public EmptySpace generateNewSpace() {
-        EmptySpace space = new EmptySpace();
-        space.setPreferredSize(getSize(buttonWidth, buttonHeight));
-        space.setVisible(false);
-        return space;
+        return new EmptySpace(getSize(buttonWidth, buttonHeight));
     }
 
     private void runMainWindow() {
-        mainMenu.setVisible(true);
-        java.util.Collection<Window> openWindows = textGUI.getWindows();
-        if (!openWindows.contains(mainMenu)) {
-            textGUI.addWindowAndWait(mainMenu);
-        }
+        textGUI.addWindowAndWait(mainMenu);
     }
 
     private void transitionMenus(BasicWindow windowToTransitionTo) {
-        mainMenu.setVisible(false);
-        java.util.Collection<Window> openWindows = textGUI.getWindows();
-        if (!openWindows.contains(windowToTransitionTo)) {
+        guiThread.invokeLater(() -> {
             textGUI.addWindowAndWait(windowToTransitionTo);
-        }
+        });
     }
 
     private void dropWindow(BasicWindow window) {
@@ -396,27 +148,15 @@ public final class TerminalInterface extends com.streamline.frontend.FrontendInt
     }
 
     public String getString(String text) {
-        return "  " + text + "  ";
+        return LanguagePeer.getText(text);
     }
 
     @Override
     public void shutdown() {
         try {
-            guiThread.invokeLater(() -> {
-                try {
-                    for (Window window : new ArrayList<>(textGUI.getWindows())) {
-                        textGUI.removeWindow(window);
-                    }
-                } catch (IllegalStateException iE) {
-                    Logger.warn("[!] There was an exception while cleaning up the terminal interface:\n" + iE.getMessage());
-                }
-            });
             screen.stopScreen();
-            terminal.close();
         } catch (IOException iE) {
-            Logger.error("[!] An unexpected error occured during shutdown, forcing shutdown...");
-        } catch (IllegalStateException iE) {
-            Logger.warn("[!] There was an exception while cleaning up the terminal interface:\n" + iE.getMessage());
+            Logger.error("[!] There was an error while shutting down the terminal interface.");
         }
     }
 }

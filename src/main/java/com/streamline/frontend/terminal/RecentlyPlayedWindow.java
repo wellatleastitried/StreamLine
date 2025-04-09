@@ -16,12 +16,12 @@ public class RecentlyPlayedWindow extends BaseWindow {
 
     @Override
     public BasicWindow createWindow() {
-        BasicWindow window = createStandardWindow("Recently Played");
+        BasicWindow window = createStandardWindow(LanguagePeer.getText("window.recentlyPlayedTitle"));
         
         Panel panel = componentFactory.createStandardPanel();
         
         panel.addComponent(componentFactory.createEmptySpace());
-        panel.addComponent(componentFactory.createLabel("Recently Played Songs"));
+        panel.addComponent(componentFactory.createLabel(LanguagePeer.getText("label.recentlyPlayedTitle")));
         panel.addComponent(componentFactory.createEmptySpace());
         
         // Back button

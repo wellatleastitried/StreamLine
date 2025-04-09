@@ -8,6 +8,7 @@ import com.googlecode.lanterna.input.KeyType;
 import com.streamline.audio.Song;
 import com.streamline.backend.Dispatcher;
 import com.streamline.utilities.RetrievedStorage;
+import com.streamline.utilities.LanguagePeer;
 import org.tinylog.Logger;
 
 import java.io.IOException;
@@ -33,7 +34,7 @@ public class SearchPageWindow extends BaseWindow {
 
     @Override
     public BasicWindow createWindow() {
-        BasicWindow window = createStandardWindow("Search");
+        BasicWindow window = createStandardWindow(LanguagePeer.getText("window.searchTitle"));
 
         Panel panel = componentFactory.createStandardPanel();
 
@@ -47,7 +48,7 @@ public class SearchPageWindow extends BaseWindow {
         resultsBox.setFillColorOverride(TextColor.ANSI.BLACK_BRIGHT);
 
         panel.addComponent(componentFactory.createEmptySpace());
-        panel.addComponent(componentFactory.createLabel("Search:"));
+        panel.addComponent(componentFactory.createLabel(LanguagePeer.getText("label.search")));
 
         Set<Button> currentButtons = new LinkedHashSet<>();
         panel.addComponent(createSearchBox(resultsBox, currentButtons));
@@ -56,7 +57,7 @@ public class SearchPageWindow extends BaseWindow {
 
         // Back button
         panel.addComponent(componentFactory.createButton(
-                    "  <- Back  ", 
+                    LanguagePeer.getText("button.back"), 
                     () -> windowManager.returnToMainMenu(window),
                     componentFactory.getButtonWidth() / 3, 
                     componentFactory.getButtonHeight() / 2

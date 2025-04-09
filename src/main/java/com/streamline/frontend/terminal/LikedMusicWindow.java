@@ -15,12 +15,12 @@ public class LikedMusicWindow extends BaseWindow {
 
     @Override
     public BasicWindow createWindow() {
-        BasicWindow window = createStandardWindow("Liked Music");
+        BasicWindow window = createStandardWindow(LanguagePeer.getText("window.likedMusicTitle"));
 
         Panel panel = componentFactory.createStandardPanel();
 
         panel.addComponent(componentFactory.createEmptySpace());
-        panel.addComponent(componentFactory.createLabel("Your Liked Songs"));
+        panel.addComponent(componentFactory.createLabel(LanguagePeer.getText("label.likedMusicTitle")));
         panel.addComponent(componentFactory.createEmptySpace());
 
         // Back button
