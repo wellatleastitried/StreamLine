@@ -147,7 +147,6 @@ public final class Dispatcher {
 
             jobExecutor.shutdown();
             exitedGracefully = true;
-            System.out.println("[*] " + LanguagePeer.getText("app.goodbye"));
         }
     }
 

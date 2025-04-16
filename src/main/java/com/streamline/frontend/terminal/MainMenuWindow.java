@@ -1,6 +1,7 @@
 package com.streamline.frontend.terminal;
 
 import com.googlecode.lanterna.gui2.*;
+import com.streamline.Driver;
 import com.streamline.backend.Dispatcher;
 import com.streamline.utilities.LanguagePeer;
 
@@ -58,7 +59,7 @@ public class MainMenuWindow extends BaseWindow {
         panel.addComponent(componentFactory.createButton(
             LanguagePeer.getText("button.quit"), 
             () -> {
-                backend.shutdown();
+                Driver.shutdown();
             }
         ));
         

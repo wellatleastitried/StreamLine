@@ -39,6 +39,7 @@ public final class Driver {
 
     private static OS os;
 
+    private static boolean exitedGracefully = false;
     private static FrontendInterface frontend;
     private static Dispatcher backend;
 
@@ -194,6 +195,7 @@ public final class Driver {
 
     private static boolean handlePlayingSingleSong(Config config, String songName) {
         Dispatcher streamlineBackend = new Dispatcher(config);
+        setShutdownHookParams(streamlineBackend);
         Song song = streamlineBackend.getSongFromName(songName);
         if (song == null) {
             return false;
@@ -375,14 +377,22 @@ public final class Driver {
         return StreamLineConstants.YT_DLP_BIN_LOCATION_LINUX + "yt-dlp";
     }
 
-    private static void setShutdownHook() {
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+    public static void shutdown() {
+        if (!exitedGracefully) {
             if (frontend != null) {
                 frontend.shutdown();
             }
             if (backend != null) {
                 backend.shutdown();
             }
+            System.out.println("[*] " + LanguagePeer.getText("app.goodbye"));
+            exitedGracefully = true;
+        }
+    }
+
+    private static void setShutdownHook() {
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            shutdown();
         }));
     }
 
