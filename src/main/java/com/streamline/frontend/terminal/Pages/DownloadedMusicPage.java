@@ -1,27 +1,28 @@
-package com.streamline.frontend.terminal;
+package com.streamline.frontend.terminal.Pages;
 
 import com.googlecode.lanterna.gui2.*;
 import com.streamline.backend.Dispatcher;
+import com.streamline.frontend.terminal.*;
 import com.streamline.utilities.LanguagePeer;
 
 /**
- * Window for displaying and managing playlists.
+ * Window for displaying downloaded music.
+ * @author wellatleastitried
  */
-public class PlaylistWindow extends BaseWindow {
+public class DownloadedMusicPage extends BasePage {
     
-    public PlaylistWindow(TerminalWindowManager windowManager, Dispatcher backend, 
-                         TextGUIThread guiThread, TerminalComponentFactory componentFactory) {
+    public DownloadedMusicPage(TerminalWindowManager windowManager, Dispatcher backend, TextGUIThread guiThread, TerminalComponentFactory componentFactory) {
         super(windowManager, backend, guiThread, componentFactory);
     }
 
     @Override
     public BasicWindow createWindow() {
-        BasicWindow window = createStandardWindow(LanguagePeer.getText("window.playlistsTitle"));
+        BasicWindow window = createStandardWindow(LanguagePeer.getText("window.downloadedMusicTitle"));
         
         Panel panel = componentFactory.createStandardPanel();
         
         panel.addComponent(componentFactory.createEmptySpace());
-        panel.addComponent(componentFactory.createLabel(LanguagePeer.getText("label.playlistsFeature")));
+        panel.addComponent(componentFactory.createLabel(LanguagePeer.getText("label.downloadedMusicTitle")));
         panel.addComponent(componentFactory.createEmptySpace());
         
         // Back button
@@ -36,4 +37,3 @@ public class PlaylistWindow extends BaseWindow {
         return window;
     }
 }
-

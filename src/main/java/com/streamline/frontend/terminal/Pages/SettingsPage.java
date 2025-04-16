@@ -1,16 +1,17 @@
-package com.streamline.frontend.terminal;
+package com.streamline.frontend.terminal.Pages;
 
 import com.googlecode.lanterna.gui2.*;
 import com.streamline.backend.Dispatcher;
+import com.streamline.frontend.terminal.*;
 import com.streamline.utilities.LanguagePeer;
 
 /**
  * Window for application settings.
  * @author wellatleastitried
  */
-public class SettingsMenuWindow extends BaseWindow {
+public class SettingsPage extends BasePage {
 
-    public SettingsMenuWindow(TerminalWindowManager windowManager, Dispatcher backend, TextGUIThread guiThread, TerminalComponentFactory componentFactory) {
+    public SettingsPage(TerminalWindowManager windowManager, Dispatcher backend, TextGUIThread guiThread, TerminalComponentFactory componentFactory) {
         super(windowManager, backend, guiThread, componentFactory);
     }
 

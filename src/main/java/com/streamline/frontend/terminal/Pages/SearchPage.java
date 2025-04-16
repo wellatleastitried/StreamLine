@@ -1,4 +1,4 @@
-package com.streamline.frontend.terminal;
+package com.streamline.frontend.terminal.Pages;
 
 import com.googlecode.lanterna.TerminalSize;
 import com.googlecode.lanterna.TextColor;
@@ -7,6 +7,7 @@ import com.googlecode.lanterna.input.KeyStroke;
 import com.googlecode.lanterna.input.KeyType;
 import com.streamline.audio.Song;
 import com.streamline.backend.Dispatcher;
+import com.streamline.frontend.terminal.*;
 import com.streamline.utilities.RetrievedStorage;
 import com.streamline.utilities.LanguagePeer;
 import org.tinylog.Logger;
@@ -21,13 +22,13 @@ import java.util.Set;
  * Window for the search functionality.
  * @author wellatleastitried
  */
-public class SearchPageWindow extends BaseWindow {
+public class SearchPage extends BasePage {
 
     private final TextGUI textGUI;
 
     private Map<Integer, Button> searchResultButtons;
 
-    public SearchPageWindow(TerminalWindowManager windowManager, Dispatcher backend, TextGUIThread guiThread, TerminalComponentFactory componentFactory, TextGUI textGUI) {
+    public SearchPage(TerminalWindowManager windowManager, Dispatcher backend, TextGUIThread guiThread, TerminalComponentFactory componentFactory, TextGUI textGUI) {
         super(windowManager, backend, guiThread, componentFactory);
         this.textGUI = textGUI;
     }

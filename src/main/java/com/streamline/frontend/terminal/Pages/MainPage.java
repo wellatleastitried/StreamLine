@@ -1,13 +1,14 @@
-package com.streamline.frontend.terminal;
+package com.streamline.frontend.terminal.Pages;
 
 import com.googlecode.lanterna.gui2.*;
 import com.streamline.Driver;
 import com.streamline.backend.Dispatcher;
+import com.streamline.frontend.terminal.*;
 import com.streamline.utilities.LanguagePeer;
 
-public class MainMenuWindow extends BaseWindow {
+public class MainPage extends BasePage {
     
-    public MainMenuWindow(TerminalWindowManager windowManager, Dispatcher backend, TextGUIThread guiThread, TerminalComponentFactory componentFactory) {
+    public MainPage(TerminalWindowManager windowManager, Dispatcher backend, TextGUIThread guiThread, TerminalComponentFactory componentFactory) {
         super(windowManager, backend, guiThread, componentFactory);
     }
 
@@ -48,12 +49,12 @@ public class MainMenuWindow extends BaseWindow {
         
         panel.addComponent(componentFactory.createButton(
             LanguagePeer.getText("button.help"), 
-            () -> windowManager.transitionTo(windowManager.helpMenu)
+            () -> windowManager.transitionTo(windowManager.helpPage)
         ));
         
         panel.addComponent(componentFactory.createButton(
             LanguagePeer.getText("button.settings"), 
-            () -> windowManager.transitionTo(windowManager.settingsMenu)
+            () -> windowManager.transitionTo(windowManager.settingsPage)
         ));
         
         panel.addComponent(componentFactory.createButton(

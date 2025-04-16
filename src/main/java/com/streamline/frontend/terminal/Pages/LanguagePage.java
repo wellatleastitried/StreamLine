@@ -1,16 +1,17 @@
-package com.streamline.frontend.terminal;
+package com.streamline.frontend.terminal.Pages;
 
 import com.googlecode.lanterna.gui2.*;
 import com.streamline.backend.Dispatcher;
+import com.streamline.frontend.terminal.*;
 import com.streamline.utilities.LanguagePeer;
 
 /**
  * Window for language selection.
  * @author wellatleastitried
  */
-public class LanguagePageWindow extends BaseWindow {
+public class LanguagePage extends BasePage {
     
-    public LanguagePageWindow(TerminalWindowManager windowManager, Dispatcher backend, TextGUIThread guiThread, TerminalComponentFactory componentFactory) {
+    public LanguagePage(TerminalWindowManager windowManager, Dispatcher backend, TextGUIThread guiThread, TerminalComponentFactory componentFactory) {
         super(windowManager, backend, guiThread, componentFactory);
     }
 
@@ -28,8 +29,8 @@ public class LanguagePageWindow extends BaseWindow {
             () -> {
                 backend.changeLanguage("en");
                 guiThread.invokeLater(() -> {
-                    windowManager.closeAllWindows();
-                    windowManager.showMainMenu();
+                    windowManager.rebuildWindows();
+                    windowManager.transitionTo(windowManager.settingsPage);
                 });
             }
         ));
@@ -39,8 +40,8 @@ public class LanguagePageWindow extends BaseWindow {
             () -> {
                 LanguagePeer.setLanguage("es");
                 guiThread.invokeLater(() -> {
-                    windowManager.closeAllWindows();
-                    windowManager.showMainMenu();
+                    windowManager.rebuildWindows();
+                    windowManager.transitionTo(windowManager.settingsPage);
                 });
             }
         ));
@@ -50,8 +51,8 @@ public class LanguagePageWindow extends BaseWindow {
             () -> {
                 backend.changeLanguage("ru");
                 guiThread.invokeLater(() -> {
-                    windowManager.closeAllWindows();
-                    windowManager.showMainMenu();
+                    windowManager.rebuildWindows();
+                    windowManager.transitionTo(windowManager.settingsPage);
                 });
             }
         ));

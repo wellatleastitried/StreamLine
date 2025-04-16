@@ -2,6 +2,7 @@ package com.streamline.frontend.terminal;
 
 import com.googlecode.lanterna.gui2.*;
 import com.streamline.backend.Dispatcher;
+import com.streamline.frontend.terminal.Pages.*;
 
 import org.tinylog.Logger;
 
@@ -18,15 +19,15 @@ public class TerminalWindowManager {
     private final TerminalComponentFactory componentFactory;
 
     // Windows
-    protected final BasicWindow mainMenu;
-    protected final BasicWindow settingsMenu;
-    protected final BasicWindow helpMenu;
-    protected final BasicWindow searchPage;
-    protected final BasicWindow recentlyPlayedPage;
-    protected final BasicWindow downloadedPage;
-    protected final BasicWindow playlistPage;
-    protected final BasicWindow likedMusicPage;
-    protected final BasicWindow languagePage;
+    public BasicWindow mainPage;
+    public BasicWindow settingsPage;
+    public BasicWindow helpPage;
+    public BasicWindow searchPage;
+    public BasicWindow recentlyPlayedPage;
+    public BasicWindow downloadedPage;
+    public BasicWindow playlistPage;
+    public BasicWindow likedMusicPage;
+    public BasicWindow languagePage;
 
     public TerminalWindowManager(WindowBasedTextGUI textGUI, TextGUIThread guiThread, Dispatcher backend, TerminalComponentFactory componentFactory) {
         this.textGUI = textGUI;
@@ -35,22 +36,36 @@ public class TerminalWindowManager {
         this.componentFactory = componentFactory;
 
         // Initialize all windows
-        this.mainMenu = new MainMenuWindow(this, backend, guiThread, componentFactory).createWindow();
-        this.helpMenu = new HelpMenuWindow(this, backend, guiThread, componentFactory).createWindow();
-        this.settingsMenu = new SettingsMenuWindow(this, backend, guiThread, componentFactory).createWindow();
-        this.searchPage = new SearchPageWindow(this, backend, guiThread, componentFactory, textGUI).createWindow();
-        this.likedMusicPage = new LikedMusicWindow(this, backend, guiThread, componentFactory).createWindow();
-        this.playlistPage = new PlaylistWindow(this, backend, guiThread, componentFactory).createWindow();
-        this.recentlyPlayedPage = new RecentlyPlayedWindow(this, backend, guiThread, componentFactory).createWindow();
-        this.downloadedPage = new DownloadedMusicWindow(this, backend, guiThread, componentFactory).createWindow();
-        this.languagePage = new LanguagePageWindow(this, backend, guiThread, componentFactory).createWindow();
+        this.mainPage = new MainPage(this, backend, guiThread, componentFactory).createWindow();
+        this.helpPage = new HelpPage(this, backend, guiThread, componentFactory).createWindow();
+        this.settingsPage = new SettingsPage(this, backend, guiThread, componentFactory).createWindow();
+        this.searchPage = new SearchPage(this, backend, guiThread, componentFactory, textGUI).createWindow();
+        this.likedMusicPage = new LikedMusicPage(this, backend, guiThread, componentFactory).createWindow();
+        this.playlistPage = new PlaylistPage(this, backend, guiThread, componentFactory).createWindow();
+        this.recentlyPlayedPage = new RecentlyPlayedPage(this, backend, guiThread, componentFactory).createWindow();
+        this.downloadedPage = new DownloadedMusicPage(this, backend, guiThread, componentFactory).createWindow();
+        this.languagePage = new LanguagePage(this, backend, guiThread, componentFactory).createWindow();
+    }
+
+    public void rebuildWindows() {
+        guiThread.invokeLater(() -> {
+            this.mainPage = new MainPage(this, backend, guiThread, componentFactory).createWindow();
+            this.helpPage = new HelpPage(this, backend, guiThread, componentFactory).createWindow();
+            this.settingsPage = new SettingsPage(this, backend, guiThread, componentFactory).createWindow();
+            this.searchPage = new SearchPage(this, backend, guiThread, componentFactory, textGUI).createWindow();
+            this.likedMusicPage = new LikedMusicPage(this, backend, guiThread, componentFactory).createWindow();
+            this.playlistPage = new PlaylistPage(this, backend, guiThread, componentFactory).createWindow();
+            this.recentlyPlayedPage = new RecentlyPlayedPage(this, backend, guiThread, componentFactory).createWindow();
+            this.downloadedPage = new DownloadedMusicPage(this, backend, guiThread, componentFactory).createWindow();
+            this.languagePage = new LanguagePage(this, backend, guiThread, componentFactory).createWindow();
+        });
     }
 
     public void showMainMenu() {
-        mainMenu.setVisible(true);
+        mainPage.setVisible(true);
         Collection<Window> openWindows = textGUI.getWindows();
-        if (!openWindows.contains(mainMenu)) {
-            textGUI.addWindowAndWait(mainMenu);
+        if (!openWindows.contains(mainPage)) {
+            textGUI.addWindowAndWait(mainPage);
         }
     }
 
