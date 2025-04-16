@@ -43,7 +43,7 @@ public final class Dispatcher {
 
     private void initializeServices() {
         submitJob(new CacheInitializationJob(config, dbRunner));
-        setShutdownHandler();
+        // setShutdownHandler();
         config.setHandle(getConnectionHandle());
         submitJob(new ConnectionMonitorJob(config));
     }
@@ -125,11 +125,14 @@ public final class Dispatcher {
         submitJob(new CacheClearJob(config, dbRunner, CacheManager.getCacheDirectory(config.getOS())));
     }
 
+    /*
     private void setShutdownHandler() {
         Runtime.getRuntime().addShutdownHook(new Thread(this::shutdown));
     }
+    */
 
     public void shutdown() {
+        /* Uncomment the line below if needed for debugging. */
         // getThreadStates();
         if (!exitedGracefully) {
             for (StreamLineJob job : activeJobs.values()) {

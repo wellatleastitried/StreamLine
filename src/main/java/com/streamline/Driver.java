@@ -13,6 +13,7 @@ import com.streamline.backend.Dispatcher;
 import com.streamline.backend.DockerManager;
 import com.streamline.backend.InvidiousHandle;
 import com.streamline.backend.YoutubeHandle;
+import com.streamline.frontend.FrontendInterface;
 import com.streamline.frontend.terminal.TerminalInterface;
 import com.streamline.utilities.LanguagePeer;
 import com.streamline.utilities.LibraryPeer;
@@ -37,6 +38,9 @@ import org.tinylog.Logger;
 public final class Driver {
 
     private static OS os;
+
+    private static FrontendInterface frontend;
+    private static Dispatcher backend;
 
     static {
         os = getOSOfUser();
@@ -216,6 +220,7 @@ public final class Driver {
         }
         Dispatcher streamlineBackend = new Dispatcher(configuration);
         TerminalInterface tui = new TerminalInterface(streamlineBackend);
+        setShutdownHookParams(tui, streamlineBackend);
         if (!tui.run()) {
             System.err.println("[!] A fatal error has occured while starting StreamLine, please try reloading the app.");
             return;
@@ -368,5 +373,27 @@ public final class Driver {
             return StreamLineConstants.YT_DLP_BIN_LOCATION_MAC + "yt-dlp";
         }
         return StreamLineConstants.YT_DLP_BIN_LOCATION_LINUX + "yt-dlp";
+    }
+
+    private static void setShutdownHook() {
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            if (frontend != null) {
+                frontend.shutdown();
+            }
+            if (backend != null) {
+                backend.shutdown();
+            }
+        }));
+    }
+
+    private static <T extends FrontendInterface> void setShutdownHookParams(T ui, Dispatcher runner) {
+        frontend = ui;
+        backend = runner;
+        setShutdownHook();
+    }
+
+    private static void setShutdownHookParams(Dispatcher runner) {
+        backend = runner;
+        setShutdownHook();
     }
 }

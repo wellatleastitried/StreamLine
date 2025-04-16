@@ -12,8 +12,8 @@
     </repository>
   </repositories>
   <properties>
-    <maven.compiler.source>21</maven.compiler.source>
-    <maven.compiler.target>21</maven.compiler.target>
+    <maven.compiler.source>17</maven.compiler.source>
+    <maven.compiler.target>17</maven.compiler.target>
     <clojure.version>1.11.1</clojure.version>
     <bash.executable>/bin/bash</bash.executable>
     <skip.bash.script>${os.windows}</skip.bash.script>
@@ -186,7 +186,7 @@
           </execution>
         </executions>
         <configuration>
-          <targetBytecode>21</targetBytecode>
+          <targetBytecode>17</targetBytecode>
         </configuration>
         <dependencies>
           <dependency>
