@@ -19,7 +19,7 @@ This program is currently under development and is not yet functional. If you wa
 
 ### Prerequisites
 
-- Java 17 or higher
+- Java 21 or higher
 - Maven 3.8 or higher
 - yt-dlp (for audio extraction)
 
