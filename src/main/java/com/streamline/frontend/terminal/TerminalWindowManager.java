@@ -13,6 +13,7 @@ import java.util.Collection;
  * @author wellatleastitried
  */
 public class TerminalWindowManager {
+
     private final WindowBasedTextGUI textGUI;
     private final TextGUIThread guiThread;
     private final Dispatcher backend;

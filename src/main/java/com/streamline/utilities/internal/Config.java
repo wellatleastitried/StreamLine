@@ -1,6 +1,6 @@
 package com.streamline.utilities.internal;
 
-import com.streamline.backend.ConnectionHandle;
+import com.streamline.backend.handle.ConnectionHandle;
 
 import java.util.logging.Logger;
 
