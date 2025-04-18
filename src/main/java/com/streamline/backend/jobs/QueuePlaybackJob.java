@@ -4,7 +4,7 @@ import com.streamline.audio.AudioPlayer;
 import com.streamline.utilities.RetrievedStorage;
 import com.streamline.utilities.internal.Config;
 
-public class QueuePlaybackJob extends StreamLineJob {
+public class QueuePlaybackJob extends AbstractStreamLineJob {
 
     private final RetrievedStorage queue;
 

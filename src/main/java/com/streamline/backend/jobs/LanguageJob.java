@@ -5,7 +5,7 @@ import com.streamline.utilities.internal.Config;
 
 import org.tinylog.Logger;
 
-public class LanguageJob extends StreamLineJob {
+public class LanguageJob extends AbstractStreamLineJob {
 
     private final String languageCode;
 

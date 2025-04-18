@@ -108,6 +108,7 @@ public final class TerminalInterface extends com.streamline.frontend.FrontendInt
     }
 
     private void runMainWindow() {
+        assert mainMenu != null;
         textGUI.addWindowAndWait(mainMenu);
     }
 

@@ -33,6 +33,12 @@ public class SearchPage extends BasePage {
         this.textGUI = textGUI;
     }
 
+    public SearchPage(TerminalWindowManager windowManager, Dispatcher backend, TextGUIThread guiThread, TerminalComponentFactory componentFactory, TextGUI textGUI, Map<Integer, Button> searchResultButtons) {
+        super(windowManager, backend, guiThread, componentFactory);
+        this.textGUI = textGUI;
+        this.searchResultButtons = searchResultButtons;
+    }
+
     @Override
     public BasicWindow createWindow() {
         BasicWindow window = createStandardWindow(LanguagePeer.getText("window.searchTitle"));
@@ -55,6 +61,9 @@ public class SearchPage extends BasePage {
         panel.addComponent(createSearchBox(resultsBox, currentButtons));
         panel.addComponent(componentFactory.createEmptySpace());
         panel.addComponent(resultsBox);
+        if (searchResultButtons.size() > 0) {
+            updateResultsDisplay(resultsBox, currentButtons);
+        }
 
         // Back button
         panel.addComponent(componentFactory.createButton(
@@ -86,55 +95,55 @@ public class SearchPage extends BasePage {
                 return super.handleKeyStroke(keyStroke);
             }
 
-            private void resultsToButtons(RetrievedStorage results) {
-                searchResultButtons = new HashMap<>();
-                for (int i = 0; i < results.size(); i++) {
-                    Song song = results.getSongFromIndex(i);
-                    String text = String.format(
-                            "%d%s%s - %s   %s",
-                            results.getIndexFromSong(song) + 1,
-                            getOffsetForSongButton(results.getIndexFromSong(song)),
-                            song.getSongName(),
-                            song.getSongArtist(),
-                            song.getDuration()
-                            );
-                    final int key = i;
-                    searchResultButtons.put(i, new Button(text, () -> handleSongSelection(song, key)));
-                }
-            }
 
-            private void updateResultsDisplay(Panel resultsBox, Set<Button> currentButtons) {
-                guiThread.invokeLater(() -> {
-                    for (Button button : currentButtons) {
-                        resultsBox.removeComponent(button);
-                    }
-                    currentButtons.clear();
-
-                    for (Map.Entry<Integer, Button> entry : searchResultButtons.entrySet()) {
-                        if (currentButtons.add(entry.getValue())) {
-                            resultsBox.addComponent(entry.getValue());
-                        }
-                    }
-
-                    try {
-                        textGUI.getScreen().refresh();
-                    } catch (IOException iE) {
-                        Logger.error("[!] Error while redrawing screen, please restart the app.");
-                    }
-                });
-            }
-
-            private void handleSongSelection(Song song, int key) {
-
-            }
-
-            private String getOffsetForSongButton(int digits) {
-                StringBuilder sB = new StringBuilder();
-                for (int i = 0; i < 7 - String.valueOf(digits).length(); i++) {
-                    sB.append(" ");
-                }
-                return sB.toString();
-            }
         };
+    }
+    private void handleSongSelection(Song song) {
+        windowManager.buildSongOptionPage(song, this, searchResultButtons);
+        windowManager.transitionTo(windowManager.songOptionPage);
+    }
+
+    private String getOffsetForSongButton(int digits) {
+        StringBuilder sB = new StringBuilder();
+        for (int i = 0; i < 7 - String.valueOf(digits).length(); i++) {
+            sB.append(" ");
+        }
+        return sB.toString();
+    }
+    private void resultsToButtons(RetrievedStorage results) {
+        searchResultButtons = new HashMap<>();
+        for (int i = 0; i < results.size(); i++) {
+            Song song = results.getSongFromIndex(i);
+            String text = String.format(
+                    "%d%s%s - %s   %s",
+                    results.getIndexFromSong(song) + 1,
+                    getOffsetForSongButton(results.getIndexFromSong(song)),
+                    song.getSongName(),
+                    song.getSongArtist(),
+                    song.getDuration()
+                    );
+            searchResultButtons.put(i, new Button(text, () -> handleSongSelection(song)));
+        }
+    }
+
+    private void updateResultsDisplay(Panel resultsBox, Set<Button> currentButtons) {
+        guiThread.invokeLater(() -> {
+            for (Button button : currentButtons) {
+                resultsBox.removeComponent(button);
+            }
+            currentButtons.clear();
+
+            for (Map.Entry<Integer, Button> entry : searchResultButtons.entrySet()) {
+                if (currentButtons.add(entry.getValue())) {
+                    resultsBox.addComponent(entry.getValue());
+                }
+            }
+
+            try {
+                textGUI.getScreen().refresh();
+            } catch (IOException iE) {
+                Logger.error("[!] Error while redrawing screen, please restart the app.");
+            }
+        });
     }
 }

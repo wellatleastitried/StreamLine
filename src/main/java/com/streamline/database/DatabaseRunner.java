@@ -202,7 +202,7 @@ public final class DatabaseRunner {
     /**
      * This function is called when a song is liked. The other functions (such as insertSongIntoLikedSongs()) are for internal use as they do not provide verification of the existence of the song in other tables on their own.
      */
-    public void likeSong(Song song) {
+    public void handleLikeSong(Song song) {
         try {
             connection.setAutoCommit(false);
             // TODO: NEED TO CHECK LIKEDSONGS TABLE AS WELL
@@ -210,7 +210,11 @@ public final class DatabaseRunner {
             if (songId == -1) {
                 songId = insertSongIntoSongs(song);
             }
-            insertSongIntoLikedTable(songId);
+            if (song.isSongLiked()) {
+                removeSongFromLikedTable(songId);
+            } else {
+                insertSongIntoLikedTable(songId);
+            }
         } catch (SQLException sE) {
             handleSQLException(sE);
         } finally {
@@ -355,6 +359,15 @@ public final class DatabaseRunner {
 
     protected void insertSongIntoLikedTable(int songId) throws SQLException {
         final String insertIntoLikedSongs = "INSERT INTO LikedSongs (song_id, date_liked) VALUES (?, CURRENT_TIMESTAMP);";
+        try (final PreparedStatement insertSongStatement = connection.prepareStatement(insertIntoLikedSongs)) {
+            insertSongStatement.setInt(1, songId);
+            insertSongStatement.executeUpdate();
+            connection.commit();
+        }
+    }
+
+    protected void removeSongFromLikedTable(int songId) throws SQLException {
+        final String insertIntoLikedSongs = "DELETE FROM LikedSongs WHERE song_id = ?;";
         try (final PreparedStatement insertSongStatement = connection.prepareStatement(insertIntoLikedSongs)) {
             insertSongStatement.setInt(1, songId);
             insertSongStatement.executeUpdate();

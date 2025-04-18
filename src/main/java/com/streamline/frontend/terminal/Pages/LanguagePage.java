@@ -29,7 +29,7 @@ public class LanguagePage extends BasePage {
             () -> {
                 backend.changeLanguage("en");
                 guiThread.invokeLater(() -> {
-                    windowManager.rebuildWindows();
+                    windowManager.rebuildAllWindows();
                     windowManager.transitionTo(windowManager.settingsPage);
                 });
             }
@@ -40,7 +40,7 @@ public class LanguagePage extends BasePage {
             () -> {
                 LanguagePeer.setLanguage("es");
                 guiThread.invokeLater(() -> {
-                    windowManager.rebuildWindows();
+                    windowManager.rebuildAllWindows();
                     windowManager.transitionTo(windowManager.settingsPage);
                 });
             }
@@ -51,7 +51,7 @@ public class LanguagePage extends BasePage {
             () -> {
                 backend.changeLanguage("ru");
                 guiThread.invokeLater(() -> {
-                    windowManager.rebuildWindows();
+                    windowManager.rebuildAllWindows();
                     windowManager.transitionTo(windowManager.settingsPage);
                 });
             }

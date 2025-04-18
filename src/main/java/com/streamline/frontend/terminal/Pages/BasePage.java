@@ -1,6 +1,8 @@
 package com.streamline.frontend.terminal.Pages;
 
-import com.googlecode.lanterna.gui2.*;
+import com.googlecode.lanterna.gui2.BasicWindow;
+import com.googlecode.lanterna.gui2.TextGUIThread;
+import com.googlecode.lanterna.gui2.Window;
 import com.streamline.backend.Dispatcher;
 import com.streamline.frontend.terminal.*;
 
@@ -11,6 +13,7 @@ import java.util.Arrays;
  * @author wellatleastitried
  */
 public abstract class BasePage {
+
     protected final TerminalWindowManager windowManager;
     protected final Dispatcher backend;
     protected final TextGUIThread guiThread;

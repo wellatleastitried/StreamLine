@@ -7,7 +7,6 @@ import com.streamline.database.DatabaseLinker;
 import com.streamline.database.DatabaseRunner;
 import com.streamline.database.utils.QueryLoader;
 import com.streamline.utilities.CacheManager;
-import com.streamline.utilities.LanguagePeer;
 import com.streamline.utilities.RetrievedStorage;
 import com.streamline.utilities.internal.Config;
 
@@ -25,7 +24,7 @@ import org.tinylog.Logger;
 public final class Dispatcher {
     
     private final Config config;
-    private final ConcurrentHashMap<String, StreamLineJob> activeJobs;
+    private final ConcurrentHashMap<String, AbstractStreamLineJob> activeJobs;
     private final ExecutorService jobExecutor;
 
     private final DatabaseRunner dbRunner;
@@ -62,7 +61,7 @@ public final class Dispatcher {
         return new DatabaseRunner(linker.getConnection(), QueryLoader.getMapOfQueries(), linker);
     }
 
-    public <T extends StreamLineJob> String submitJob(T job) {
+    public <T extends AbstractStreamLineJob> String submitJob(T job) {
         String id = job.getJobId();
         activeJobs.put(id, job);
         jobExecutor.submit(() -> {
@@ -83,18 +82,13 @@ public final class Dispatcher {
         submitJob(searchJob);
 
         while (!searchJob.resultsAreReady()) {
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                break;
-            }
+            Thread.onSpinWait();
         }
         Logger.debug("Job is no longer running.");
 
-        RetrievedStorage test = searchJob.getResults();
-        Logger.debug(test != null ? "results contains data" : "results is null");
-        return test;
+        RetrievedStorage results = searchJob.getResults();
+        Logger.debug(results != null ? "results contains data" : "results is null");
+        return results;
     }
 
     public void changeLanguage(String languageCode) {
@@ -107,9 +101,26 @@ public final class Dispatcher {
     
     private void killCurrentAudioJobIfExists() {
         if (audioJobId != null) {
-            StreamLineJob currentAudioJob = activeJobs.get(audioJobId);
+            AbstractStreamLineJob currentAudioJob = activeJobs.get(audioJobId);
             currentAudioJob.cancel();
         }
+    }
+
+    public RetrievedStorage getRecentlyPlayedSongs() {
+        RecentlyPlayedSongsJob recPlayJob = new RecentlyPlayedSongsJob(config, dbRunner);
+        submitJob(recPlayJob);
+
+        while (!recPlayJob.resultsAreReady()) {
+            Thread.onSpinWait();
+        }
+        Logger.debug("Job is no longer running.");
+
+        return recPlayJob.getResults();
+    }
+
+    public void handleSongLikeStatus(Song song) {
+        LikeSongJob likeJob = new LikeSongJob(config, dbRunner, song);
+        submitJob(likeJob);
     }
 
     public void playSong(Song song) {
@@ -136,7 +147,7 @@ public final class Dispatcher {
         /* Uncomment the line below if needed for debugging. */
         // getThreadStates();
         if (!exitedGracefully) {
-            for (StreamLineJob job : activeJobs.values()) {
+            for (AbstractStreamLineJob job : activeJobs.values()) {
                 job.cancel();
             }
 

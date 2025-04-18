@@ -227,7 +227,7 @@ public class DatabaseRunnerTest {
 
         clearInvocations(mockConnection);
 
-        spyRunner.likeSong(song);
+        spyRunner.handleLikeSong(song);
 
         verify(mockConnection).setAutoCommit(false);
         verify(spyRunner).insertSongIntoLikedTable(7);
@@ -245,7 +245,7 @@ public class DatabaseRunnerTest {
 
         clearInvocations(mockConnection);
 
-        spyRunner.likeSong(song);
+        spyRunner.handleLikeSong(song);
 
         verify(mockConnection).setAutoCommit(false);
         verify(spyRunner).insertSongIntoSongs(song);

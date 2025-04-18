@@ -7,7 +7,7 @@ import com.streamline.utilities.internal.StreamLineConstants;
 
 import org.tinylog.Logger;
 
-public class ConnectionMonitorJob extends StreamLineJob {
+public class ConnectionMonitorJob extends AbstractStreamLineJob {
 
     public ConnectionMonitorJob(Config config) {
         super(config);
