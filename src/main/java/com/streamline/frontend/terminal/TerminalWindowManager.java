@@ -35,7 +35,7 @@ public class TerminalWindowManager {
     public BasicWindow songOptionPage;
     public BasicWindow playlistChoicePage;
 
-    public TerminalWindowManager(WindowBasedTextGUI textGUI, TextGUIThread guiThread, Dispatcher backend, TerminalComponentFactory componentFactory) {
+    public TerminalWindowManager(WindowBasedTextGUI textGUI, TextGUIThread guiThread, Dispatcher backend, TerminalComponentFactory componentFactory) throws Exception {
         this.textGUI = textGUI;
         this.guiThread = guiThread;
         this.backend = backend;

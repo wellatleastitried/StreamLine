@@ -61,7 +61,7 @@ public class SearchPage extends BasePage {
         panel.addComponent(createSearchBox(resultsBox, currentButtons));
         panel.addComponent(componentFactory.createEmptySpace());
         panel.addComponent(resultsBox);
-        if (searchResultButtons.size() > 0) {
+        if (searchResultButtons != null && searchResultButtons.size() > 0) {
             updateResultsDisplay(resultsBox, currentButtons);
         }
 
