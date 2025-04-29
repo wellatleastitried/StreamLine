@@ -146,7 +146,7 @@ public class TerminalWindowManager {
         guiThread.invokeLater(() -> {
             Collection<Window> openWindows = textGUI.getWindows();
             for (Window openWindow: openWindows) {
-                if (openWindow != mainPage) {
+                if (openWindow != window) {
                     textGUI.removeWindow(openWindow);
                 }
             }
