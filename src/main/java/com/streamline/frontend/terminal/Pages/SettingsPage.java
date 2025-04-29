@@ -23,13 +23,11 @@ public class SettingsPage extends BasePage {
 
         panel.addComponent(componentFactory.createEmptySpace());
 
-        // Clear cache button
         panel.addComponent(componentFactory.createButton(
                     LanguagePeer.getText("button.clearCache"),
                     () -> backend.clearCache()
         ));
 
-        // Language selection button
         panel.addComponent(componentFactory.createButton(
                     LanguagePeer.getText("button.chooseLanguage"),
                     () -> windowManager.transitionTo(windowManager.languagePage)
@@ -37,7 +35,6 @@ public class SettingsPage extends BasePage {
 
         panel.addComponent(componentFactory.createEmptySpace());
 
-        // Back button
         panel.addComponent(componentFactory.createButton(
                     LanguagePeer.getText("button.back"),
                     () -> windowManager.returnToMainMenu(window),

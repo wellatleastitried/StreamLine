@@ -30,7 +30,6 @@ public class HelpPage extends BasePage {
         panel.addComponent(componentFactory.createEmptySpace());
         panel.addComponent(componentFactory.createEmptySpace());
         
-        // Back button
         panel.addComponent(componentFactory.createButton(
             LanguagePeer.getText("button.back"),
             () -> windowManager.returnToMainMenu(window),

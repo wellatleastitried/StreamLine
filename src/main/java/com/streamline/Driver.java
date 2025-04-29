@@ -379,11 +379,11 @@ public final class Driver {
 
     public static void shutdown() {
         if (!exitedGracefully) {
-            if (frontend != null) {
-                frontend.shutdown();
-            }
             if (backend != null) {
                 backend.shutdown();
+            }
+            if (frontend != null) {
+                frontend.shutdown();
             }
             System.out.println("[*] " + LanguagePeer.getText("app.goodbye"));
             exitedGracefully = true;

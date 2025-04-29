@@ -24,7 +24,6 @@ public class PlaylistPage extends BasePage {
         panel.addComponent(componentFactory.createLabel(LanguagePeer.getText("label.playlistsFeature")));
         panel.addComponent(componentFactory.createEmptySpace());
         
-        // Back button
         panel.addComponent(componentFactory.createButton(
             LanguagePeer.getText("button.back"),
             () -> windowManager.returnToMainMenu(window),

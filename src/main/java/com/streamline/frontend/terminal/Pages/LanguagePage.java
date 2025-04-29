@@ -23,7 +23,7 @@ public class LanguagePage extends BasePage {
         
         panel.addComponent(componentFactory.createEmptySpace());
         
-        // Language selection buttons
+        /* Language selection buttons */
         panel.addComponent(componentFactory.createButton(
             LanguagePeer.getText("button.english"),
             () -> {
@@ -59,7 +59,6 @@ public class LanguagePage extends BasePage {
         
         panel.addComponent(componentFactory.createEmptySpace());
         
-        // Back button
         panel.addComponent(componentFactory.createButton(
             LanguagePeer.getText("button.back"),
             () -> windowManager.returnToMainMenu(window),

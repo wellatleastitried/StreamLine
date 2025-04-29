@@ -41,7 +41,7 @@ public class RecentlyPlayedPage extends BasePage {
 
         Panel panel = componentFactory.createStandardPanel();
 
-        // Panel for search results
+        /* Panel for search results */
         Panel resultsBox = new Panel();
         resultsBox.setLayoutManager(new GridLayout(1));
         resultsBox.setPreferredSize(new TerminalSize(
@@ -58,7 +58,7 @@ public class RecentlyPlayedPage extends BasePage {
         resultsBox = handleSongRendering(resultsBox, currentButtons);
         panel.addComponent(resultsBox);
 
-        // Back button
+        /* Back button */
         panel.addComponent(componentFactory.createButton(
                     LanguagePeer.getText("button.back"), 
                     () -> windowManager.returnToMainMenu(window),

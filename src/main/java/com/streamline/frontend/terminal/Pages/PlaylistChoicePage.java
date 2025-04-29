@@ -24,7 +24,7 @@ public class PlaylistChoicePage extends BasePage {
 
         Panel panel = componentFactory.createStandardPanel();
 
-        // Panel for search results
+        /* Panel for search results */
         Panel resultsBox = new Panel();
         resultsBox.setLayoutManager(new GridLayout(1));
         resultsBox.setPreferredSize(new TerminalSize(
@@ -39,7 +39,6 @@ public class PlaylistChoicePage extends BasePage {
         panel.addComponent(componentFactory.createEmptySpace());
         panel.addComponent(resultsBox);
 
-        // Back button
         panel.addComponent(componentFactory.createButton(
                     LanguagePeer.getText("button.back"), 
                     () -> windowManager.returnToMainMenu(window),

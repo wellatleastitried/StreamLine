@@ -22,7 +22,6 @@ public class TerminalWindowManager {
     private final Dispatcher backend;
     private final TerminalComponentFactory componentFactory;
 
-    // Windows
     public BasicWindow mainPage;
     public BasicWindow settingsPage;
     public BasicWindow helpPage;
@@ -34,6 +33,11 @@ public class TerminalWindowManager {
     public BasicWindow languagePage;
     public BasicWindow songOptionPage;
     public BasicWindow playlistChoicePage;
+
+    /**
+     * Flag to indicate if the window should be rebuilt after navigating off of the page.
+     */
+    public boolean rebuildWhenDone = false;
 
     public TerminalWindowManager(WindowBasedTextGUI textGUI, TextGUIThread guiThread, Dispatcher backend, TerminalComponentFactory componentFactory) throws Exception {
         this.textGUI = textGUI;
@@ -111,7 +115,12 @@ public class TerminalWindowManager {
     }
 
     public void rebuildSearchPage(Map<Integer, Button> searchResults) {
-        this.searchPage = new SearchPage(this, backend, guiThread, componentFactory, textGUI, searchResults).createWindow();
+        if (rebuildWhenDone) {
+            this.rebuildWhenDone = false;
+            this.searchPage = new SearchPage(this, backend, guiThread, componentFactory, textGUI).createWindow();
+        } else {
+            this.searchPage = new SearchPage(this, backend, guiThread, componentFactory, textGUI, searchResults).createWindow();
+        }
         assert searchPage != null;
     }
 
@@ -121,6 +130,11 @@ public class TerminalWindowManager {
         if (!openWindows.contains(mainPage)) {
             textGUI.addWindowAndWait(mainPage);
         }
+    }
+
+    public void transitionToCachedSearchPage() {
+        this.rebuildWhenDone = true;
+        transitionTo(searchPage);
     }
 
     public void transitionTo(BasicWindow window) {

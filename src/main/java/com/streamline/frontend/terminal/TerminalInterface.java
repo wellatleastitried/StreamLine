@@ -67,10 +67,13 @@ public final class TerminalInterface extends com.streamline.frontend.FrontendInt
     private void initializeWindows() {
         try {
             TerminalWindowManager windowManager = new TerminalWindowManager(textGUI, guiThread, backend, new TerminalComponentFactory(terminalSize));
-            assert windowManager.mainPage != null;
-            mainMenu = windowManager.mainPage;
+            if (windowManager.mainPage == null) {
+                throw new IllegalStateException("Main page is null");
+            } else {
+                mainMenu = windowManager.mainPage;
+            }
         } catch (Exception e) {
-            Logger.error("[!] There was an error while initializing the windows for the terminal interface.");
+            Logger.error("[!] There was an error while initializing the windows for the terminal interface.\n[!] Error message: " + e.getMessage());
         }
     }
 

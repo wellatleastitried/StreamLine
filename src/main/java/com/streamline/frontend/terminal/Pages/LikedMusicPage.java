@@ -24,7 +24,6 @@ public class LikedMusicPage extends BasePage {
         panel.addComponent(componentFactory.createLabel(LanguagePeer.getText("label.likedMusicTitle")));
         panel.addComponent(componentFactory.createEmptySpace());
 
-        // Back button
         panel.addComponent(componentFactory.createButton(
                     LanguagePeer.getText("button.back"),
                     () -> windowManager.returnToMainMenu(window),

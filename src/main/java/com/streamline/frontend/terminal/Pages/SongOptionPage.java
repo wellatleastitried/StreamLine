@@ -38,7 +38,6 @@ public class SongOptionPage extends BasePage {
 
         Panel panel = componentFactory.createStandardPanel();
 
-        // Panel for search results
         panel.addComponent(componentFactory.createEmptySpace());
         panel.addComponent(componentFactory.createLabel(LanguagePeer.getText("label.songOptionPageTitle")));
 
@@ -48,16 +47,35 @@ public class SongOptionPage extends BasePage {
         }));
 
         panel.addComponent(componentFactory.createEmptySpace());
-        // Back button
         panel.addComponent(componentFactory.createButton(
                     LanguagePeer.getText("button.back"), 
                     () -> {
-                        windowManager.returnToMainMenu(window);
-                        windowManager.rebuildSearchPage(previousResultsForSearchPage);
+                        switch (previousPage.getClass().getSimpleName()) {
+                            case "SearchPage":
+                                windowManager.rebuildSearchPage(previousResultsForSearchPage);
+                                windowManager.transitionToCachedSearchPage();
+                                break;
+                            case "LikedMusicPage":
+                                windowManager.rebuildDynamicWindows();
+                                windowManager.transitionTo(windowManager.likedMusicPage);
+                                break;
+                            case "DownloadedMusicPage":
+                                windowManager.rebuildDynamicWindows();
+                                windowManager.transitionTo(windowManager.downloadedPage);
+                                break;
+                            case "PlaylistPage":
+                                windowManager.rebuildDynamicWindows();
+                                windowManager.transitionTo(windowManager.playlistPage);
+                                break;
+                            default:
+                                windowManager.rebuildAllWindows();
+                                windowManager.returnToMainMenu(window);
+                                break;
+                        }
                     },
                     componentFactory.getButtonWidth() / 3, 
                     componentFactory.getButtonHeight() / 2
-                    ));
+                        ));
 
         window.setComponent(panel);
         return window;

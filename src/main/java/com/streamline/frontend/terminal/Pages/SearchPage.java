@@ -45,7 +45,7 @@ public class SearchPage extends BasePage {
 
         Panel panel = componentFactory.createStandardPanel();
 
-        // Panel for search results
+        /* Panel for search results */
         Panel resultsBox = new Panel();
         resultsBox.setLayoutManager(new GridLayout(1));
         resultsBox.setPreferredSize(new TerminalSize(
@@ -65,7 +65,6 @@ public class SearchPage extends BasePage {
             updateResultsDisplay(resultsBox, currentButtons);
         }
 
-        // Back button
         panel.addComponent(componentFactory.createButton(
                     LanguagePeer.getText("button.back"), 
                     () -> windowManager.returnToMainMenu(window),
