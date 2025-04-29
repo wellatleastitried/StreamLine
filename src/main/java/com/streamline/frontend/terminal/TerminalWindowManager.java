@@ -127,6 +127,11 @@ public class TerminalWindowManager {
     public void showMainMenu() {
         mainPage.setVisible(true);
         Collection<Window> openWindows = textGUI.getWindows();
+        for (Window window : openWindows) {
+            if (window != mainPage) {
+                textGUI.removeWindow(window);
+            }
+        }
         if (!openWindows.contains(mainPage)) {
             textGUI.addWindowAndWait(mainPage);
         }
@@ -140,6 +145,11 @@ public class TerminalWindowManager {
     public void transitionTo(BasicWindow window) {
         guiThread.invokeLater(() -> {
             Collection<Window> openWindows = textGUI.getWindows();
+            for (Window openWindow: openWindows) {
+                if (openWindow != mainPage) {
+                    textGUI.removeWindow(openWindow);
+                }
+            }
             if (!openWindows.contains(window)) {
                 if (isDynamicWindow(window)) {
                     rebuildDynamicWindows();

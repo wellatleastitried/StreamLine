@@ -1,10 +1,9 @@
 package com.streamline.frontend.terminal;
 
-import com.googlecode.lanterna.SGR;
 import com.googlecode.lanterna.TerminalSize;
-import com.googlecode.lanterna.TextColor;
 import com.googlecode.lanterna.gui2.*;
-import com.googlecode.lanterna.graphics.*;
+
+import org.tinylog.Logger;
 
 /**
  * Factory for creating consistently styled UI components. Centralizes styling and component creation logic.
@@ -21,6 +20,7 @@ public class TerminalComponentFactory {
         this.buttonWidth = terminalSize.getColumns() / 4;
         this.buttonHeight = 2;
         this.theme = new StreamLineTheme();
+        Logger.debug("TerminalComponentFactory: Initialized with terminal size " + terminalSize);
     }
 
     public Label createLabel(String text) {

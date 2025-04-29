@@ -8,7 +8,6 @@ import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.tinylog.Logger;
 
 /**
@@ -29,6 +28,22 @@ public class StreamLineTheme extends AbstractTheme {
     private static final TextColor PRIMARY_FOREGROUND = new TextColor.RGB(220, 220, 230);
     private static final TextColor ACCENT_COLOR = new TextColor.RGB(130, 80, 255);
 
+    private static final String[] COMPONENT_CLASSES = {
+        "Button",
+        "Label",
+        "TextBox",
+        "Panel",
+        "Window",
+        "BasicWindow", 
+        "EmptySpace",
+        "ActionListBox",
+        "CheckBox",
+        "ComboBox",
+        "RadioBoxList",
+        "Separator",
+        "Table"
+    };
+
     public StreamLineTheme() {
         super(null, null);
 
@@ -45,118 +60,70 @@ public class StreamLineTheme extends AbstractTheme {
                 true,
                 SGR.BOLD
         ));
-        themeDefinitions.put("Button", new StreamLineThemeDefinition(
-                PRIMARY_FOREGROUND,
-                SECONDARY_BACKGROUND,
-                ACCENT_COLOR,
-                SECONDARY_BACKGROUND,
-                TextColor.ANSI.WHITE,
-                ACTIVE_BACKGROUND,
-                true,
-                true,
-                SGR.BOLD
-        ));
-        themeDefinitions.put("TextBox", new StreamLineThemeDefinition(
-                PRIMARY_FOREGROUND,
-                PRIMARY_BACKGROUND,
-                PRIMARY_FOREGROUND,
-                SECONDARY_BACKGROUND,
-                PRIMARY_BACKGROUND,
-                SECONDARY_BACKGROUND,
-                true,
-                false
-        ));
-        themeDefinitions.put("Label", new StreamLineThemeDefinition(
-                PRIMARY_FOREGROUND,
-                PRIMARY_BACKGROUND,
-                PRIMARY_FOREGROUND,
-                PRIMARY_BACKGROUND,
-                ACCENT_COLOR,
-                PRIMARY_BACKGROUND,
-                false,
-                false,
-                SGR.BOLD
-        ));
-        themeDefinitions.put("Window", new StreamLineThemeDefinition(
-                PRIMARY_FOREGROUND,
-                PRIMARY_BACKGROUND,
-                PRIMARY_FOREGROUND,
-                PRIMARY_BACKGROUND,
-                ACCENT_COLOR,
-                PRIMARY_BACKGROUND,
-                true,
-                true
-        ));
-        themeDefinitions.put("Panel", new StreamLineThemeDefinition(
-                PRIMARY_FOREGROUND,
-                PRIMARY_BACKGROUND,
-                PRIMARY_FOREGROUND,
-                PRIMARY_BACKGROUND,
-                PRIMARY_FOREGROUND,
-                PRIMARY_BACKGROUND,
-                false, 
-                false
-        ));
-        themeDefinitions.put("EmptySpace", new StreamLineThemeDefinition(
-                PRIMARY_FOREGROUND,
-                PRIMARY_BACKGROUND,
-                PRIMARY_FOREGROUND,
-                PRIMARY_BACKGROUND,
-                PRIMARY_FOREGROUND,
-                PRIMARY_BACKGROUND,
-                false,
-                false
-        ));
-        themeDefinitions.put("ActionListBox", new StreamLineThemeDefinition(
-                PRIMARY_FOREGROUND,
-                PRIMARY_BACKGROUND,
-                ACCENT_COLOR,
-                SECONDARY_BACKGROUND,
-                TextColor.ANSI.WHITE,
-                ACTIVE_BACKGROUND,
-                true,
-                true
-        ));
-        themeDefinitions.put("CheckBox", new StreamLineThemeDefinition(
-                PRIMARY_FOREGROUND,
-                PRIMARY_BACKGROUND,
-                ACCENT_COLOR,
-                PRIMARY_BACKGROUND,
-                TextColor.ANSI.WHITE,
-                ACTIVE_BACKGROUND,
-                true,
-                false
-        ));
-        themeDefinitions.put("ComboBox", new StreamLineThemeDefinition(
-                PRIMARY_FOREGROUND,
-                SECONDARY_BACKGROUND,
-                ACCENT_COLOR,
-                SECONDARY_BACKGROUND,
-                TextColor.ANSI.WHITE,
-                ACTIVE_BACKGROUND,
-                true,
-                true
-        ));
-        themeDefinitions.put("RadioBoxList", new StreamLineThemeDefinition(
-                PRIMARY_FOREGROUND,
-                PRIMARY_BACKGROUND,
-                ACCENT_COLOR,
-                SECONDARY_BACKGROUND,
-                TextColor.ANSI.WHITE,
-                ACTIVE_BACKGROUND,
-                true,
-                true
-        ));
-        themeDefinitions.put("Table", new StreamLineThemeDefinition(
-                PRIMARY_FOREGROUND,
-                PRIMARY_BACKGROUND,
-                ACCENT_COLOR,
-                SECONDARY_BACKGROUND,
-                TextColor.ANSI.WHITE,
-                ACTIVE_BACKGROUND,
-                true,
-                true
-        ));
+
+        for (String componentClass : COMPONENT_CLASSES) {
+            if (componentClass.equals("Button")) {
+                themeDefinitions.put(componentClass, new StreamLineThemeDefinition(
+                        PRIMARY_FOREGROUND,
+                        SECONDARY_BACKGROUND,
+                        ACCENT_COLOR,
+                        SECONDARY_BACKGROUND,
+                        TextColor.ANSI.WHITE,
+                        ACTIVE_BACKGROUND,
+                        true,
+                        true,
+                        SGR.BOLD
+                ));
+            } else if (componentClass.equals("TextBox")) {
+                themeDefinitions.put(componentClass, new StreamLineThemeDefinition(
+                        PRIMARY_FOREGROUND,
+                        PRIMARY_BACKGROUND,
+                        PRIMARY_FOREGROUND,
+                        SECONDARY_BACKGROUND,
+                        PRIMARY_FOREGROUND,
+                        SECONDARY_BACKGROUND,
+                        true,
+                        false
+                ));
+            } else if (componentClass.equals("Label")) {
+                themeDefinitions.put(componentClass, new StreamLineThemeDefinition(
+                        PRIMARY_FOREGROUND,
+                        PRIMARY_BACKGROUND,
+                        PRIMARY_FOREGROUND,
+                        PRIMARY_BACKGROUND,
+                        ACCENT_COLOR,
+                        PRIMARY_BACKGROUND,
+                        false,
+                        false,
+                        SGR.BOLD
+                ));
+            } else if (componentClass.equals("Window") || componentClass.equals("BasicWindow")) {
+                themeDefinitions.put(componentClass, new StreamLineThemeDefinition(
+                        PRIMARY_FOREGROUND,
+                        PRIMARY_BACKGROUND,
+                        PRIMARY_FOREGROUND,
+                        PRIMARY_BACKGROUND,
+                        ACCENT_COLOR,
+                        PRIMARY_BACKGROUND,
+                        true,
+                        true
+                ));
+            } else {
+                /* All other components get the default theme */
+                themeDefinitions.put(componentClass, new StreamLineThemeDefinition(
+                        PRIMARY_FOREGROUND,
+                        PRIMARY_BACKGROUND,
+                        PRIMARY_FOREGROUND,
+                        PRIMARY_BACKGROUND,
+                        PRIMARY_FOREGROUND,
+                        PRIMARY_BACKGROUND,
+                        false,
+                        false
+                ));
+            }
+        }
+        
+        Logger.debug("StreamLineTheme: Initialized with " + themeDefinitions.size() + " component theme definitions");
     }
 
     @Override
@@ -166,58 +133,41 @@ public class StreamLineTheme extends AbstractTheme {
 
     @Override
     public ThemeDefinition getDefinition(Class<?> clazz) {
-
-        /* First, check if we have a direct match for the class name */
         String className = clazz.getSimpleName();
+        
         if (themeDefinitions.containsKey(className)) {
+            Logger.trace("StreamLineTheme: Found theme for " + className + " by direct lookup");
             return themeDefinitions.get(className);
         }
         
-        /* Then try to find a matching definition by class compatibility */
-        String key = null;
         if (clazz == Component.class) {
-            key = "DEFAULT";
-        } else {
-            for (String definitionKey : themeDefinitions.keySet()) {
-                if (definitionKey.equals("DEFAULT")) {
-                    continue;
+            Logger.trace("StreamLineTheme: Using default theme for base Component class");
+            return getDefaultDefinition();
+        }
+        
+        for (String definitionKey : themeDefinitions.keySet()) {
+            if (definitionKey.equals("DEFAULT")) {
+                continue;
+            }
+            
+            try {
+                Class<?> definitionClass = Class.forName("com.googlecode.lanterna.gui2." + definitionKey);
+                if (definitionClass.isAssignableFrom(clazz)) {
+                    Logger.trace("StreamLineTheme: Found theme for " + className + " via parent class " + definitionKey);
+                    return themeDefinitions.get(definitionKey);
                 }
-                
-                try {
-                    Class<?> definitionClass = Class.forName("com.googlecode.lanterna.gui2." + definitionKey);
-                    if (definitionClass.isAssignableFrom(clazz)) {
-                        key = definitionKey;
-                        break;
-                    }
-                } catch (ClassNotFoundException e) {
-
-                    /* Try loading as a fully qualified class name */
-                    try {
-                        Class<?> definitionClass = Class.forName(definitionKey);
-                        if (definitionClass.isAssignableFrom(clazz)) {
-                            key = definitionKey;
-                            break;
-                        }
-                    } catch (Exception ignore) {
-                        Logger.debug("Failed to load class: " + definitionKey, ignore);
-                        /* Log and try the next key */
-                    }
-                } catch (Exception ignore) {
-                    Logger.debug("Failed to load class: " + definitionKey, ignore);
-                    /* Log and try the next key */
-                }
+            } catch (ClassNotFoundException e) {
+                Logger.debug("[*] StreamLineTheme: Class not found for " + definitionKey + ": " + e.getMessage());
+            } catch (Exception e) {
+                Logger.debug("[*] StreamLineTheme: Unknown error for " + definitionKey + ": " + e.getMessage());
             }
         }
-
-        if (key == null) {
-            return getDefaultDefinition();
-        } else {
-            return themeDefinitions.get(key);
-        }
+        
+        Logger.trace("StreamLineTheme: No theme definition found for " + className + ", using default");
+        return getDefaultDefinition();
     }
 
     private static class StreamLineThemeDefinition implements ThemeDefinition {
-
         private final TextColor normalForeground;
         private final TextColor normalBackground;
         private final TextColor selectedForeground;
@@ -243,20 +193,20 @@ public class StreamLineTheme extends AbstractTheme {
             this.activeBackground = activeBackground;
             this.useRenderer = useRenderer;
             this.useBorder = useBorder;
-            this.extraStyles = extraStyles;
+            this.extraStyles = extraStyles != null ? extraStyles : new SGR[0];
             
-            this.normalStyle = new DefaultThemeStyle(normalForeground, normalBackground, extraStyles);
-            this.selectedStyle = new DefaultThemeStyle(selectedForeground, selectedBackground, extraStyles);
-            this.activeStyle = new DefaultThemeStyle(activeForeground, activeBackground, extraStyles);
-            this.preLightStyle = new DefaultThemeStyle(selectedForeground, normalBackground, extraStyles);
+            this.normalStyle = new DefaultThemeStyle(normalForeground, normalBackground, this.extraStyles);
+            this.selectedStyle = new DefaultThemeStyle(selectedForeground, selectedBackground, this.extraStyles);
+            this.activeStyle = new DefaultThemeStyle(activeForeground, activeBackground, this.extraStyles);
+            this.preLightStyle = new DefaultThemeStyle(selectedForeground, normalBackground, this.extraStyles);
             
             TextColor dimmedForeground;
             if (normalForeground instanceof TextColor.RGB) {
-                TextColor.RGB rgb = (TextColor.RGB) normalForeground;
+                TextColor.RGB RGB = (TextColor.RGB) normalForeground;
                 dimmedForeground = new TextColor.RGB(
-                    Math.max(0, rgb.getRed() - 70),
-                    Math.max(0, rgb.getGreen() - 70),
-                    Math.max(0, rgb.getBlue() - 70)
+                    Math.max(0, RGB.getRed() - 70),
+                    Math.max(0, RGB.getGreen() - 70),
+                    Math.max(0, RGB.getBlue() - 70)
                 );
             } else {
                 dimmedForeground = normalForeground;
@@ -321,9 +271,9 @@ public class StreamLineTheme extends AbstractTheme {
 
         @Override
         public boolean getBooleanProperty(String name, boolean defaultValue) {
-            if (name.equals("RENDERER")) {
+            if ("RENDERER".equals(name)) {
                 return useRenderer;
-            } else if (name.equals("USE_BORDER")) {
+            } else if ("USE_BORDER".equals(name)) {
                 return useBorder;
             }
             return defaultValue;
@@ -351,7 +301,7 @@ public class StreamLineTheme extends AbstractTheme {
         public DefaultThemeStyle(TextColor foreground, TextColor background, SGR... sgrs) {
             this.foreground = foreground;
             this.background = background;
-            this.sgrs = sgrs != null ? EnumSet.copyOf(Arrays.asList(sgrs)) : EnumSet.noneOf(SGR.class);
+            this.sgrs = sgrs.length > 0 ? EnumSet.copyOf(Arrays.asList(sgrs)) : EnumSet.noneOf(SGR.class);
         }
         
         @Override

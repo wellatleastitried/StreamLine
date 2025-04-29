@@ -67,7 +67,10 @@ public class SearchPage extends BasePage {
 
         panel.addComponent(componentFactory.createButton(
                     LanguagePeer.getText("button.back"), 
-                    () -> windowManager.returnToMainMenu(window),
+                    () -> {
+                        windowManager.rebuildSearchPage(null);
+                        windowManager.returnToMainMenu(window);
+                    },
                     componentFactory.getButtonWidth() / 3, 
                     componentFactory.getButtonHeight() / 2
                     ));
