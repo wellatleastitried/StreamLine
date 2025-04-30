@@ -320,7 +320,7 @@ public final class Driver {
         return config;
     }
 
-    private static <T extends AbstractStreamLineTheme> AbstractStreamLineTheme getTerminalTheme(OS os) {
+    private static AbstractStreamLineTheme getTerminalTheme(OS os) {
         AbstractStreamLineTheme theme = null;
         String configPath = switch (os) {
             case WINDOWS -> StreamLineConstants.STREAMLINE_CONFIG_PATH_WINDOWS;
@@ -334,7 +334,7 @@ public final class Driver {
                 case MAC -> config.load(new FileInputStream(StreamLineConstants.STREAMLINE_CONFIG_PATH_MAC));
                 default -> config.load(new FileInputStream(StreamLineConstants.STREAMLINE_CONFIG_PATH_LINUX));
             }
-            String themeName = config.getProperty("language", "en");
+            String themeName = config.getProperty("theme", "default");
             return getThemeFromName(themeName);
         } catch (IOException iE) {
             Logger.warn("[!] Error loading configuration file, using default theme.");
@@ -352,7 +352,7 @@ public final class Driver {
         } else if (themeName.equals("solarized")) {
             return new SolarizedTheme();
         }
-        Logger.info("[!] Invalid theme specified in configuration file, using default theme.");
+        Logger.info("[!] Unexpected error while parsing theme; using default theme.");
         return new DefaultTheme();
     }
 

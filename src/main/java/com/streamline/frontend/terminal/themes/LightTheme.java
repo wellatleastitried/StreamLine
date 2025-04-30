@@ -4,12 +4,12 @@ import com.googlecode.lanterna.*;
 
 public class LightTheme extends AbstractStreamLineTheme {
 
-    private static final TextColor PRIMARY_BACKGROUND = rgb(25, 25, 35);
-    private static final TextColor SECONDARY_BACKGROUND = rgb(35, 35, 50);
-    private static final TextColor ACTIVE_BACKGROUND = rgb(80, 45, 120);
+    private static final TextColor PRIMARY_BACKGROUND = rgb(255, 255, 255);
+    private static final TextColor SECONDARY_BACKGROUND = rgb(240, 240, 240);
+    private static final TextColor ACTIVE_BACKGROUND = rgb(255, 200, 200);
 
-    private static final TextColor PRIMARY_FOREGROUND = rgb(220, 220, 230);
-    private static final TextColor ACCENT_COLOR = rgb(130, 80, 255);
+    private static final TextColor PRIMARY_FOREGROUND = rgb(50, 50, 50);
+    private static final TextColor ACCENT_COLOR = rgb(215, 0, 0);
 
     public LightTheme() {
         super(PRIMARY_BACKGROUND, SECONDARY_BACKGROUND, PRIMARY_FOREGROUND, ACTIVE_BACKGROUND, ACCENT_COLOR);

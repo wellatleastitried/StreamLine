@@ -4,12 +4,12 @@ import com.googlecode.lanterna.*;
 
 public class SolarizedTheme extends AbstractStreamLineTheme {
 
-    private static final TextColor PRIMARY_BACKGROUND = rgb(25, 25, 35);
-    private static final TextColor SECONDARY_BACKGROUND = rgb(35, 35, 50);
-    private static final TextColor ACTIVE_BACKGROUND = rgb(80, 45, 120);
+    private static final TextColor PRIMARY_BACKGROUND = rgb(0, 43, 54);
+    private static final TextColor SECONDARY_BACKGROUND = rgb(7, 54, 66);
+    private static final TextColor ACTIVE_BACKGROUND = rgb(38, 139, 210);
 
-    private static final TextColor PRIMARY_FOREGROUND = rgb(220, 220, 230);
-    private static final TextColor ACCENT_COLOR = rgb(130, 80, 255);
+    private static final TextColor PRIMARY_FOREGROUND = rgb(238, 232, 213);
+    private static final TextColor ACCENT_COLOR = rgb(181, 137, 0);
 
     public SolarizedTheme() {
         super(PRIMARY_BACKGROUND, SECONDARY_BACKGROUND, PRIMARY_FOREGROUND, ACTIVE_BACKGROUND, ACCENT_COLOR);
