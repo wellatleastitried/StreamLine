@@ -6,6 +6,8 @@ import com.streamline.audio.Song;
 import com.streamline.backend.Dispatcher;
 import com.streamline.frontend.terminal.Pages.*;
 
+import java.io.IOException;
+
 import org.tinylog.Logger;
 
 import java.util.Collection;
@@ -122,6 +124,16 @@ public class TerminalWindowManager {
             this.searchPage = new SearchPage(this, backend, guiThread, componentFactory, textGUI, searchResults).createWindow();
         }
         assert searchPage != null;
+    }
+
+    public void refresh() {
+        guiThread.invokeLater(() -> {
+            try {
+                textGUI.getScreen().refresh();
+            } catch (IOException iE) {
+                Logger.error("[!] Error while redrawing screen, please restart the app.");
+            }
+        });
     }
 
     public void showMainMenu() {

@@ -162,6 +162,55 @@ public final class DatabaseRunner {
         return songsFromPlaylist;
     }
 
+    /* TODO: Need to fix this method as it is throwing an error during build tests:
+     *
+     *
+     [ERROR] com.streamline.database.DatabaseRunnerTest.testLikeSongExistingSong -- Time elapsed: 0.036 s <<< FAILURE!
+     Wanted but not invoked:
+     databaseRunner.insertSongIntoLikedTable(7);
+     -> at com.streamline.database.DatabaseRunner.insertSongIntoLikedTable(DatabaseRunner.java:384)
+
+     However, there were exactly 3 interactions with this mock:
+     databaseRunner.handleLikeSong(
+     com.streamline.audio.Song@7c8b37a8
+     );
+     -> at com.streamline.database.DatabaseRunnerTest.testLikeSongExistingSong(DatabaseRunnerTest.java:230)
+
+     databaseRunner.getSongIdFromLikedTable(
+     com.streamline.audio.Song@7c8b37a8
+     );
+     -> at com.streamline.database.DatabaseRunner.handleLikeSong(DatabaseRunner.java:228)
+
+     databaseRunner.insertSongIntoSongs(
+     com.streamline.audio.Song@7c8b37a8
+     );
+     -> at com.streamline.database.DatabaseRunner.handleLikeSong(DatabaseRunner.java:232)
+
+
+     at com.streamline.database.DatabaseRunner.insertSongIntoLikedTable(DatabaseRunner.java:384)
+     at com.streamline.database.DatabaseRunnerTest.testLikeSongExistingSong(DatabaseRunnerTest.java:233)
+     *
+     */
+    public int getSongIdFromLikedTable(Song songToSearch) {
+        final String likedSongQuery = "SELECT ls.song_id FROM LikedSongs ls WHERE ls.song_id IN (SELECT id FROM Songs s WHERE s.title = ? AND s.artist = ? AND s.videoId = ?);";
+        try (final PreparedStatement statement = connection.prepareStatement(likedSongQuery)) {
+            statement.setString(1, songToSearch.getSongName());
+            statement.setString(2, songToSearch.getSongArtist());
+            statement.setString(3, songToSearch.getSongVideoId());
+            final ResultSet rs = statement.executeQuery();
+            if (!rs.isBeforeFirst()) {
+                return -1;
+            }
+            while (rs.next()) {
+                return rs.getInt("id");
+            }
+        } catch (SQLException sE) {
+            handleSQLException(sE);
+        }
+        return -1;
+    }
+
+
     public RetrievedStorage getExpiredCache() {
         final RetrievedStorage expiredSongs = new RetrievedStorage();
         try (final Statement statement = connection.createStatement()) {
@@ -205,15 +254,18 @@ public final class DatabaseRunner {
     public void handleLikeSong(Song song) {
         try {
             connection.setAutoCommit(false);
-            // TODO: NEED TO CHECK LIKEDSONGS TABLE AS WELL
-            int songId = getSongId(song.getSongName(), song.getSongArtist());
+            int songId = getSongIdFromLikedTable(song);
+            // int songId = getSongId(song.getSongName(), song.getSongArtist());
+            Logger.debug("Song ID from LikedSongs query: " + songId);
             if (songId == -1) {
                 songId = insertSongIntoSongs(song);
             }
             if (song.isSongLiked()) {
                 removeSongFromLikedTable(songId);
             } else {
+                Logger.debug("Inserting song into LikedSongs table with ID: " + songId);
                 insertSongIntoLikedTable(songId);
+                Logger.debug("Song inserted into LikedSongs table with ID: " + songId);
             }
         } catch (SQLException sE) {
             handleSQLException(sE);
@@ -318,7 +370,7 @@ public final class DatabaseRunner {
             insertSongStatement.executeUpdate();
             connection.commit();
             try (final ResultSet generatedKeys = insertSongStatement.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
+                if (generatedKeys != null && generatedKeys.next()) {
                     return generatedKeys.getInt(1);
                 } else {
                     throw new SQLException("Failed to insert song, no ID was generated.");
@@ -363,6 +415,7 @@ public final class DatabaseRunner {
             insertSongStatement.setInt(1, songId);
             insertSongStatement.executeUpdate();
             connection.commit();
+            Logger.debug("Song insertion query committed into LikedSongs table with ID: " + songId);
         }
     }
 
