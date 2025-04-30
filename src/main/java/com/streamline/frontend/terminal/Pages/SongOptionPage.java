@@ -15,8 +15,10 @@ import java.util.Map;
 public class SongOptionPage extends BasePage {
 
     private final Song selectedSong;
-    public final BasePage previousPage;
     private final Map<Integer, Button> previousResultsForSearchPage;
+
+    private BasicWindow window;
+    public final BasePage previousPage;
 
     public <T extends BasePage> SongOptionPage(TerminalWindowManager windowManager, Dispatcher backend, TextGUIThread guiThread, TerminalComponentFactory componentFactory, Song selectedSong, T previousPage) {
         super(windowManager, backend, guiThread, componentFactory);
@@ -34,7 +36,7 @@ public class SongOptionPage extends BasePage {
 
     @Override
     public BasicWindow createWindow() {
-        BasicWindow window = createStandardWindow(LanguagePeer.getText("window.songOptionPageTitle"));
+        window = createStandardWindow(LanguagePeer.getText("window.songOptionPageTitle"));
 
         Panel panel = componentFactory.createStandardPanel();
 
@@ -42,8 +44,24 @@ public class SongOptionPage extends BasePage {
         panel.addComponent(componentFactory.createLabel(LanguagePeer.getText("label.songOptionPageTitle")));
 
         panel.addComponent(componentFactory.createEmptySpace());
+        panel.addComponent(componentFactory.createButton(LanguagePeer.getText("button.playSong"), () -> {
+            backend.playSong(selectedSong);
+            handlePageTransition();
+        }));
+
+
         panel.addComponent(componentFactory.createButton(selectedSong.isSongLiked() ? LanguagePeer.getText("button.unlikeSong") : LanguagePeer.getText("button.likeSong"), () -> {
             backend.handleSongLikeStatus(selectedSong);
+            if (previousResultsForSearchPage != null) {
+                windowManager.buildSongOptionPage(selectedSong, previousPage, previousResultsForSearchPage);
+            } else {
+                windowManager.buildSongOptionPage(selectedSong, previousPage);
+            }
+            handlePageTransition();
+        }));
+
+        panel.addComponent(componentFactory.createButton(LanguagePeer.getText("button.downloadSong"), () -> {
+            backend.downloadSong(selectedSong);
             if (previousResultsForSearchPage != null) {
                 windowManager.buildSongOptionPage(selectedSong, previousPage, previousResultsForSearchPage);
             } else {
@@ -55,35 +73,37 @@ public class SongOptionPage extends BasePage {
         panel.addComponent(componentFactory.createEmptySpace());
         panel.addComponent(componentFactory.createButton(
                     LanguagePeer.getText("button.back"), 
-                    () -> {
-                        switch (previousPage.getClass().getSimpleName()) {
-                            case "SearchPage":
-                                windowManager.rebuildSearchPage(previousResultsForSearchPage);
-                                windowManager.transitionToCachedSearchPage();
-                                break;
-                            case "LikedMusicPage":
-                                windowManager.rebuildDynamicWindows();
-                                windowManager.transitionTo(windowManager.likedMusicPage);
-                                break;
-                            case "DownloadedMusicPage":
-                                windowManager.rebuildDynamicWindows();
-                                windowManager.transitionTo(windowManager.downloadedPage);
-                                break;
-                            case "PlaylistPage":
-                                windowManager.rebuildDynamicWindows();
-                                windowManager.transitionTo(windowManager.playlistPage);
-                                break;
-                            default:
-                                windowManager.rebuildAllWindows();
-                                windowManager.returnToMainMenu(window);
-                                break;
-                        }
-                    },
+                    () -> handlePageTransition(),
                     componentFactory.getButtonWidth() / 3, 
                     componentFactory.getButtonHeight() / 2
                         ));
 
         window.setComponent(panel);
         return window;
+    }
+
+    private void handlePageTransition() {
+        switch (previousPage.getClass().getSimpleName()) {
+            case "SearchPage":
+                windowManager.rebuildSearchPage(previousResultsForSearchPage);
+                windowManager.transitionToCachedSearchPage();
+                break;
+            case "LikedMusicPage":
+                windowManager.rebuildDynamicWindows();
+                windowManager.transitionTo(windowManager.likedMusicPage);
+                break;
+            case "DownloadedMusicPage":
+                windowManager.rebuildDynamicWindows();
+                windowManager.transitionTo(windowManager.downloadedPage);
+                break;
+            case "PlaylistPage":
+                windowManager.rebuildDynamicWindows();
+                windowManager.transitionTo(windowManager.playlistPage);
+                break;
+            default:
+                windowManager.rebuildAllWindows();
+                windowManager.returnToMainMenu(window);
+                break;
+        }
     }
 }

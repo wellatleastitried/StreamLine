@@ -66,8 +66,6 @@ public class TerminalWindowManager {
         assert downloadedPage != null;
         this.languagePage = new LanguagePage(this, backend, guiThread, componentFactory).createWindow();
         assert languagePage != null;
-        this.playlistChoicePage = new PlaylistChoicePage(this, backend, guiThread, componentFactory).createWindow();
-        assert playlistChoicePage != null;
     }
 
     public <T extends BasePage> void buildSongOptionPage(Song song, T previousWindow) {
@@ -78,6 +76,16 @@ public class TerminalWindowManager {
     public <T extends BasePage> void buildSongOptionPage(Song song, T previousWindow, Map<Integer, Button> previousSearchResults) {
         this.songOptionPage = new SongOptionPage(this, backend, guiThread, componentFactory, song, previousWindow, previousSearchResults).createWindow();
         assert songOptionPage != null;
+    }
+
+    public <T extends BasePage> void buildPlaylistChoicePage(Song song, T previousWindow) {
+        this.playlistChoicePage = new PlaylistChoicePage(this, backend, guiThread, componentFactory, song, previousWindow).createWindow();
+        assert playlistChoicePage != null;
+    }
+
+    public <T extends BasePage> void buildPlaylistChoicePage(Song song, T previousWindow, Map<Integer, Button> previousSearchResults) {
+        this.playlistChoicePage = new PlaylistChoicePage(this, backend, guiThread, componentFactory, song, previousWindow, previousSearchResults).createWindow();
+        assert playlistChoicePage != null;
     }
 
     public void rebuildDynamicWindows() {

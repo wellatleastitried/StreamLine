@@ -18,5 +18,6 @@ public class LikeSongJob extends AbstractStreamLineJob {
     @Override
     public void execute() {
         dbRunner.handleLikeSong(song);
+        song.setSongLikeStatus(!song.isSongLiked());
     }
 }

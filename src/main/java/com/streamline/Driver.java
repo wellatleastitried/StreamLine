@@ -67,7 +67,6 @@ public final class Driver {
     }
 
     private static void displayCurrentlyPlayingSong() {
-        // Get the name and artist of the currently playing song
         System.out.println("Not yet implemented.");
     }
 }

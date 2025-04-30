@@ -15,6 +15,7 @@ public class CacheClearJob extends AbstractStreamLineJob {
         this.cacheDirectory = cacheDirectory;
     }
 
+    @Override
     public void execute() {
         CacheManager.clearExpiredCacheOnStartup(cacheDirectory, dbRunner.getExpiredCache());
         dbRunner.clearExpiredCache();

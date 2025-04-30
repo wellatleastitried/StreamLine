@@ -76,6 +76,11 @@ public final class Dispatcher {
         return id;
     }
 
+    public void downloadSong(Song song) {
+        DownloadJob downloadJob = new DownloadJob(config, song);
+        submitJob(downloadJob);
+    }
+
     public RetrievedStorage doSearch(String searchTerm) {
         SearchJob searchJob = new SearchJob(config, searchTerm);
         submitJob(searchJob);
@@ -83,7 +88,7 @@ public final class Dispatcher {
         while (!searchJob.resultsAreReady()) {
             Thread.onSpinWait();
         }
-        Logger.debug("Job is no longer running.");
+        Logger.debug("SearchJob is no longer running.");
 
         RetrievedStorage results = searchJob.getResults();
         Logger.debug(results != null ? "results contains data" : "results is null");
