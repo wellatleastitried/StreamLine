@@ -66,7 +66,7 @@ public final class TerminalInterface extends com.streamline.frontend.FrontendInt
 
     private void initializeWindows() {
         try {
-            TerminalWindowManager windowManager = new TerminalWindowManager(textGUI, guiThread, backend, new TerminalComponentFactory(terminalSize));
+            TerminalWindowManager windowManager = new TerminalWindowManager(textGUI, guiThread, backend, new TerminalComponentFactory(backend.config, terminalSize));
             if (windowManager.mainPage == null) {
                 throw new IllegalStateException("Main page is null");
             } else {

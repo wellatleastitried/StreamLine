@@ -3,6 +3,9 @@ package com.streamline.frontend.terminal;
 import com.googlecode.lanterna.TerminalSize;
 import com.googlecode.lanterna.gui2.*;
 
+import com.streamline.frontend.terminal.themes.*;
+import com.streamline.utilities.internal.Config;
+
 import org.tinylog.Logger;
 
 /**
@@ -13,13 +16,13 @@ public class TerminalComponentFactory {
     private final TerminalSize terminalSize;
     private final int buttonWidth;
     private final int buttonHeight;
-    private final StreamLineTheme theme;
+    private final AbstractStreamLineTheme theme;
 
-    public TerminalComponentFactory(TerminalSize terminalSize) {
+    public TerminalComponentFactory(Config config, TerminalSize terminalSize) {
         this.terminalSize = terminalSize;
         this.buttonWidth = terminalSize.getColumns() / 4;
         this.buttonHeight = 2;
-        this.theme = new StreamLineTheme();
+        this.theme = config.getTheme();
         Logger.debug("TerminalComponentFactory: Initialized with terminal size " + terminalSize);
     }
 
@@ -112,7 +115,7 @@ public class TerminalComponentFactory {
         return buttonHeight;
     }
 
-    public StreamLineTheme getTheme() {
+    public AbstractStreamLineTheme getTheme() {
         return this.theme;
     }
 

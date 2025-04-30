@@ -1,6 +1,7 @@
 package com.streamline.utilities.internal;
 
 import com.streamline.backend.handle.ConnectionHandle;
+import com.streamline.frontend.terminal.themes.AbstractStreamLineTheme;
 
 import java.util.logging.Logger;
 
@@ -17,6 +18,7 @@ public class Config {
     private char audioSource;
     private ConnectionHandle apiHandle;
     private String binaryPath;
+    private AbstractStreamLineTheme theme;
 
     public Config() {}
 
@@ -105,5 +107,13 @@ public class Config {
 
     public String getBinaryPath() {
         return binaryPath;
+    }
+
+    public void setTheme(AbstractStreamLineTheme theme) {
+        this.theme = theme;
+    }
+
+    public AbstractStreamLineTheme getTheme() {
+        return theme;
     }
 }

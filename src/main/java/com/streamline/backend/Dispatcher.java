@@ -23,7 +23,7 @@ import org.tinylog.Logger;
  */
 public final class Dispatcher {
     
-    private final Config config;
+    public final Config config;
     private final ConcurrentHashMap<String, AbstractStreamLineJob> activeJobs;
     private final ExecutorService jobExecutor;
 

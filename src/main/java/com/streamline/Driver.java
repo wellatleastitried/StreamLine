@@ -2,9 +2,11 @@ package com.streamline;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import java.util.Properties;
 import java.util.Scanner;
 
 import com.streamline.audio.AudioPlayer;
@@ -15,6 +17,7 @@ import com.streamline.backend.handle.InvidiousHandle;
 import com.streamline.backend.handle.YoutubeHandle;
 import com.streamline.frontend.FrontendInterface;
 import com.streamline.frontend.terminal.TerminalInterface;
+import com.streamline.frontend.terminal.themes.*;
 import com.streamline.utilities.LanguagePeer;
 import com.streamline.utilities.LibraryPeer;
 import com.streamline.utilities.RetrievedStorage;
@@ -66,6 +69,7 @@ public final class Driver {
 
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(createLine("language", LanguagePeer.getSystemLocale()));
+        stringBuilder.append(createLine("theme", "default"));
         writeConfigurationFile(path, stringBuilder.toString());
     }
 
@@ -287,6 +291,7 @@ public final class Driver {
     private static Config getConfigurationForRuntime() {
         Config config = new Config();
         config.setMode(Mode.TERMINAL);
+        config.setTheme(getTerminalTheme(os));
 
         config.setOS(os);
 
@@ -314,6 +319,43 @@ public final class Driver {
         }
         return config;
     }
+
+    private static <T extends AbstractStreamLineTheme> AbstractStreamLineTheme getTerminalTheme(OS os) {
+        AbstractStreamLineTheme theme = null;
+        String configPath = switch (os) {
+            case WINDOWS -> StreamLineConstants.STREAMLINE_CONFIG_PATH_WINDOWS;
+            case MAC -> StreamLineConstants.STREAMLINE_CONFIG_PATH_MAC;
+            default -> StreamLineConstants.STREAMLINE_CONFIG_PATH_LINUX;
+        };
+        try {
+            Properties config = new Properties();
+            switch (Driver.getOSOfUser()) {
+                case WINDOWS -> config.load(new FileInputStream(StreamLineConstants.STREAMLINE_CONFIG_PATH_WINDOWS));
+                case MAC -> config.load(new FileInputStream(StreamLineConstants.STREAMLINE_CONFIG_PATH_MAC));
+                default -> config.load(new FileInputStream(StreamLineConstants.STREAMLINE_CONFIG_PATH_LINUX));
+            }
+            String themeName = config.getProperty("language", "en");
+            return getThemeFromName(themeName);
+        } catch (IOException iE) {
+            Logger.warn("[!] Error loading configuration file, using default theme.");
+        }
+        return new DefaultTheme();
+    }
+
+    private static AbstractStreamLineTheme getThemeFromName(String themeName) {
+        if (themeName.equals("default")) {
+            return new DefaultTheme();
+        } else if (themeName.equals("dark")) {
+            return new DarkTheme();
+        } else if (themeName.equals("light")) {
+            return new LightTheme();
+        } else if (themeName.equals("solarized")) {
+            return new SolarizedTheme();
+        }
+        Logger.info("[!] Invalid theme specified in configuration file, using default theme.");
+        return new DefaultTheme();
+    }
+
 
     public static OS getOSOfUser() {
         String osString = System.getProperty("os.name").toLowerCase();
