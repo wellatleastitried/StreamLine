@@ -223,7 +223,7 @@ public class DatabaseRunnerTest {
         Song song = new Song(0, "Existing Song", "Artist", "http://example.com", "vid123");
 
         DatabaseRunner spyRunner = spy(databaseRunner);
-        doReturn(7).when(spyRunner).getSongId(anyString(), anyString());
+        doReturn(7).when(spyRunner).getSongIdFromLikedTable(any(Song.class));
 
         clearInvocations(mockConnection);
 

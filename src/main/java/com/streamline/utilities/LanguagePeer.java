@@ -1,6 +1,6 @@
 package com.streamline.utilities;
 
-import com.streamline.Driver;
+import com.streamline.ConfigManager;
 import com.streamline.utilities.internal.StreamLineConstants;
 
 import java.io.FileInputStream;
@@ -40,7 +40,7 @@ public final class LanguagePeer {
     private static String getLanguageCode() {
         try {
             Properties config = new Properties();
-            switch (Driver.getOSOfUser()) {
+            switch (ConfigManager.getOSOfUser()) {
                 case WINDOWS -> config.load(new FileInputStream(StreamLineConstants.STREAMLINE_CONFIG_PATH_WINDOWS));
                 case MAC -> config.load(new FileInputStream(StreamLineConstants.STREAMLINE_CONFIG_PATH_MAC));
                 default -> config.load(new FileInputStream(StreamLineConstants.STREAMLINE_CONFIG_PATH_LINUX));

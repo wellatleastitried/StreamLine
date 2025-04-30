@@ -1,7 +1,7 @@
 package com.streamline.frontend.terminal.Pages;
 
 import com.googlecode.lanterna.gui2.*;
-import com.streamline.Driver;
+import com.streamline.RuntimeManager;
 import com.streamline.backend.Dispatcher;
 import com.streamline.frontend.terminal.*;
 import com.streamline.utilities.LanguagePeer;
@@ -69,7 +69,7 @@ public class MainPage extends BasePage {
         panel.addComponent(componentFactory.createButton(
             LanguagePeer.getText("button.quit"), 
             () -> {
-                Driver.shutdown();
+                RuntimeManager.shutdown();
             }
         ));
         Logger.debug("MainPage: Quit button created.");

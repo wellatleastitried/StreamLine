@@ -162,35 +162,6 @@ public final class DatabaseRunner {
         return songsFromPlaylist;
     }
 
-    /* TODO: Need to fix this method as it is throwing an error during build tests:
-     *
-     *
-     [ERROR] com.streamline.database.DatabaseRunnerTest.testLikeSongExistingSong -- Time elapsed: 0.036 s <<< FAILURE!
-     Wanted but not invoked:
-     databaseRunner.insertSongIntoLikedTable(7);
-     -> at com.streamline.database.DatabaseRunner.insertSongIntoLikedTable(DatabaseRunner.java:384)
-
-     However, there were exactly 3 interactions with this mock:
-     databaseRunner.handleLikeSong(
-     com.streamline.audio.Song@7c8b37a8
-     );
-     -> at com.streamline.database.DatabaseRunnerTest.testLikeSongExistingSong(DatabaseRunnerTest.java:230)
-
-     databaseRunner.getSongIdFromLikedTable(
-     com.streamline.audio.Song@7c8b37a8
-     );
-     -> at com.streamline.database.DatabaseRunner.handleLikeSong(DatabaseRunner.java:228)
-
-     databaseRunner.insertSongIntoSongs(
-     com.streamline.audio.Song@7c8b37a8
-     );
-     -> at com.streamline.database.DatabaseRunner.handleLikeSong(DatabaseRunner.java:232)
-
-
-     at com.streamline.database.DatabaseRunner.insertSongIntoLikedTable(DatabaseRunner.java:384)
-     at com.streamline.database.DatabaseRunnerTest.testLikeSongExistingSong(DatabaseRunnerTest.java:233)
-     *
-     */
     public int getSongIdFromLikedTable(Song songToSearch) {
         final String likedSongQuery = "SELECT ls.song_id FROM LikedSongs ls WHERE ls.song_id IN (SELECT id FROM Songs s WHERE s.title = ? AND s.artist = ? AND s.videoId = ?);";
         try (final PreparedStatement statement = connection.prepareStatement(likedSongQuery)) {
@@ -255,7 +226,6 @@ public final class DatabaseRunner {
         try {
             connection.setAutoCommit(false);
             int songId = getSongIdFromLikedTable(song);
-            // int songId = getSongId(song.getSongName(), song.getSongArtist());
             Logger.debug("Song ID from LikedSongs query: " + songId);
             if (songId == -1) {
                 songId = insertSongIntoSongs(song);
