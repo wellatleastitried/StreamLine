@@ -33,8 +33,7 @@ public abstract class AbstractStreamLineTheme extends AbstractTheme {
         "CheckBox",
         "ComboBox",
         "RadioBoxList",
-        "Separator",
-        "Table"
+        "Separator"
     };
 
     public AbstractStreamLineTheme(TextColor PRIMARY_BACKGROUND, TextColor SECONDARY_BACKGROUND, TextColor PRIMARY_FOREGROUND, TextColor ACTIVE_BACKGROUND, TextColor ACCENT_COLOR) {

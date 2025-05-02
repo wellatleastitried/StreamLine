@@ -39,7 +39,8 @@ public class TerminalWindowManager {
     /**
      * Flag to indicate if the window should be rebuilt after navigating off of the page.
      */
-    public boolean rebuildWhenDone = false;
+    public boolean rebuildSearchPageWhenDone = false;
+    public boolean rebuildPlaylistPageWhenDone = false;
 
     public TerminalWindowManager(WindowBasedTextGUI textGUI, TextGUIThread guiThread, Dispatcher backend, TerminalComponentFactory componentFactory) throws Exception {
         this.textGUI = textGUI;
@@ -125,13 +126,15 @@ public class TerminalWindowManager {
     }
 
     public void rebuildSearchPage(Map<Integer, Button> searchResults) {
-        if (rebuildWhenDone) {
-            this.rebuildWhenDone = false;
-            this.searchPage = new SearchPage(this, backend, guiThread, componentFactory, textGUI).createWindow();
-        } else {
-            this.searchPage = new SearchPage(this, backend, guiThread, componentFactory, textGUI, searchResults).createWindow();
-        }
-        assert searchPage != null;
+        guiThread.invokeLater(() -> {
+            if (this.rebuildSearchPageWhenDone) {
+                this.rebuildSearchPageWhenDone = false;
+                this.searchPage = new SearchPage(this, backend, guiThread, componentFactory, textGUI).createWindow();
+            } else {
+                this.searchPage = new SearchPage(this, backend, guiThread, componentFactory, textGUI, searchResults).createWindow();
+            }
+            assert searchPage != null;
+        });
     }
 
     public void refresh() {
@@ -158,8 +161,17 @@ public class TerminalWindowManager {
     }
 
     public void transitionToCachedSearchPage() {
-        this.rebuildWhenDone = true;
+        this.rebuildSearchPageWhenDone = true;
         transitionTo(searchPage);
+    }
+
+    public <T extends BasePage> void transitionToPlaylistChoicePage(T previousPage, Song song, Map<Integer, Button> previousSearchResults) {
+        if (previousSearchResults != null) {
+            buildPlaylistChoicePage(song, previousPage, previousSearchResults);
+        } else {
+            buildPlaylistChoicePage(song, previousPage);
+        }
+        transitionTo(playlistChoicePage);
     }
 
     public void transitionTo(BasicWindow window) {

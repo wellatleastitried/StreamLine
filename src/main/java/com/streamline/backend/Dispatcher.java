@@ -110,8 +110,28 @@ public final class Dispatcher {
         }
     }
 
+    public boolean isSongLiked(Song song) {
+        Logger.debug("Checking if song is liked: {}", song.getSongName());
+        boolean isLiked = dbRunner.getSongLikeStatus(song);
+        Logger.debug("Song like status: {}", isLiked);
+        return isLiked;
+        // return dbRunner.getSongLikeStatus(song);
+    }
+
+    public RetrievedStorage getLikedSongs() {
+        LikedSongsFetchJob likedJob = new LikedSongsFetchJob(config, dbRunner);
+        submitJob(likedJob);
+
+        while (!likedJob.resultsAreReady()) {
+            Thread.onSpinWait();
+        }
+        Logger.debug("Job is no longer running.");
+
+        return likedJob.getResults();
+    }
+
     public RetrievedStorage getRecentlyPlayedSongs() {
-        RecentlyPlayedSongsJob recPlayJob = new RecentlyPlayedSongsJob(config, dbRunner);
+        RecentlyPlayedSongsFetchJob recPlayJob = new RecentlyPlayedSongsFetchJob(config, dbRunner);
         submitJob(recPlayJob);
 
         while (!recPlayJob.resultsAreReady()) {

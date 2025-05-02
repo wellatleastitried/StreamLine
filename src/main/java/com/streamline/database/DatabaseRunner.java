@@ -40,6 +40,27 @@ public final class DatabaseRunner {
         }
     }
 
+    public boolean getSongLikeStatus(Song song) {
+        final String songLikeStatusQuery = "SELECT ls.song_id FROM LikedSongs ls WHERE ls.song_id IN (SELECT id FROM Songs s WHERE s.title = ? AND s.artist = ? AND s.videoId = ?);";
+        try (PreparedStatement statement = connection.prepareStatement(songLikeStatusQuery)) {
+            statement.setString(1, song.getSongName());
+            statement.setString(2, song.getSongArtist());
+            statement.setString(3, song.getSongVideoId());
+            final ResultSet rs = statement.executeQuery();
+            if (!rs.isBeforeFirst()) {
+                Logger.debug("Song not found in LikedSongs table.");
+                return false;
+            }
+            while (rs.next()) {
+                Logger.debug("Song found in LikedSongs table with ID: " + rs.getInt("song_id"));
+                return true;
+            }
+        } catch (SQLException sE) {
+            handleSQLException(sE);
+        }
+        return false;
+    }
+
     public RetrievedStorage getLikedSongs() {
         final RetrievedStorage likedSongs = new RetrievedStorage();
         try {
@@ -228,9 +249,11 @@ public final class DatabaseRunner {
             int songId = getSongIdFromLikedTable(song);
             Logger.debug("Song ID from LikedSongs query: " + songId);
             if (songId == -1) {
+                Logger.debug("Song not found in the LikedSongs table; making sure it exists in the Songs table.");
                 songId = insertSongIntoSongs(song);
             }
             if (song.isSongLiked()) {
+                Logger.debug("Removing song from LikedSongs table with ID: " + songId);
                 removeSongFromLikedTable(songId);
             } else {
                 Logger.debug("Inserting song into LikedSongs table with ID: " + songId);

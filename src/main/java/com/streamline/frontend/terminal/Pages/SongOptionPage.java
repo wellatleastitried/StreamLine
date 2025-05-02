@@ -22,6 +22,7 @@ public class SongOptionPage extends BasePage {
 
     public <T extends BasePage> SongOptionPage(TerminalWindowManager windowManager, Dispatcher backend, TextGUIThread guiThread, TerminalComponentFactory componentFactory, Song selectedSong, T previousPage) {
         super(windowManager, backend, guiThread, componentFactory);
+        selectedSong.setSongLikeStatus(backend.isSongLiked(selectedSong));
         this.selectedSong = selectedSong;
         this.previousPage = previousPage;
         this.previousResultsForSearchPage = null;
@@ -29,6 +30,7 @@ public class SongOptionPage extends BasePage {
 
     public <T extends BasePage> SongOptionPage(TerminalWindowManager windowManager, Dispatcher backend, TextGUIThread guiThread, TerminalComponentFactory componentFactory, Song selectedSong, T previousPage, Map<Integer, Button> previousResultsForSearchPage) {
         super(windowManager, backend, guiThread, componentFactory);
+        selectedSong.setSongLikeStatus(backend.isSongLiked(selectedSong));
         this.selectedSong = selectedSong;
         this.previousPage = previousPage;
         this.previousResultsForSearchPage = previousResultsForSearchPage;
@@ -60,6 +62,10 @@ public class SongOptionPage extends BasePage {
             handlePageTransition();
         }));
 
+        panel.addComponent(componentFactory.createButton(LanguagePeer.getText("button.addToPlaylist"), () -> {
+            windowManager.transitionToPlaylistChoicePage(previousPage, selectedSong, previousResultsForSearchPage);
+        }));
+
         panel.addComponent(componentFactory.createButton(LanguagePeer.getText("button.downloadSong"), () -> {
             backend.downloadSong(selectedSong);
             if (previousResultsForSearchPage != null) {
@@ -76,7 +82,7 @@ public class SongOptionPage extends BasePage {
                     () -> handlePageTransition(),
                     componentFactory.getButtonWidth() / 3, 
                     componentFactory.getButtonHeight() / 2
-                        ));
+                    ));
 
         window.setComponent(panel);
         return window;

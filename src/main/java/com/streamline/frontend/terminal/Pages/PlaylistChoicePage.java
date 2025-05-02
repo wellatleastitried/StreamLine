@@ -41,7 +41,7 @@ public class PlaylistChoicePage extends BasePage {
         Panel panel = componentFactory.createStandardPanel();
 
         panel.addComponent(componentFactory.createEmptySpace());
-        panel.addComponent(componentFactory.createLabel(LanguagePeer.getText("label.playistChoicePageTitle")));
+        panel.addComponent(componentFactory.createLabel(LanguagePeer.getText("label.playlistChoicePageTitle")));
 
         panel.addComponent(componentFactory.createEmptySpace());
 
