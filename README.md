@@ -19,7 +19,7 @@ This program is currently under development and is not yet functional. If you wa
 
 ### Prerequisites
 
-- Java 21 or higher
+- Java 17 or higher
 - Maven 3.8 or higher
 - yt-dlp (for audio extraction)
 
@@ -46,6 +46,7 @@ java -jar target/StreamLine.jar
 - [User Guide](doc/USER_GUIDE.md) - Learn how to use StreamLine
 - [Developer Guide](CONTRIBUTING.md) - Contribute to the project
 - [API Documentation](doc/API.md) - Technical documentation
+- [Changing Themes](doc/THEMES.md) - Customize the look and feel of StreamLine
 
 ## Contributing
 
