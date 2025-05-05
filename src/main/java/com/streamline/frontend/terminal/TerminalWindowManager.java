@@ -1,6 +1,7 @@
 package com.streamline.frontend.terminal;
 
 import com.googlecode.lanterna.gui2.*;
+import com.googlecode.lanterna.screen.TerminalScreen;
 
 import com.streamline.audio.Song;
 import com.streamline.backend.Dispatcher;
@@ -36,17 +37,21 @@ public class TerminalWindowManager {
     public BasicWindow songOptionPage;
     public BasicWindow playlistChoicePage;
 
+    private final TerminalKeybinds vimKeyBindings;
+
     /**
      * Flag to indicate if the window should be rebuilt after navigating off of the page.
      */
     public boolean rebuildSearchPageWhenDone = false;
     public boolean rebuildPlaylistPageWhenDone = false;
 
-    public TerminalWindowManager(WindowBasedTextGUI textGUI, TextGUIThread guiThread, Dispatcher backend, TerminalComponentFactory componentFactory) throws Exception {
+    public TerminalWindowManager(TerminalScreen screen, WindowBasedTextGUI textGUI, TextGUIThread guiThread, Dispatcher backend, TerminalComponentFactory componentFactory) throws Exception {
         this.textGUI = textGUI;
         this.guiThread = guiThread;
         this.backend = backend;
         this.componentFactory = componentFactory;
+
+        this.vimKeyBindings = new TerminalKeybinds(textGUI);
 
         // Initialize all windows
         this.mainPage = new MainPage(this, backend, guiThread, componentFactory).createWindow();

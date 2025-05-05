@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.streamline.ConfigManager;
+import com.streamline.utilities.ConfigManager;
 import com.streamline.utilities.internal.Config;
 import com.streamline.utilities.internal.OS;
 import com.streamline.utilities.internal.StreamLineConstants;

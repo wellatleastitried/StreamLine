@@ -1,6 +1,5 @@
 package com.streamline.utilities;
 
-import com.streamline.ConfigManager;
 import com.streamline.utilities.internal.StreamLineConstants;
 
 import java.io.FileInputStream;

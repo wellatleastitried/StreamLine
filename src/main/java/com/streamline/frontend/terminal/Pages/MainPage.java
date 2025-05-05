@@ -1,10 +1,10 @@
 package com.streamline.frontend.terminal.Pages;
 
 import com.googlecode.lanterna.gui2.*;
-import com.streamline.RuntimeManager;
 import com.streamline.backend.Dispatcher;
 import com.streamline.frontend.terminal.*;
 import com.streamline.utilities.LanguagePeer;
+import com.streamline.utilities.RuntimeManager;
 
 import org.tinylog.Logger;
 

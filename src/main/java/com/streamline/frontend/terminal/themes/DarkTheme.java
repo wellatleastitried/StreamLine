@@ -1,4 +1,3 @@
-
 package com.streamline.frontend.terminal.themes;
 
 import com.googlecode.lanterna.*;
