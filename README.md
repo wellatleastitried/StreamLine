@@ -40,8 +40,8 @@ mvn clean install
 java -jar target/streamline.jar --install
 ```
 
-4. Run the application with the `setup` flag to install the final requirements for the app:
-</br></br>Using `setup youtube` is recommended - the invidious instances are inconsistent and may lead to issues.
+4. Run the application with the `--setup` flag to install the final requirements for the app:
+</br></br>Using `--setup youtube` is recommended - the invidious instances are inconsistent and may lead to issues.
 ```bash
 streamline --setup <youtube|docker>
 ```
