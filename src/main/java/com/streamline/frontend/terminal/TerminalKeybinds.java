@@ -37,7 +37,7 @@ public class TerminalKeybinds implements TextGUI.Listener {
             if (keyStroke.getKeyType() == KeyType.Escape) {
                 Logger.debug("Escape pressed, exiting input mode");
 
-                /* Send an 'h' to escape from the text box */
+                /* Send a 'j' to escape from the text box */
                 KeyStroke simKeyStroke = new KeyStroke('j', false, false);
                 return handleVimKeys(simKeyStroke, (BasicWindow) activeWindow);
             }
