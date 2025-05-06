@@ -5,7 +5,7 @@ import com.googlecode.lanterna.screen.TerminalScreen;
 
 import com.streamline.audio.Song;
 import com.streamline.backend.Dispatcher;
-import com.streamline.frontend.terminal.Pages.*;
+import com.streamline.frontend.terminal.pages.*;
 
 import java.io.IOException;
 

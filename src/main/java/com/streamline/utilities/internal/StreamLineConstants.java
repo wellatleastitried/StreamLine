@@ -63,4 +63,12 @@ public class StreamLineConstants {
 
     // Set cache expiration at 5 minutes
     public static final long YOUTUBE_CACHE_EXPIRY_MS = 5 * 60 * 1000;
+
+    public static final String  WINDOWS_JAR_INSTALLATION_PATH       = System.getenv("LOCALAPPDATA") + "\\StreamLine\\";
+    public static final String  WINDOWS_LAUNCHER_INSTALLATION_PATH  = System.getenv("LOCALAPPDATA") + "\\StreamLine\\bin\\";
+    public static final String  LINUX_JAR_INSTALLATION_PATH         = "/opt/StreamLine/";
+    public static final String  LINUX_LAUNCHER_INSTALLATION_PATH    = "/usr/local/bin/";
+    public static final String  MAC_JAR_INSTALLATION_PATH           = "/Application/StreamLine/bin/";
+    public static final String  MAC_LAUNCHER_INSTALLATION_PATH      = "/usr/local/bin/";
+
 }

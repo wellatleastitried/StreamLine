@@ -36,9 +36,15 @@ cd StreamLine
 mvn clean install
 ```
 
-3. Run the application:
+3. Run the application with the `setup` flag to install the final requirements for the app:
+</br>Using `setup youtube` is recommended - the invidious instances are inconsistent and may lead to issues.
 ```bash
-java -jar target/StreamLine.jar
+java -jar target/streamline.jar setup <youtube|docker>
+```
+
+4. Run the application:
+```bash
+java -jar target/streamline.jar
 ```
 
 ## Documentation

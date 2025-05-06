@@ -1,4 +1,4 @@
-package com.streamline.frontend.terminal.Pages;
+package com.streamline.frontend.terminal.pages;
 
 import com.googlecode.lanterna.gui2.*;
 import com.streamline.backend.Dispatcher;

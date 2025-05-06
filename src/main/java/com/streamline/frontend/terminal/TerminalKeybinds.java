@@ -9,7 +9,6 @@ import org.tinylog.Logger;
 public class TerminalKeybinds implements TextGUI.Listener {
 
     private final TextGUI textGUI;
-    private boolean inputMode = true;
     private TextBox currentTextBox = null;
 
     public TerminalKeybinds(TextGUI textGUI) {
@@ -33,30 +32,20 @@ public class TerminalKeybinds implements TextGUI.Listener {
         if (focused instanceof TextBox) {
             if (currentTextBox != focused) {
                 currentTextBox = (TextBox) focused;
-                inputMode = true;
             }
 
             if (keyStroke.getKeyType() == KeyType.Escape) {
                 Logger.debug("Escape pressed, exiting input mode");
-                inputMode = !inputMode;
-                return true;
+
+                /* Send an 'h' to escape from the text box */
+                KeyStroke simKeyStroke = new KeyStroke('j', false, false);
+                return handleVimKeys(simKeyStroke, (BasicWindow) activeWindow);
             }
         } else {
             currentTextBox = null;
-            inputMode = false;
-        }
-
-        if (inputMode) {
-            return false;
         }
 
         if (keyStroke.getCharacter() != null) {
-            char c = keyStroke.getCharacter();
-            if (c == 'i' && focused instanceof TextBox) {
-                inputMode = true;
-                return true;
-            }
-
             return handleVimKeys(keyStroke, (BasicWindow) activeWindow);
         }
 

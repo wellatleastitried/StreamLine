@@ -1,4 +1,4 @@
-package com.streamline.frontend.terminal.Pages;
+package com.streamline.frontend.terminal.pages;
 
 import com.googlecode.lanterna.gui2.Button;
 import com.googlecode.lanterna.gui2.BasicWindow;
@@ -12,7 +12,7 @@ import com.streamline.utilities.LanguagePeer;
 
 import java.util.Map;
 
-public class SongOptionPage extends BasePage {
+public class PlaylistChoicePage extends BasePage {
 
     private final Song selectedSong;
     private final Map<Integer, Button> previousResultsForSearchPage;
@@ -20,17 +20,15 @@ public class SongOptionPage extends BasePage {
     private BasicWindow window;
     public final BasePage previousPage;
 
-    public <T extends BasePage> SongOptionPage(TerminalWindowManager windowManager, Dispatcher backend, TextGUIThread guiThread, TerminalComponentFactory componentFactory, Song selectedSong, T previousPage) {
+    public <T extends BasePage> PlaylistChoicePage(TerminalWindowManager windowManager, Dispatcher backend, TextGUIThread guiThread, TerminalComponentFactory componentFactory, Song selectedSong, T previousPage) {
         super(windowManager, backend, guiThread, componentFactory);
-        selectedSong.setSongLikeStatus(backend.isSongLiked(selectedSong));
         this.selectedSong = selectedSong;
         this.previousPage = previousPage;
         this.previousResultsForSearchPage = null;
     }
 
-    public <T extends BasePage> SongOptionPage(TerminalWindowManager windowManager, Dispatcher backend, TextGUIThread guiThread, TerminalComponentFactory componentFactory, Song selectedSong, T previousPage, Map<Integer, Button> previousResultsForSearchPage) {
+    public <T extends BasePage> PlaylistChoicePage(TerminalWindowManager windowManager, Dispatcher backend, TextGUIThread guiThread, TerminalComponentFactory componentFactory, Song selectedSong, T previousPage, Map<Integer, Button> previousResultsForSearchPage) {
         super(windowManager, backend, guiThread, componentFactory);
-        selectedSong.setSongLikeStatus(backend.isSongLiked(selectedSong));
         this.selectedSong = selectedSong;
         this.previousPage = previousPage;
         this.previousResultsForSearchPage = previousResultsForSearchPage;
@@ -38,51 +36,21 @@ public class SongOptionPage extends BasePage {
 
     @Override
     public BasicWindow createWindow() {
-        window = createStandardWindow(LanguagePeer.getText("window.songOptionPageTitle"));
+        window = createStandardWindow(LanguagePeer.getText("window.playlistChoicePageTitle"));
 
         Panel panel = componentFactory.createStandardPanel();
 
         panel.addComponent(componentFactory.createEmptySpace());
-        panel.addComponent(componentFactory.createLabel(LanguagePeer.getText("label.songOptionPageTitle")));
+        panel.addComponent(componentFactory.createLabel(LanguagePeer.getText("label.playlistChoicePageTitle")));
 
         panel.addComponent(componentFactory.createEmptySpace());
-        panel.addComponent(componentFactory.createButton(LanguagePeer.getText("button.playSong"), () -> {
-            backend.playSong(selectedSong);
-            handlePageTransition();
-        }));
 
-
-        panel.addComponent(componentFactory.createButton(selectedSong.isSongLiked() ? LanguagePeer.getText("button.unlikeSong") : LanguagePeer.getText("button.likeSong"), () -> {
-            backend.handleSongLikeStatus(selectedSong);
-            if (previousResultsForSearchPage != null) {
-                windowManager.buildSongOptionPage(selectedSong, previousPage, previousResultsForSearchPage);
-            } else {
-                windowManager.buildSongOptionPage(selectedSong, previousPage);
-            }
-            handlePageTransition();
-        }));
-
-        panel.addComponent(componentFactory.createButton(LanguagePeer.getText("button.addToPlaylist"), () -> {
-            windowManager.transitionToPlaylistChoicePage(previousPage, selectedSong, previousResultsForSearchPage);
-        }));
-
-        panel.addComponent(componentFactory.createButton(LanguagePeer.getText("button.downloadSong"), () -> {
-            backend.downloadSong(selectedSong);
-            if (previousResultsForSearchPage != null) {
-                windowManager.buildSongOptionPage(selectedSong, previousPage, previousResultsForSearchPage);
-            } else {
-                windowManager.buildSongOptionPage(selectedSong, previousPage);
-            }
-            windowManager.refresh();
-        }));
-
-        panel.addComponent(componentFactory.createEmptySpace());
         panel.addComponent(componentFactory.createButton(
                     LanguagePeer.getText("button.back"), 
                     () -> handlePageTransition(),
                     componentFactory.getButtonWidth() / 3, 
                     componentFactory.getButtonHeight() / 2
-                    ));
+                        ));
 
         window.setComponent(panel);
         return window;
