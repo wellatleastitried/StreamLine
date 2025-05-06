@@ -52,7 +52,7 @@ public class SongOptionPage extends BasePage {
         }));
 
 
-        panel.addComponent(componentFactory.createButton(selectedSong.isSongLiked() ? LanguagePeer.getText("button.unlikeSong") : LanguagePeer.getText("button.likeSong"), () -> {
+        panel.addComponent(componentFactory.createButton(selectedSong.isSongLiked() ? LanguagePeer.getText("button.dislikeSong") : LanguagePeer.getText("button.likeSong"), () -> {
             backend.handleSongLikeStatus(selectedSong);
             if (previousResultsForSearchPage != null) {
                 windowManager.buildSongOptionPage(selectedSong, previousPage, previousResultsForSearchPage);
