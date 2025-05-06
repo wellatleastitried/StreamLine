@@ -21,7 +21,6 @@ This program is currently under development and is not yet functional. If you wa
 
 - Java 17 or higher
 - Maven 3.8 or higher
-- yt-dlp (for audio extraction)
 
 ### Installation
 
@@ -36,15 +35,20 @@ cd StreamLine
 mvn clean install
 ```
 
-3. Run the application with the `setup` flag to install the final requirements for the app:
-</br>Using `setup youtube` is recommended - the invidious instances are inconsistent and may lead to issues.
+3. Install the project (*Optional*, but recommended)
 ```bash
-java -jar target/streamline.jar setup <youtube|docker>
+java -jar target/streamline.jar --install
 ```
 
-4. Run the application:
+4. Run the application with the `setup` flag to install the final requirements for the app:
+</br></br>Using `setup youtube` is recommended - the invidious instances are inconsistent and may lead to issues.
 ```bash
-java -jar target/streamline.jar
+streamline --setup <youtube|docker>
+```
+
+5. Run the application:
+```bash
+streamline
 ```
 
 ## Documentation
