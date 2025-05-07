@@ -46,23 +46,23 @@ public class SearchPage extends BasePage {
         Panel panel = componentFactory.createStandardPanel();
 
         /* Panel for search results */
-        Panel resultsBox = new Panel();
-        resultsBox.setLayoutManager(new GridLayout(1));
-        resultsBox.setPreferredSize(new TerminalSize(
+        Panel resultsPanel = new Panel();
+        resultsPanel.setLayoutManager(new GridLayout(1));
+        resultsPanel.setPreferredSize(new TerminalSize(
                     componentFactory.getTerminalSize().getColumns(), 
                     componentFactory.getTerminalSize().getRows() - panel.getSize().getRows() - 15
                     ));
-        resultsBox.setFillColorOverride(TextColor.ANSI.BLACK_BRIGHT);
+        resultsPanel.setFillColorOverride(TextColor.ANSI.BLACK_BRIGHT);
 
         panel.addComponent(componentFactory.createEmptySpace());
         panel.addComponent(componentFactory.createLabel(LanguagePeer.getText("label.search")));
 
         Set<Button> currentButtons = new LinkedHashSet<>();
-        panel.addComponent(createSearchBox(resultsBox, currentButtons));
+        panel.addComponent(createSearchBox(resultsPanel, currentButtons));
         panel.addComponent(componentFactory.createEmptySpace());
-        panel.addComponent(resultsBox);
+        panel.addComponent(resultsPanel);
         if (searchResultButtons != null && searchResultButtons.size() > 0) {
-            updateResultsDisplay(resultsBox, currentButtons);
+            updateResultsDisplay(resultsPanel, currentButtons);
         }
 
         panel.addComponent(componentFactory.createButton(
@@ -79,7 +79,7 @@ public class SearchPage extends BasePage {
         return window;
     }
 
-    private TextBox createSearchBox(Panel resultsBox, Set<Button> currentButtons) {
+    private TextBox createSearchBox(Panel resultsPanel, Set<Button> currentButtons) {
         return new TextBox(new TerminalSize(componentFactory.getTerminalSize().getColumns() / 2, 1)) {
             @Override
             public synchronized Result handleKeyStroke(KeyStroke keyStroke) {
@@ -90,8 +90,8 @@ public class SearchPage extends BasePage {
                         return Result.HANDLED;
                     }
 
-                    resultsToButtons(results);
-                    updateResultsDisplay(resultsBox, currentButtons);
+                    resultsToButtons(results, resultsPanel);
+                    updateResultsDisplay(resultsPanel, currentButtons);
                     return Result.HANDLED;
                 }
                 return super.handleKeyStroke(keyStroke);
@@ -112,32 +112,38 @@ public class SearchPage extends BasePage {
         }
         return sB.toString();
     }
-    private void resultsToButtons(RetrievedStorage results) {
-        searchResultButtons = new HashMap<>();
+    private void resultsToButtons(RetrievedStorage results, Panel resultsPanel) {
+        if (searchResultButtons != null) {
+            searchResultButtons.clear();
+        } else {
+            searchResultButtons = new HashMap<>();
+        }
         for (int i = 0; i < results.size(); i++) {
             Song song = results.getSongFromIndex(i);
-            String text = String.format(
-                    "%d%s%s - %s   %s",
+            String formattedText = componentFactory.getFormattedTextForSongButton(
+                    resultsPanel.getSize().getColumns(),
                     results.getIndexFromSong(song) + 1,
-                    getOffsetForSongButton(results.getIndexFromSong(song)),
                     song.getSongName(),
                     song.getSongArtist(),
-                    song.getDuration()
-                    );
-            searchResultButtons.put(i, new Button(text, () -> handleSongSelection(song)));
+                    song.getDuration());
+            searchResultButtons.put(i, componentFactory.createButton(
+                        formattedText, 
+                        () -> handleSongSelection(song),
+                        resultsPanel.getSize().getColumns(),
+                        componentFactory.getButtonHeight()));
         }
     }
 
-    private void updateResultsDisplay(Panel resultsBox, Set<Button> currentButtons) {
+    private void updateResultsDisplay(Panel resultsPanel, Set<Button> currentButtons) {
         guiThread.invokeLater(() -> {
             for (Button button : currentButtons) {
-                resultsBox.removeComponent(button);
+                resultsPanel.removeComponent(button);
             }
             currentButtons.clear();
 
             for (Map.Entry<Integer, Button> entry : searchResultButtons.entrySet()) {
                 if (currentButtons.add(entry.getValue())) {
-                    resultsBox.addComponent(entry.getValue());
+                    resultsPanel.addComponent(entry.getValue());
                 }
             }
 

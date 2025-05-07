@@ -54,6 +54,14 @@ public class TerminalComponentFactory {
         return button;
     }
 
+    public Button createSongButton(String text, Runnable runner, TerminalSize sizeOfResultsBox) {
+        Button button = new Button(text, runner);
+        TerminalSize buttonSize = sizeOfResultsBox.withRows(buttonHeight / 3);
+        button.setPreferredSize(buttonSize);
+        button.setTheme(theme);
+        return button;
+    }
+
     public EmptySpace createEmptySpace() {
         EmptySpace space = new EmptySpace();
         space.setPreferredSize(new TerminalSize(buttonWidth, buttonHeight));
@@ -62,15 +70,6 @@ public class TerminalComponentFactory {
         return space;
     }
 
-    /*
-    public Panel createSearchResultsPanel() {
-        Panel panel = new Panel();
-        panel.setLayoutManager(new GridLayout(1).setLeftMarginSize(1).setRightMarginSize(1));
-        panel.setPreferredSize(new TerminalSize(terminalSize.getColumns() - 8, terminalSize.getRows() - 8));
-        return Panels.bordered(panel, "Results", Borders.singleLine());
-    }
-    */
-
     public Panel createStandardPanel() {
         Panel panel = new Panel();
         panel.setLayoutManager(new GridLayout(1).setLeftMarginSize(2).setRightMarginSize(2));
@@ -78,13 +77,6 @@ public class TerminalComponentFactory {
         panel.setTheme(theme);
         return panel;
     }
-
-    /*
-    public Panel createBorderedPanel(String title) {
-        Panel panel = createStandardPanel();
-        return Panels.bordered(panel, title, BorderStyle.DOUBLE);
-    }
-    */
 
     public TextBox createSearchBox() {
         TextBox textBox = new TextBox(new TerminalSize(terminalSize.getColumns() / 2, 1));
@@ -101,6 +93,51 @@ public class TerminalComponentFactory {
         wrapper.addComponent(new EmptySpace(new TerminalSize(0, margin)));
         wrapper.setTheme(theme);
         return wrapper;
+    }
+
+    public String getFormattedTextForSongButton(int widthOfButton, int index, String title, String artist, String length) {
+        int effectiveWidth = widthOfButton - 8; /* Take 2 off the width so the text isn't touching the border */
+
+        final int MAX_TITLE_LENGTH = effectiveWidth / 3;
+        final int MAX_ARTIST_LENGTH = effectiveWidth / 3;
+
+        String formattedTitle = formatTextToFixedLength(title, MAX_TITLE_LENGTH);
+        String formattedArtist = formatTextToFixedLength(artist, MAX_ARTIST_LENGTH);
+
+        String indexStr = index + ") ";
+        int fixedContentLength = indexStr.length() + MAX_TITLE_LENGTH + MAX_ARTIST_LENGTH + length.length();
+        int totalPaddingNeeded = effectiveWidth - fixedContentLength;
+
+        int titleToArtistPadding = totalPaddingNeeded / 2;
+        int artistToLengthPadding = totalPaddingNeeded - titleToArtistPadding;
+
+        String titleArtistSeparator = " ".repeat(Math.max(0, titleToArtistPadding));
+        String artistLengthSeparator = " ".repeat(Math.max(0, artistToLengthPadding));
+
+        String formattedText = String.format("%s%s%s%s%s%s",
+                indexStr,
+                formattedTitle,
+                titleArtistSeparator,
+                formattedArtist,
+                artistLengthSeparator,
+                length);
+        if (formattedText.length() < widthOfButton) {
+            formattedText += " ".repeat(widthOfButton - formattedText.length());
+        } else if (formattedText.length() > widthOfButton) {
+            formattedText = formattedText.substring(0, widthOfButton);
+        }
+
+        return formattedText;
+    }
+
+    private String formatTextToFixedLength(String text, int maxLength) {
+        if (text.length() > maxLength) {
+            return text.substring(0, maxLength - 3) + "...";
+        }
+        if (text.length() < maxLength) {
+            return text + " ".repeat(maxLength - text.length());
+        }
+        return text;
     }
 
     public TerminalSize getTerminalSize() {

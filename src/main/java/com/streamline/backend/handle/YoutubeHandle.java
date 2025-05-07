@@ -132,7 +132,7 @@ public final class YoutubeHandle implements ConnectionHandle {
             "--no-playlist",
             "--flat-playlist",
             "--socket-timeout", "5", // Remove if necessary
-            "ytsearch10:'" + sanitizedTerm + "'",
+            "ytsearch20:'" + sanitizedTerm + "'",
             "--print",
             "%(title)s | %(uploader)s | %(duration>%M:%S)s | %(id)s"
         };

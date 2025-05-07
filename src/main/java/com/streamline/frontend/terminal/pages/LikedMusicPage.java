@@ -3,8 +3,6 @@ package com.streamline.frontend.terminal.pages;
 import com.googlecode.lanterna.TerminalSize;
 import com.googlecode.lanterna.TextColor;
 import com.googlecode.lanterna.gui2.*;
-import com.googlecode.lanterna.input.KeyStroke;
-import com.googlecode.lanterna.input.KeyType;
 import com.streamline.audio.Song;
 import com.streamline.backend.Dispatcher;
 import com.streamline.frontend.terminal.*;
@@ -76,24 +74,26 @@ public class LikedMusicPage extends BasePage {
             return resultsBox;
         }
 
-        resultsToButtons(results);
+        resultsToButtons(resultsBox, results);
         updateResultsDisplay(resultsBox, currentButtons);
         return resultsBox;
     }
 
-    private void resultsToButtons(RetrievedStorage results) {
+    private void resultsToButtons(Panel resultsBox, RetrievedStorage results) {
         likedMusicButtons = new HashMap<>();
         for (int i = 0; i < results.size(); i++) {
             Song song = results.getSongFromIndex(i);
-            String text = String.format(
-                    "%d%s%s - %s   %s",
+            String formattedText = componentFactory.getFormattedTextForSongButton(
+                    resultsBox.getSize().getColumns(),
                     results.getIndexFromSong(song) + 1,
-                    getOffsetForSongButton(results.getIndexFromSong(song)),
                     song.getSongName(),
                     song.getSongArtist(),
-                    song.getDuration()
-                    );
-            likedMusicButtons.put(i, new Button(text, () -> handleSongSelection(song)));
+                    song.getDuration());
+            likedMusicButtons.put(i, componentFactory.createButton(
+                        formattedText, 
+                        () -> handleSongSelection(song),
+                        resultsBox.getSize().getColumns(),
+                        componentFactory.getButtonHeight()));
         }
     }
 
@@ -115,13 +115,5 @@ public class LikedMusicPage extends BasePage {
     private void handleSongSelection(Song song) {
         windowManager.buildSongOptionPage(song, this);
         windowManager.transitionTo(windowManager.songOptionPage);
-    }
-
-    private String getOffsetForSongButton(int digits) {
-        StringBuilder sB = new StringBuilder();
-        for (int i = 0; i < 7 - String.valueOf(digits).length(); i++) {
-            sB.append(" ");
-        }
-        return sB.toString();
     }
 }

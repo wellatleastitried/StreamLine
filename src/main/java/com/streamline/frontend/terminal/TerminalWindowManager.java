@@ -68,7 +68,7 @@ public class TerminalWindowManager {
         assert playlistPage != null;
         this.recentlyPlayedPage = new RecentlyPlayedPage(this, backend, guiThread, componentFactory, textGUI).createWindow();
         assert recentlyPlayedPage != null;
-        this.downloadedPage = new DownloadedMusicPage(this, backend, guiThread, componentFactory).createWindow();
+        this.downloadedPage = new DownloadedMusicPage(this, backend, guiThread, componentFactory, textGUI).createWindow();
         assert downloadedPage != null;
         this.languagePage = new LanguagePage(this, backend, guiThread, componentFactory).createWindow();
         assert languagePage != null;
@@ -102,7 +102,7 @@ public class TerminalWindowManager {
             assert playlistPage != null;
             this.recentlyPlayedPage = new RecentlyPlayedPage(this, backend, guiThread, componentFactory, textGUI).createWindow();
             assert recentlyPlayedPage != null;
-            this.downloadedPage = new DownloadedMusicPage(this, backend, guiThread, componentFactory).createWindow();
+            this.downloadedPage = new DownloadedMusicPage(this, backend, guiThread, componentFactory, textGUI).createWindow();
             assert downloadedPage != null;
         });
     }
@@ -123,7 +123,7 @@ public class TerminalWindowManager {
             assert playlistPage != null;
             this.recentlyPlayedPage = new RecentlyPlayedPage(this, backend, guiThread, componentFactory, textGUI).createWindow();
             assert recentlyPlayedPage != null;
-            this.downloadedPage = new DownloadedMusicPage(this, backend, guiThread, componentFactory).createWindow();
+            this.downloadedPage = new DownloadedMusicPage(this, backend, guiThread, componentFactory, textGUI).createWindow();
             assert downloadedPage != null;
             this.languagePage = new LanguagePage(this, backend, guiThread, componentFactory).createWindow();
             assert languagePage != null;
