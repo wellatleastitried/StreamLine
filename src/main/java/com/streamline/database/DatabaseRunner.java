@@ -359,7 +359,7 @@ public final class DatabaseRunner {
     }
 
     protected int insertSongIntoSongs(Song song) throws SQLException {
-        final String insertIntoSongs = "INSERT OR IGNORE INTO Songs (title, artist, url, videoId) VALUES(?, ?, ?, ?);";
+        final String insertIntoSongs = "INSERT INTO Songs (title, artist, url, videoId) VALUES (?, ?, ?, ?);";
         try (final PreparedStatement insertSongStatement = connection.prepareStatement(insertIntoSongs)) {
             insertSongStatement.setString(1, song.getSongName());
             insertSongStatement.setString(2, song.getSongArtist());
@@ -415,7 +415,7 @@ public final class DatabaseRunner {
     }
 
     protected int insertSongIntoLikedTable(int songId) throws SQLException {
-        final String insertIntoLikedSongs = "INSERT INTO LikedSongs (song_id, date_liked) VALUES (?, CURRENT_TIMESTAMP);";
+        final String insertIntoLikedSongs = "INSERT INTO LikedSongs VALUES (?, CURRENT_TIMESTAMP);";
         try (final PreparedStatement insertSongStatement = connection.prepareStatement(insertIntoLikedSongs)) {
             insertSongStatement.setInt(1, songId);
             insertSongStatement.executeUpdate();
@@ -443,6 +443,7 @@ public final class DatabaseRunner {
 
     private void handleSQLException(SQLException sE) {
         Logger.warn("[!] Unable to execute query on the database, please try restarting the app.");
+        Logger.debug("[!] SQL error message: " + sE.getMessage());
         try {
             connection.rollback();
         } catch (SQLException rollbackException) {
