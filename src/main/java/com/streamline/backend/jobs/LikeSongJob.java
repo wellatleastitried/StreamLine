@@ -4,6 +4,8 @@ import com.streamline.audio.Song;
 import com.streamline.database.DatabaseRunner;
 import com.streamline.utilities.internal.Config;
 
+import org.tinylog.Logger;
+
 public class LikeSongJob extends AbstractStreamLineJob {
 
     private final DatabaseRunner dbRunner;
@@ -17,7 +19,11 @@ public class LikeSongJob extends AbstractStreamLineJob {
 
     @Override
     public void execute() {
-        dbRunner.handleLikeSong(song);
-        song.setSongLikeStatus(!song.isSongLiked());
+        if (dbRunner.handleLikeSong(song)) {
+            boolean updatedStatus = dbRunner.getSongLikeStatus(song);
+            song.setSongLikeStatus(updatedStatus);
+        } else {
+            Logger.error("Failed to like song: " + song.getSongName());
+        }
     }
 }

@@ -60,6 +60,10 @@ public final class Dispatcher {
         return new DatabaseRunner(linker.getConnection(), QueryLoader.getMapOfQueries(), linker);
     }
 
+    public AbstractStreamLineJob getJob(String jobId) {
+        return activeJobs.get(jobId);
+    }
+
     public <T extends AbstractStreamLineJob> String submitJob(T job) {
         String id = job.getJobId();
         activeJobs.put(id, job);
@@ -115,7 +119,6 @@ public final class Dispatcher {
         boolean isLiked = dbRunner.getSongLikeStatus(song);
         Logger.debug("Song like status: {}", isLiked);
         return isLiked;
-        // return dbRunner.getSongLikeStatus(song);
     }
 
     public RetrievedStorage getLikedSongs() {
@@ -142,14 +145,15 @@ public final class Dispatcher {
         return recPlayJob.getResults();
     }
 
-    public void handleSongLikeStatus(Song song) {
+    public String handleSongLikeStatus(Song song) {
         LikeSongJob likeJob = new LikeSongJob(config, dbRunner, song);
         submitJob(likeJob);
+        return likeJob.getJobId();
     }
 
     public void playSong(Song song) {
         killCurrentAudioJobIfExists();
-        audioJobId = submitJob(new SongPlaybackJob(config, song));;
+        submitJob(new SongPlaybackJob(config, song));;
     }
 
     public void playQueue(RetrievedStorage songQueue) {
@@ -162,8 +166,6 @@ public final class Dispatcher {
     }
 
     public void shutdown() {
-        /* Uncomment the line below if needed for debugging. */
-        // getThreadStates();
         if (!exitedGracefully) {
             for (AbstractStreamLineJob job : activeJobs.values()) {
                 job.cancel();
@@ -177,26 +179,6 @@ public final class Dispatcher {
 
             jobExecutor.shutdown();
             exitedGracefully = true;
-        }
-    }
-
-    /*
-     * This is a method that I am leaving for potential debugging in the future.
-     */
-    private void getThreadStates() {
-        Map<Thread, StackTraceElement[]> threads = Thread.getAllStackTraces();
-        System.out.println("Currently running threads:");
-        for (Map.Entry<Thread, StackTraceElement[]> entry : threads.entrySet()) {
-            Thread thread = entry.getKey();
-            StackTraceElement[] sTE = entry.getValue();
-            if (thread.getId() != 3) {
-                System.out.println(thread.getName() + " (ID: " + thread.getId() + ") -> " + thread.getState());
-            } else {
-                System.out.println("Thread: " + thread.getName() + " (ID: " + thread.getId() + ") -> " + thread.getState());
-                for (StackTraceElement element : sTE) {
-                    System.out.println("\t" + element);
-                }
-            }
         }
     }
 }

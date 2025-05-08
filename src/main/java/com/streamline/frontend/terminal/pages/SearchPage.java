@@ -100,18 +100,12 @@ public class SearchPage extends BasePage {
 
         };
     }
+
     private void handleSongSelection(Song song) {
         windowManager.buildSongOptionPage(song, this, searchResultButtons);
         windowManager.transitionTo(windowManager.songOptionPage);
     }
 
-    private String getOffsetForSongButton(int digits) {
-        StringBuilder sB = new StringBuilder();
-        for (int i = 0; i < 7 - String.valueOf(digits).length(); i++) {
-            sB.append(" ");
-        }
-        return sB.toString();
-    }
     private void resultsToButtons(RetrievedStorage results, Panel resultsPanel) {
         if (searchResultButtons != null) {
             searchResultButtons.clear();
