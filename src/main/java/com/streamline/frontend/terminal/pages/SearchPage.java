@@ -96,8 +96,6 @@ public class SearchPage extends BasePage {
                 }
                 return super.handleKeyStroke(keyStroke);
             }
-
-
         };
     }
 

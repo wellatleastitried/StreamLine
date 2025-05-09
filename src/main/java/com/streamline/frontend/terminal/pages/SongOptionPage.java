@@ -18,6 +18,8 @@ public class SongOptionPage extends BasePage {
     private final Map<Integer, Button> previousResultsForSearchPage;
 
     private BasicWindow window;
+    private Panel panel;
+    private Button likeButton;
     public final BasePage previousPage;
 
     public <T extends BasePage> SongOptionPage(TerminalWindowManager windowManager, Dispatcher backend, TextGUIThread guiThread, TerminalComponentFactory componentFactory, Song selectedSong, T previousPage) {
@@ -39,32 +41,24 @@ public class SongOptionPage extends BasePage {
     @Override
     public BasicWindow createWindow() {
         window = createStandardWindow(LanguagePeer.getText("window.songOptionPageTitle"));
+        panel = componentFactory.createStandardPanel();
+        fillPanelComponents();
+        window.setComponent(panel);
+        return window;
+    }
 
-        Panel panel = componentFactory.createStandardPanel();
-
+    private void fillPanelComponents() {
         panel.addComponent(componentFactory.createEmptySpace());
         panel.addComponent(componentFactory.createLabel(LanguagePeer.getText("label.songOptionPageTitle")));
 
         panel.addComponent(componentFactory.createEmptySpace());
         panel.addComponent(componentFactory.createButton(LanguagePeer.getText("button.playSong"), () -> {
             backend.playSong(selectedSong);
-            handlePageTransition();
         }));
 
 
-        panel.addComponent(componentFactory.createButton(backend.isSongLiked(selectedSong) ? LanguagePeer.getText("button.dislikeSong") : LanguagePeer.getText("button.likeSong"), () -> {
-            String jobId = backend.handleSongLikeStatus(selectedSong);
-            while (backend.getJob(jobId).isRunning()) {
-                Thread.onSpinWait();
-            }
-            selectedSong.setSongLikeStatus(backend.isSongLiked(selectedSong));
-            if (previousResultsForSearchPage != null) {
-                windowManager.buildSongOptionPage(selectedSong, previousPage, previousResultsForSearchPage);
-            } else {
-                windowManager.buildSongOptionPage(selectedSong, previousPage);
-            }
-            handlePageTransition();
-        }));
+        likeButton = createLikeButton();
+        panel.addComponent(likeButton);
 
         panel.addComponent(componentFactory.createButton(LanguagePeer.getText("button.addToPlaylist"), () -> {
             windowManager.transitionToPlaylistChoicePage(previousPage, selectedSong, previousResultsForSearchPage);
@@ -87,10 +81,28 @@ public class SongOptionPage extends BasePage {
                     componentFactory.getButtonWidth() / 3, 
                     componentFactory.getButtonHeight() / 2
                     ));
-
-        window.setComponent(panel);
-        return window;
     }
+
+    private Button createLikeButton() {
+        return componentFactory.createButton(backend.isSongLiked(selectedSong) ? LanguagePeer.getText("button.dislikeSong") : LanguagePeer.getText("button.likeSong"), () -> {
+            String jobId = backend.handleSongLikeStatus(selectedSong);
+            while (backend.getJob(jobId).isRunning()) {
+                Thread.onSpinWait();
+            }
+            selectedSong.setSongLikeStatus(backend.isSongLiked(selectedSong));
+            likeButton = createLikeButton();
+            updatePanel();
+            windowManager.refresh();
+        });
+    }
+
+    private void updatePanel() {
+        guiThread.invokeLater(() -> {
+            panel.removeAllComponents();
+            fillPanelComponents();
+        });
+    }
+
 
     private void handlePageTransition() {
         switch (previousPage.getClass().getSimpleName()) {

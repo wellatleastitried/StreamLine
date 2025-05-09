@@ -37,8 +37,6 @@ public class TerminalWindowManager {
     public BasicWindow songOptionPage;
     public BasicWindow playlistChoicePage;
 
-    private final TerminalKeybinds vimKeyBindings;
-
     /**
      * Flag to indicate if the window should be rebuilt after navigating off of the page.
      */
@@ -51,82 +49,60 @@ public class TerminalWindowManager {
         this.backend = backend;
         this.componentFactory = componentFactory;
 
-        this.vimKeyBindings = new TerminalKeybinds(textGUI);
+        new TerminalKeybinds(textGUI);
 
         // Initialize all windows
         this.mainPage = new MainPage(this, backend, guiThread, componentFactory).createWindow();
-        assert mainPage != null;
         this.helpPage = new HelpPage(this, backend, guiThread, componentFactory).createWindow();
-        assert helpPage != null;
         this.settingsPage = new SettingsPage(this, backend, guiThread, componentFactory).createWindow();
-        assert settingsPage != null;
         this.searchPage = new SearchPage(this, backend, guiThread, componentFactory, textGUI).createWindow();
-        assert searchPage != null;
         this.likedMusicPage = new LikedMusicPage(this, backend, guiThread, componentFactory).createWindow();
-        assert likedMusicPage != null;
         this.playlistPage = new PlaylistPage(this, backend, guiThread, componentFactory).createWindow();
-        assert playlistPage != null;
         this.recentlyPlayedPage = new RecentlyPlayedPage(this, backend, guiThread, componentFactory, textGUI).createWindow();
-        assert recentlyPlayedPage != null;
         this.downloadedPage = new DownloadedMusicPage(this, backend, guiThread, componentFactory, textGUI).createWindow();
-        assert downloadedPage != null;
         this.languagePage = new LanguagePage(this, backend, guiThread, componentFactory).createWindow();
-        assert languagePage != null;
+        if (!verifyWindows()) {
+            Logger.error("[!] Error while creating windows, please restart the app.");
+            System.exit(1);
+        }
     }
 
     public <T extends BasePage> void buildSongOptionPage(Song song, T previousWindow) {
         this.songOptionPage = new SongOptionPage(this, backend, guiThread, componentFactory, song, previousWindow).createWindow();
-        assert songOptionPage != null;
     }
 
     public <T extends BasePage> void buildSongOptionPage(Song song, T previousWindow, Map<Integer, Button> previousSearchResults) {
         this.songOptionPage = new SongOptionPage(this, backend, guiThread, componentFactory, song, previousWindow, previousSearchResults).createWindow();
-        assert songOptionPage != null;
     }
 
     public <T extends BasePage> void buildPlaylistChoicePage(Song song, T previousWindow) {
         this.playlistChoicePage = new PlaylistChoicePage(this, backend, guiThread, componentFactory, song, previousWindow).createWindow();
-        assert playlistChoicePage != null;
     }
 
     public <T extends BasePage> void buildPlaylistChoicePage(Song song, T previousWindow, Map<Integer, Button> previousSearchResults) {
         this.playlistChoicePage = new PlaylistChoicePage(this, backend, guiThread, componentFactory, song, previousWindow, previousSearchResults).createWindow();
-        assert playlistChoicePage != null;
     }
 
     public void rebuildDynamicWindows() {
         guiThread.invokeLater(() -> {
             this.likedMusicPage = new LikedMusicPage(this, backend, guiThread, componentFactory).createWindow();
-            assert likedMusicPage != null;
             this.playlistPage = new PlaylistPage(this, backend, guiThread, componentFactory).createWindow();
-            assert playlistPage != null;
             this.recentlyPlayedPage = new RecentlyPlayedPage(this, backend, guiThread, componentFactory, textGUI).createWindow();
-            assert recentlyPlayedPage != null;
             this.downloadedPage = new DownloadedMusicPage(this, backend, guiThread, componentFactory, textGUI).createWindow();
-            assert downloadedPage != null;
         });
     }
 
     public void rebuildAllWindows() {
         guiThread.invokeLater(() -> {
             this.mainPage = new MainPage(this, backend, guiThread, componentFactory).createWindow();
-            assert mainPage != null;
             this.helpPage = new HelpPage(this, backend, guiThread, componentFactory).createWindow();
-            assert helpPage != null;
             this.settingsPage = new SettingsPage(this, backend, guiThread, componentFactory).createWindow();
-            assert settingsPage != null;
             this.searchPage = new SearchPage(this, backend, guiThread, componentFactory, textGUI).createWindow();
-            assert searchPage != null;
             this.likedMusicPage = new LikedMusicPage(this, backend, guiThread, componentFactory).createWindow();
-            assert likedMusicPage != null;
             this.playlistPage = new PlaylistPage(this, backend, guiThread, componentFactory).createWindow();
-            assert playlistPage != null;
             this.recentlyPlayedPage = new RecentlyPlayedPage(this, backend, guiThread, componentFactory, textGUI).createWindow();
-            assert recentlyPlayedPage != null;
             this.downloadedPage = new DownloadedMusicPage(this, backend, guiThread, componentFactory, textGUI).createWindow();
-            assert downloadedPage != null;
             this.languagePage = new LanguagePage(this, backend, guiThread, componentFactory).createWindow();
-            assert languagePage != null;
         });
     }
 
@@ -205,6 +181,17 @@ public class TerminalWindowManager {
             textGUI.removeWindow(currentWindow);
             showMainMenu();
         });
+    }
+
+    private boolean verifyWindows() {
+        try {
+            if (mainPage == null || settingsPage == null || helpPage == null || searchPage == null || likedMusicPage == null || playlistPage == null || recentlyPlayedPage == null || downloadedPage == null) {
+                return false;
+            }
+        } catch (Exception e) {
+            return false;
+        }
+        return true;
     }
 
     public void closeAllWindows() {

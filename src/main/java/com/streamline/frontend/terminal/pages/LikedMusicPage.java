@@ -83,6 +83,10 @@ public class LikedMusicPage extends BasePage {
         likedMusicButtons = new HashMap<>();
         for (int i = 0; i < results.size(); i++) {
             Song song = results.getSongFromIndex(i);
+            if (song == null) {
+                Logger.debug("Song is null at index {}", i);
+                continue;
+            }
             String formattedText = componentFactory.getFormattedTextForSongButton(
                     resultsBox.getSize().getColumns(),
                     results.getIndexFromSong(song) + 1,
