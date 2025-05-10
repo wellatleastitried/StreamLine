@@ -288,11 +288,25 @@ public final class DatabaseRunner {
         }
     }
 
-    public void removeDownloadedSong(Song song) {}
+    public void removeDownloadedSong(Song song) {
+        try {
+            final PreparedStatement statement = connection.prepareStatement("DELETE ds FROM DownloadedSongs ds INNER JOIN Songs s ON ds.song_id = s.id WHERE s.title = ? AND s.artist = ? and s.url = ?");
+            statement.setQueryTimeout(5);
+            statement.setString(1, song.getSongName());
+            statement.setString(2, song.getSongArtist());
+            statement.setString(3, song.getSongLink());
+            statement.executeUpdate();
+            connection.commit();
+        } catch (SQLException sE) {
+            handleSQLException(sE);
+        } finally {
+            restoreAutoCommit();
+        }
+    }
 
     public Song getSongFromDownloads(Song song) {
         try {
-            final PreparedStatement statement = connection.prepareStatement("SELECT * FROM DownloadedSongs WHERE title = ? AND artist = ? and url = ?");
+            final PreparedStatement statement = connection.prepareStatement("SELECT * FROM DownloadedSongs ds INNER JOIN Songs s ON s.id = ds.song_id WHERE s.title = ? AND s.artist = ? AND s.url = ?;");
             statement.setQueryTimeout(5);
             statement.setString(1, song.getSongName());
             statement.setString(2, song.getSongArtist());
@@ -330,7 +344,7 @@ public final class DatabaseRunner {
 
     protected Song download(Song song) {
         // Convert video to mp3 and download
-        final String filePath = String.format("%s_%s.mp3", song.getSongName(), song.getSongArtist()); 
+        final String filePath = String.format("%s_%s.m4a", song.getSongName(), song.getSongArtist()); 
         final String fileHash = generateHashFromFile(filePath);
         return new Song(
                 song.getSongId(),
@@ -421,7 +435,7 @@ public final class DatabaseRunner {
     }
 
     protected int insertSongIntoDownloadTable(int songId, String filePath, String fileHash) throws SQLException {
-        final String insertIntoLikedSongs = "INSERT INTO DownloadedSongs (song_id, date_downloaded, file_path, file_hash) VALUES (?, CURRENT_TIMESTAMP, ?, ?);";
+        final String insertIntoLikedSongs = "INSERT INTO DownloadedSongs (song_id, date_downloaded) VALUES (?, CURRENT_TIMESTAMP, ?, ?);";
         try (final PreparedStatement insertSongStatement = connection.prepareStatement(insertIntoLikedSongs)) {
             insertSongStatement.setInt(1, songId);
             insertSongStatement.setString(2, filePath);
@@ -439,7 +453,7 @@ public final class DatabaseRunner {
     }
 
     protected int insertSongIntoLikedTable(int songId) throws SQLException {
-        final String insertIntoLikedSongs = "INSERT INTO LikedSongs VALUES (?, CURRENT_TIMESTAMP);";
+        final String insertIntoLikedSongs = "INSERT INTO LikedSongs (song_id, date_liked) VALUES (?, CURRENT_TIMESTAMP);";
         try (final PreparedStatement insertSongStatement = connection.prepareStatement(insertIntoLikedSongs)) {
             insertSongStatement.setInt(1, songId);
             insertSongStatement.executeUpdate();
