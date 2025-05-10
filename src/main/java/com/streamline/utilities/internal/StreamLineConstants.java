@@ -25,8 +25,6 @@ public class StreamLineConstants {
 
     public static final boolean REQUEST_INSTANCE_START      = true;
 
-    // public static final String  YOUTUBE_HOST                = "";
-
     public static final String  YT_DLP_BIN_LOCATION_WINDOWS = System.getenv("LOCALAPPDATA") + "\\Local\\StreamLine\\bin\\";
     public static final String  YT_DLP_BIN_LOCATION_LINUX   = System.getProperty("user.home") + "/.local/share/StreamLine/bin/";
     public static final String  YT_DLP_BIN_LOCATION_MAC     = System.getProperty("user.home") + "/Library/Application Support/StreamLine/bin/";
@@ -71,4 +69,11 @@ public class StreamLineConstants {
     public static final String  MAC_JAR_INSTALLATION_PATH           = "/Application/StreamLine/bin/";
     public static final String  MAC_LAUNCHER_INSTALLATION_PATH      = "/usr/local/bin/";
 
+    public static final int     DOWNLOAD_SONG_ACTION                = 0;
+    public static final int     CANCEL_DOWNLOAD_ACTION              = 1;
+    public static final int     REMOVE_DOWNLOADED_SONG_ACTION       = 2;
+
+    public static final String  WINDOWS_SONG_DOWNLOAD_LOCATION      = System.getenv("LOCALAPPDATA") + "\\Local\\StreamLine\\Downloads\\";
+    public static final String  LINUX_SONG_DOWNLOAD_LOCATION        = System.getProperty("user.home") + "/.local/share/StreamLine/Downloads/";
+    public static final String  MAC_SONG_DOWNLOAD_LOCATION          = System.getProperty("user.home") + "/Library/Application Support/StreamLine/Downloads/";
 }

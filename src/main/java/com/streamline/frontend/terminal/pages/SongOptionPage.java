@@ -20,6 +20,10 @@ public class SongOptionPage extends BasePage {
     private BasicWindow window;
     private Panel panel;
     private Button likeButton;
+
+    private Button downloadButton;
+    private boolean isDownloading = false;
+
     public final BasePage previousPage;
 
     public <T extends BasePage> SongOptionPage(TerminalWindowManager windowManager, Dispatcher backend, TextGUIThread guiThread, TerminalComponentFactory componentFactory, Song selectedSong, T previousPage) {
@@ -64,15 +68,8 @@ public class SongOptionPage extends BasePage {
             windowManager.transitionToPlaylistChoicePage(previousPage, selectedSong, previousResultsForSearchPage);
         }));
 
-        panel.addComponent(componentFactory.createButton(LanguagePeer.getText("button.downloadSong"), () -> {
-            backend.downloadSong(selectedSong);
-            if (previousResultsForSearchPage != null) {
-                windowManager.buildSongOptionPage(selectedSong, previousPage, previousResultsForSearchPage);
-            } else {
-                windowManager.buildSongOptionPage(selectedSong, previousPage);
-            }
-            windowManager.refresh();
-        }));
+        downloadButton = createDownloadButton();
+        panel.addComponent(downloadButton);
 
         panel.addComponent(componentFactory.createEmptySpace());
         panel.addComponent(componentFactory.createButton(
@@ -94,6 +91,58 @@ public class SongOptionPage extends BasePage {
             updatePanel();
             windowManager.refresh();
         });
+    }
+
+    private Button createDownloadButton() {
+        String buttonText;
+        Runnable buttonAction;
+        boolean songIsDownloaded = backend.isSongDownloaded(selectedSong).getDownloadPath() != null;
+        if (!songIsDownloaded && !isDownloading) {
+            buttonText = LanguagePeer.getText("button.downloadSong");
+            buttonAction = () -> {
+                isDownloading = true;
+                backend.downloadSong(selectedSong);
+                isDownloading = false;
+                if (previousResultsForSearchPage != null) {
+                    windowManager.buildSongOptionPage(selectedSong, previousPage, previousResultsForSearchPage);
+                } else {
+                    windowManager.buildSongOptionPage(selectedSong, previousPage);
+                }
+                windowManager.refresh();
+            };
+        } else if (!songIsDownloaded && isDownloading) {
+            buttonText = LanguagePeer.getText("button.cancelDownload");
+            buttonAction = () -> {
+                backend.cancelSongDownload(selectedSong);
+                isDownloading = false;
+                if (previousResultsForSearchPage != null) {
+                    windowManager.buildSongOptionPage(selectedSong, previousPage, previousResultsForSearchPage);
+                } else {
+                    windowManager.buildSongOptionPage(selectedSong, previousPage);
+                }
+                windowManager.refresh();
+            };
+        } else {
+            songIsDownloaded = false;
+            buttonText = LanguagePeer.getText("button.removeDownload");
+            buttonAction = () -> {
+                backend.removeDownloadedSong(selectedSong);
+                isDownloading = false;
+                if (previousResultsForSearchPage != null) {
+                    windowManager.buildSongOptionPage(selectedSong, previousPage, previousResultsForSearchPage);
+                } else {
+                    windowManager.buildSongOptionPage(selectedSong, previousPage);
+                }
+                windowManager.refresh();
+            };
+        }
+        if (isDownloading) {
+            buttonText = LanguagePeer.getText("button.cancelDownload");
+        } else {
+            buttonText = LanguagePeer.getText("button.downloadSong");
+        }
+
+        return componentFactory.createButton(buttonText, buttonAction);
     }
 
     private void updatePanel() {

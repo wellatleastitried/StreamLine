@@ -145,6 +145,17 @@ public final class InvidiousHandle implements ConnectionHandle {
     }
 
     @Override
+    public CompletableFuture<Boolean> downloadSong(String url) {
+        return CompletableFuture.supplyAsync(() -> {
+            /* TODO: Implement the download logic with the Invidious API */
+            return true;
+        });
+    }
+
+    @Override
+    public void cancelSongDownload(Song song) {}
+
+    @Override
     public String getAudioUrlFromVideoId(String id) {
         StringBuilder result = new StringBuilder();
         BufferedReader reader;

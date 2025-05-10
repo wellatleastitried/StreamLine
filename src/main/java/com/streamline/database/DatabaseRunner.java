@@ -288,6 +288,31 @@ public final class DatabaseRunner {
         }
     }
 
+    public void removeDownloadedSong(Song song) {}
+
+    public Song getSongFromDownloads(Song song) {
+        try {
+            final PreparedStatement statement = connection.prepareStatement("SELECT * FROM DownloadedSongs WHERE title = ? AND artist = ? and url = ?");
+            statement.setQueryTimeout(5);
+            statement.setString(1, song.getSongName());
+            statement.setString(2, song.getSongArtist());
+            statement.setString(3, song.getSongLink());
+            final ResultSet rs = statement.executeQuery(queryMap.get("GET_DOWNLOADED_SONGS"));
+            if (rs.next()) {
+                song = new Song(
+                        rs.getInt("id"),
+                        rs.getString("title"),
+                        rs.getString("artist"),
+                        rs.getString("url"),
+                        rs.getString("videoId")
+                );
+            }
+        } catch (SQLException sE) {
+            handleSQLException(sE);
+        }
+        return song;
+    }
+
     public void addToRecents(Song song) {
         try {
             connection.setAutoCommit(false);
@@ -305,9 +330,8 @@ public final class DatabaseRunner {
 
     protected Song download(Song song) {
         // Convert video to mp3 and download
-        final String filePath = String.format("%s-%s.mp3", song.getSongName(), song.getSongArtist()); 
+        final String filePath = String.format("%s_%s.mp3", song.getSongName(), song.getSongArtist()); 
         final String fileHash = generateHashFromFile(filePath);
-        // TODO: Actually download the song
         return new Song(
                 song.getSongId(),
                 song.getSongName(),

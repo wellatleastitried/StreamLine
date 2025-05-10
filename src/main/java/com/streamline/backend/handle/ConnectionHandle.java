@@ -35,4 +35,17 @@ public interface ConnectionHandle {
      * @return String The URL that directs to the audio stream of the specified video.
      */
     public String getAudioUrlFromVideoId(String id);
+
+    /**
+     * Download the song from the given URL.
+     * @param url The URL of the song to be downloaded.
+     * @return CompletableFuture<Boolean> indicating the success or failure of the download.
+     */
+    public CompletableFuture<Boolean> downloadSong(String url);
+
+    /**
+     * Remove the downloaded song from the local storage.
+     * @param song The song to be removed.
+     */
+    public void cancelSongDownload(Song song);
 }

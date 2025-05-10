@@ -124,6 +124,54 @@ public final class YoutubeHandle implements ConnectionHandle {
         });
     }
 
+    private String[] buildDownloadCommand(String url) {
+        String downloadLocation;
+        if (config.getOS() == OS.MAC) {
+            downloadLocation = StreamLineConstants.MAC_SONG_DOWNLOAD_LOCATION;
+        } else if (config.getOS() == OS.WINDOWS) {
+            downloadLocation = StreamLineConstants.WINDOWS_SONG_DOWNLOAD_LOCATION;
+        } else {
+            downloadLocation = StreamLineConstants.LINUX_SONG_DOWNLOAD_LOCATION;
+        }
+        return new String[] {
+            config.getBinaryPath(),
+            "--geo-bypass",
+            "--no-warnings",
+            "--ignore-errors",
+            "-f",
+            "bestaudio[ext=m4a]/best[ext-m4a]/bestaudio",
+            "-o", downloadLocation + "%(title)s_%(uploader)s.%(ext)s",
+            url
+        };
+    }
+
+    @Override
+    public CompletableFuture<Boolean> downloadSong(String url) {
+        return CompletableFuture.supplyAsync(() -> {
+            String[] command = buildDownloadCommand(url);
+            Process process = null;
+            try {
+                process = CommandExecutor.runCommandExpectWait(command);
+                if (process == null) {
+                    Logger.warn("[!] Process was null when downloading song from: {}", url);
+                    return false;
+                }
+                handleErrorStream(process);
+                if (!process.waitFor(180, TimeUnit.SECONDS)) {
+                    process.destroyForcibly();
+                    Logger.warn("[!] yt-dlp download timed out after 180 seconds");
+                    return false;
+                }
+            } catch (InterruptedException e) {
+                Logger.warn("[!] There was an error while using yt-dlp to download the song, please try again.");
+                return false;
+            } finally {
+                cleanupProcess(process);
+            }
+            return true;
+        });
+    }
+
     private String[] buildSearchCommand(String term) {
         String sanitizedTerm = term.replace("'", "'\\''");
         return new String[] {
@@ -137,6 +185,11 @@ public final class YoutubeHandle implements ConnectionHandle {
             "--print",
             "%(title)s | %(uploader)s | %(duration>%M:%S)s | %(id)s"
         };
+    }
+
+    @Override
+    public void cancelSongDownload(Song song) {
+        /* TODO: Cancel the ongoing process and remove any artifacts leftover */
     }
 
     private void handleErrorStream(Process process) {

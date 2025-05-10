@@ -80,8 +80,22 @@ public final class Dispatcher {
         return id;
     }
 
+    public Song isSongDownloaded(Song song) {
+        return dbRunner.getSongFromDownloads(song);
+    }
+
     public void downloadSong(Song song) {
-        DownloadJob downloadJob = new DownloadJob(config, song);
+        DownloadJob downloadJob = new DownloadJob(config, song, dbRunner, 0);
+        submitJob(downloadJob);
+    }
+
+    public void cancelSongDownload(Song song) {
+        DownloadJob downloadJob = new DownloadJob(config, song, dbRunner, 1);
+        submitJob(downloadJob);
+    }
+
+    public void removeDownloadedSong(Song song) {
+        DownloadJob downloadJob = new DownloadJob(config, song, dbRunner, 2);
         submitJob(downloadJob);
     }
 
