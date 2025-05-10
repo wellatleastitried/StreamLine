@@ -1,72 +1,83 @@
-# StreamLine 🎵
-StreamLine is a terminal-based (TUI) music player built in Java using the [Lanterna](https://github.com/mabe02/lanterna) library. It integrates with the [Invidious API](https://docs.invidious.io/) and [yt-dlp](https://github.com/yt-dlp/yt-dlp) to provide a free, lightweight alternative to traditional music streaming platforms.
+# StreamLine
 
-## Table of Contents
-- [Features](#features)
-- [Requirements](#requirements)
-- [Building from Source](#building-from-source)
-- [Usage](#usage)
-- [Contributing](#contributing)
-- [License](#license)
+[![Java CI](https://github.com/wellatleastitried/StreamLine/actions/workflows/maven.yml/badge.svg)](https://github.com/wellatleastitried/StreamLine/actions/workflows/maven.yml)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/wellatleastitried/StreamLine/blob/main/LICENSE)
+[![Java Version](https://img.shields.io/badge/java-17%2B-blue)](https://www.oracle.com/java/technologies/downloads/)
+[![Maven](https://img.shields.io/badge/maven-3.8%2B-orange)](https://maven.apache.org/)
+
+StreamLine is a modern, terminal-based music player built in Java. It provides a lightweight, privacy-focused alternative to traditional music streaming platforms, leveraging the [Invidious API](https://docs.invidious.io/) for content delivery.
 
 ## Features
-- **Terminal-Based Interface**: Intuitive text-based UI for a lightweight experience.
-- **Search for Songs**: Allows users to search for songs directly from Invidious.
-- **Liked songs and Playlists**: View your liked songs and create/manage your playlists.
-- **Recently Played**: Track your recently played songs.
-- **Help menu**: Provides guidance on how to use StreamLine.
 
-## Requirements
-- Java 17+
-- Terminal with support for text-based interfaces
-- Internet connection (If you intend to search for/listen to songs that have not been downloaded)
-- If you want to have a locally hosted Invidious instance (can be quicker, failsafe if APIs are down):
-  - Latest version of Docker
+- Terminal-based user interface using [Lanterna](https://github.com/mabe02/lanterna)
+- Advanced search capabilities
+- Download and cache management
+- Customizable themes and layouts
+- Playlist management
+- Now playing information
+- Privacy-focused design
+- Fast and efficient performance
 
-## Building From Source
-### Requirements to Build:
-- Git
-- Java 17+
-- Maven
-### Steps to Build:
+## Getting Started
+
+### Prerequisites
+
+- Java 17 or higher
+- Maven 3.8 or higher
+- yt-dlp (for audio extraction)
+
+### Installation
+
 1. Clone the repository:
 ```bash
 git clone https://github.com/wellatleastitried/StreamLine.git
 cd StreamLine
 ```
-2. Build the project using Maven:
+
+2. Build the project:
 ```bash
-mvn install
-```
-3. ***Optional:*** Run the application setup for hosting a local Docker instance:
-```bash
-java -jar target/streamline-VERSION.jar --setup
-```
-**While this step ***is*** optional, using this app without Docker** [may be inconsistent](#notice) <br><br>
-4. Run the application:
-```bash
-java -jar target/streamline-VERSION.jar
+mvn clean install
 ```
 
-## Usage
-Once installed, run the following command to display the possible usages:
+3. Run the application:
 ```bash
-streamline
+java -jar target/StreamLine.jar
 ```
-*Only one argument can be provided at a time.*
 
-### Main Menu Options
-- **Search for a song**: Start searching for your favorite songs by interacting with the Invidious API.
-- **View Liked Music**: Browse your liked songs.
-- **Playlists**: View and manage your playlists.
-- **Recently Played**: View your recently played songs.
-- **Help**: Access help information for using StreamLine.
-- **Quit**: Exit the application.
+## Documentation
 
-## Notice
-The public instances of Invidious can change or go down at a moments notice. I will be trying to keep the list of API instances used by StreamLine updated, but running a local Docker instance will ensure that the app will always have online functionality. If you choose not to use Docker, StreamLine will only have online functionality if the public Invidious instances are reachable.
+- [User Guide](doc/USER_GUIDE.md) - Learn how to use StreamLine
+- [Developer Guide](doc/DEVELOPER_GUIDE.md) - Contribute to the project
+- [API Documentation](doc/API.md) - Technical documentation
+
 ## Contributing
-Contributions are welcome! Please check out [CONTRIBUTING.md](https://github.com/wellatleastitried/StreamLine/CONTRIBUTING.md) before getting started. Make sure to follow the project's code style and ensure all tests pass before submitting.
+
+We welcome contributions! Please read our [Contributing Guidelines](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
 
 ## License
-This project is licensed under the MIT license. See the [License](https://github.com/wellatleastitried/StreamLine/LICENSE) file for details.
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgments
+
+- [Lanterna](https://github.com/mabe02/lanterna) - Terminal UI library
+- [Invidious](https://github.com/iv-org/invidious) - Privacy-focused YouTube frontend
+- [yt-dlp](https://github.com/yt-dlp/yt-dlp) - YouTube-DL fork with additional features
+
+## Support
+
+For support, please:
+- Check the [documentation](doc/)
+- Open an [issue](https://github.com/wellatleastitried/StreamLine/issues)
+- Join our [Discord community](https://discord.gg/streamline)
+
+## Project Status
+
+This project is currently under active development. While core functionality is implemented, we are continuously working on:
+- [ ] Enhanced playlist management
+- [ ] Improved caching system
+- [ ] Additional theme options
+- [ ] Performance optimizations
+- [ ] Extended documentation
+
+Check our [project board](https://github.com/wellatleastitried/StreamLine/projects) for the latest updates and planned features.

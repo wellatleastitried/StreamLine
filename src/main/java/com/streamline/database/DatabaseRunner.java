@@ -40,6 +40,27 @@ public final class DatabaseRunner {
         }
     }
 
+    public boolean getSongLikeStatus(Song song) {
+        final String songLikeStatusQuery = "SELECT ls.song_id FROM LikedSongs ls WHERE ls.song_id IN (SELECT id FROM Songs s WHERE s.title = ? AND s.artist = ? AND s.videoId = ?);";
+        try (PreparedStatement statement = connection.prepareStatement(songLikeStatusQuery)) {
+            statement.setString(1, song.getSongName());
+            statement.setString(2, song.getSongArtist());
+            statement.setString(3, song.getSongVideoId());
+            final ResultSet rs = statement.executeQuery();
+            if (!rs.isBeforeFirst()) {
+                Logger.debug("Song not found in LikedSongs table.");
+                return false;
+            }
+            while (rs.next()) {
+                Logger.debug("Song found in LikedSongs table with ID: " + rs.getInt("song_id"));
+                return true;
+            }
+        } catch (SQLException sE) {
+            handleSQLException(sE);
+        }
+        return false;
+    }
+
     public RetrievedStorage getLikedSongs() {
         final RetrievedStorage likedSongs = new RetrievedStorage();
         try {
@@ -162,6 +183,26 @@ public final class DatabaseRunner {
         return songsFromPlaylist;
     }
 
+    public int getSongIdFromLikedTable(Song songToSearch) {
+        final String likedSongQuery = "SELECT ls.song_id FROM LikedSongs ls WHERE ls.song_id IN (SELECT id FROM Songs s WHERE s.title = ? AND s.artist = ? AND s.videoId = ?);";
+        try (final PreparedStatement statement = connection.prepareStatement(likedSongQuery)) {
+            statement.setString(1, songToSearch.getSongName());
+            statement.setString(2, songToSearch.getSongArtist());
+            statement.setString(3, songToSearch.getSongVideoId());
+            final ResultSet rs = statement.executeQuery();
+            if (!rs.isBeforeFirst()) {
+                return -1;
+            }
+            while (rs.next()) {
+                return rs.getInt("id");
+            }
+        } catch (SQLException sE) {
+            handleSQLException(sE);
+        }
+        return -1;
+    }
+
+
     public RetrievedStorage getExpiredCache() {
         final RetrievedStorage expiredSongs = new RetrievedStorage();
         try (final Statement statement = connection.createStatement()) {
@@ -202,20 +243,33 @@ public final class DatabaseRunner {
     /**
      * This function is called when a song is liked. The other functions (such as insertSongIntoLikedSongs()) are for internal use as they do not provide verification of the existence of the song in other tables on their own.
      */
-    public void likeSong(Song song) {
+    public boolean handleLikeSong(Song song) {
         try {
             connection.setAutoCommit(false);
-            // TODO: NEED TO CHECK LIKEDSONGS TABLE AS WELL
             int songId = getSongId(song.getSongName(), song.getSongArtist());
+            Logger.debug("Song ID from Songs query: " + songId);
             if (songId == -1) {
+                Logger.debug("Song not found in the Songs table; making sure it exists in the Songs table.");
                 songId = insertSongIntoSongs(song);
+                Logger.debug("Song inserted into Songs table with ID: " + songId);
             }
-            insertSongIntoLikedTable(songId);
+            if (song.isSongLiked()) {
+                Logger.debug("Removing song from LikedSongs table with ID: " + songId);
+                removeSongFromLikedTable(songId);
+                Logger.debug("Song removed from LikedSongs table with ID: " + songId);
+            } else {
+                Logger.debug("Inserting song into LikedSongs table with ID: " + songId);
+                int response = insertSongIntoLikedTable(songId);
+                Logger.debug(" Song insertion query returned key: " + response);
+                Logger.debug("Song inserted into LikedSongs table with ID: " + songId);
+            }
+            return true;
         } catch (SQLException sE) {
             handleSQLException(sE);
         } finally {
             restoreAutoCommit();
         }
+        return false;
     }
 
     public void downloadSong(Song song) {
@@ -232,6 +286,31 @@ public final class DatabaseRunner {
         } finally {
             restoreAutoCommit();
         }
+    }
+
+    public void removeDownloadedSong(Song song) {}
+
+    public Song getSongFromDownloads(Song song) {
+        try {
+            final PreparedStatement statement = connection.prepareStatement("SELECT * FROM DownloadedSongs WHERE title = ? AND artist = ? and url = ?");
+            statement.setQueryTimeout(5);
+            statement.setString(1, song.getSongName());
+            statement.setString(2, song.getSongArtist());
+            statement.setString(3, song.getSongLink());
+            final ResultSet rs = statement.executeQuery(queryMap.get("GET_DOWNLOADED_SONGS"));
+            if (rs.next()) {
+                song = new Song(
+                        rs.getInt("id"),
+                        rs.getString("title"),
+                        rs.getString("artist"),
+                        rs.getString("url"),
+                        rs.getString("videoId")
+                );
+            }
+        } catch (SQLException sE) {
+            handleSQLException(sE);
+        }
+        return song;
     }
 
     public void addToRecents(Song song) {
@@ -251,9 +330,8 @@ public final class DatabaseRunner {
 
     protected Song download(Song song) {
         // Convert video to mp3 and download
-        final String filePath = String.format("%s-%s.mp3", song.getSongName(), song.getSongArtist()); 
+        final String filePath = String.format("%s_%s.mp3", song.getSongName(), song.getSongArtist()); 
         final String fileHash = generateHashFromFile(filePath);
-        // TODO: Actually download the song
         return new Song(
                 song.getSongId(),
                 song.getSongName(),
@@ -305,7 +383,7 @@ public final class DatabaseRunner {
     }
 
     protected int insertSongIntoSongs(Song song) throws SQLException {
-        final String insertIntoSongs = "INSERT OR IGNORE INTO Songs (title, artist, url, videoId) VALUES(?, ?, ?, ?);";
+        final String insertIntoSongs = "INSERT INTO Songs (title, artist, url, videoId) VALUES (?, ?, ?, ?);";
         try (final PreparedStatement insertSongStatement = connection.prepareStatement(insertIntoSongs)) {
             insertSongStatement.setString(1, song.getSongName());
             insertSongStatement.setString(2, song.getSongArtist());
@@ -314,7 +392,7 @@ public final class DatabaseRunner {
             insertSongStatement.executeUpdate();
             connection.commit();
             try (final ResultSet generatedKeys = insertSongStatement.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
+                if (generatedKeys != null && generatedKeys.next()) {
                     return generatedKeys.getInt(1);
                 } else {
                     throw new SQLException("Failed to insert song, no ID was generated.");
@@ -342,7 +420,7 @@ public final class DatabaseRunner {
         }
     }
 
-    protected void insertSongIntoDownloadTable(int songId, String filePath, String fileHash) throws SQLException {
+    protected int insertSongIntoDownloadTable(int songId, String filePath, String fileHash) throws SQLException {
         final String insertIntoLikedSongs = "INSERT INTO DownloadedSongs (song_id, date_downloaded, file_path, file_hash) VALUES (?, CURRENT_TIMESTAMP, ?, ?);";
         try (final PreparedStatement insertSongStatement = connection.prepareStatement(insertIntoLikedSongs)) {
             insertSongStatement.setInt(1, songId);
@@ -350,23 +428,50 @@ public final class DatabaseRunner {
             insertSongStatement.setString(3, fileHash);
             insertSongStatement.executeUpdate();
             connection.commit();
+            try (final ResultSet generatedKeys = insertSongStatement.getGeneratedKeys()) {
+                if (generatedKeys != null && generatedKeys.next()) {
+                    return generatedKeys.getInt(1);
+                } else {
+                    throw new SQLException("Failed to insert song, no ID was generated.");
+                }
+            }
         }
     }
 
-    protected void insertSongIntoLikedTable(int songId) throws SQLException {
-        final String insertIntoLikedSongs = "INSERT INTO LikedSongs (song_id, date_liked) VALUES (?, CURRENT_TIMESTAMP);";
+    protected int insertSongIntoLikedTable(int songId) throws SQLException {
+        final String insertIntoLikedSongs = "INSERT INTO LikedSongs VALUES (?, CURRENT_TIMESTAMP);";
         try (final PreparedStatement insertSongStatement = connection.prepareStatement(insertIntoLikedSongs)) {
             insertSongStatement.setInt(1, songId);
             insertSongStatement.executeUpdate();
             connection.commit();
+            Logger.debug("Song insertion query committed into LikedSongs table with ID: " + songId);
+            try (final ResultSet generatedKeys = insertSongStatement.getGeneratedKeys()) {
+                if (generatedKeys != null && generatedKeys.next()) {
+                    return generatedKeys.getInt(1);
+                } else {
+                    throw new SQLException("Failed to insert song, no ID was generated.");
+                }
+            }
+        }
+    }
+
+    protected void removeSongFromLikedTable(int songId) throws SQLException {
+        final String insertIntoLikedSongs = "DELETE FROM LikedSongs WHERE song_id = ?;";
+        try (final PreparedStatement insertSongStatement = connection.prepareStatement(insertIntoLikedSongs)) {
+            insertSongStatement.setInt(1, songId);
+            insertSongStatement.executeUpdate();
+            connection.commit();
+            Logger.debug("Song deletion query committed into LikedSongs table with ID: " + songId);
         }
     }
 
     private void handleSQLException(SQLException sE) {
         Logger.warn("[!] Unable to execute query on the database, please try restarting the app.");
+        Logger.debug("[!] SQL error message: " + sE.getMessage());
         try {
             connection.rollback();
         } catch (SQLException rollbackException) {
+            Logger.error("[!] Fatal database error:");
             Logger.error("[!] Unable to rollback changes to database after an error.");
             System.exit(1);
         }

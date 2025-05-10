@@ -4,7 +4,7 @@ import com.streamline.database.DatabaseRunner;
 import com.streamline.utilities.CacheManager;
 import com.streamline.utilities.internal.Config;
 
-public class CacheInitializationJob extends StreamLineJob {
+public class CacheInitializationJob extends AbstractStreamLineJob {
 
     final DatabaseRunner dbRunner;
 

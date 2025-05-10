@@ -1,13 +1,13 @@
 package com.streamline.backend.jobs;
 
 import com.streamline.backend.DockerManager;
-import com.streamline.backend.InvidiousHandle;
+import com.streamline.backend.handle.InvidiousHandle;
 import com.streamline.utilities.internal.Config;
 import com.streamline.utilities.internal.StreamLineConstants;
 
 import org.tinylog.Logger;
 
-public class ConnectionMonitorJob extends StreamLineJob {
+public class ConnectionMonitorJob extends AbstractStreamLineJob {
 
     public ConnectionMonitorJob(Config config) {
         super(config);
