@@ -463,6 +463,7 @@ public final class DatabaseRunner {
                 if (generatedKeys != null && generatedKeys.next()) {
                     return generatedKeys.getInt(1);
                 } else {
+                    // TODO: CI Build is hitting this
                     throw new SQLException("Failed to insert song, no ID was generated.");
                 }
             }
@@ -482,6 +483,7 @@ public final class DatabaseRunner {
     private void handleSQLException(SQLException sE) {
         Logger.warn("[!] Unable to execute query on the database, please try restarting the app.");
         Logger.debug("[!] SQL error message: " + sE.getMessage());
+        sE.printStackTrace();
         try {
             connection.rollback();
         } catch (SQLException rollbackException) {
