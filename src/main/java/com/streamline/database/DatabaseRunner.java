@@ -152,9 +152,9 @@ public final class DatabaseRunner {
             String artist = rs.getString("artist");
             String url = rs.getString("url");
             String videoId = rs.getString("videoId");
-            
+
             Song song = new Song(id, title, artist, url, videoId);
-            
+
             rs.close();
             return song;
         } catch (SQLException e) {
@@ -177,7 +177,7 @@ public final class DatabaseRunner {
                         rs.getString("artist"),
                         rs.getString("url"),
                         rs.getString("videoId")
-                );
+                        );
                 songsFromPlaylist.add(++index, song);
             }
         } catch (SQLException sE) {
@@ -224,7 +224,7 @@ public final class DatabaseRunner {
                         false,
                         rs.getString("file_path"),
                         rs.getString("file_hash")
-                );
+                        );
                 expiredSongs.add(++index, song);
             }
         } catch (SQLException sE) {
@@ -232,7 +232,7 @@ public final class DatabaseRunner {
         }
         return expiredSongs;
     }
-    
+
     public void clearExpiredCache() {
         try (final Statement statement = connection.createStatement()) {
             statement.setQueryTimeout(30);
@@ -257,14 +257,13 @@ public final class DatabaseRunner {
                 Logger.debug("Song inserted into Songs table with ID: " + songId);
             }
             if (song.isSongLiked()) {
-                Logger.debug("Removing song from LikedSongs table with ID: " + songId);
+                Logger.debug("Removing song from LikedSongs table with song_id: " + songId);
                 removeSongFromLikedTable(songId);
-                Logger.debug("Song removed from LikedSongs table with ID: " + songId);
+                Logger.debug("Song removed from LikedSongs table with song_id: " + songId);
             } else {
-                Logger.debug("Inserting song into LikedSongs table with ID: " + songId);
-                int response = insertSongIntoLikedTable(songId);
-                Logger.debug(" Song insertion query returned key: " + response);
-                Logger.debug("Song inserted into LikedSongs table with ID: " + songId);
+                Logger.debug("Inserting song into LikedSongs table with song_id: " + songId);
+                insertSongIntoLikedTable(songId);
+                Logger.debug("Song inserted into LikedSongs table with song_id: " + songId);
             }
             return true;
         } catch (SQLException sE) {
@@ -327,7 +326,7 @@ public final class DatabaseRunner {
                             false,
                             rs.getString("file_path"),
                             rs.getString("file_hash")
-                    );
+                            );
                 }
             }
         } catch (SQLException sE) {
@@ -366,7 +365,7 @@ public final class DatabaseRunner {
                 song.isSongRecentlyPlayed(),
                 filePath,
                 fileHash
-        ); 
+                ); 
     }
 
     protected String generateHashFromFile(String path) {
@@ -405,23 +404,33 @@ public final class DatabaseRunner {
         return -1;
     }
 
+    protected int getSongId(Song song) throws SQLException {
+        final String checkIfSongExists = "SELECT id FROM Songs WHERE title = ? AND artist = ? AND url = ? AND videoId = ?;";
+        try (PreparedStatement checkSong = connection.prepareStatement(checkIfSongExists)) {
+            checkSong.setString(1, song.getSongName());
+            checkSong.setString(2, song.getSongArtist());
+            checkSong.setString(3, song.getSongLink());
+            checkSong.setString(4, song.getSongVideoId());
+            try (final ResultSet rs = checkSong.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        }
+        return -1;
+    }
+
     protected int insertSongIntoSongs(Song song) throws SQLException {
         final String insertIntoSongs = "INSERT INTO Songs (title, artist, url, videoId) VALUES (?, ?, ?, ?);";
-        try (final PreparedStatement insertSongStatement = connection.prepareStatement(insertIntoSongs, Statement.RETURN_GENERATED_KEYS)) {
+        try (final PreparedStatement insertSongStatement = connection.prepareStatement(insertIntoSongs)) {
             insertSongStatement.setString(1, song.getSongName());
             insertSongStatement.setString(2, song.getSongArtist());
             insertSongStatement.setString(3, song.getSongLink());
             insertSongStatement.setString(4, song.getSongVideoId());
             insertSongStatement.executeUpdate();
             connection.commit();
-            try (final ResultSet generatedKeys = insertSongStatement.getGeneratedKeys()) {
-                if (generatedKeys != null && generatedKeys.next()) {
-                    return generatedKeys.getInt(1);
-                } else {
-                    throw new SQLException("Failed to insert song, no ID was generated.");
-                }
-            }
         }
+        return getSongId(song);
     }
 
     public void clearCachedSongs() {
@@ -436,52 +445,36 @@ public final class DatabaseRunner {
 
     protected void insertSongIntoRecentlyPlayed(int songId) throws SQLException {
         final String insertIntoRecentlyPlayed = "INSERT INTO RecentlyPlayed (song_id, last_listen) VALUES (?, CURRENT_TIMESTAMP);";
-        try (final PreparedStatement insertStatement = connection.prepareStatement(insertIntoRecentlyPlayed, Statement.RETURN_GENERATED_KEYS)) {
-            insertStatement.setInt(1, songId);
-            insertStatement.executeUpdate();
+        try (final PreparedStatement insertSongStatement = connection.prepareStatement(insertIntoRecentlyPlayed)) {
+            insertSongStatement.setInt(1, songId);
+            insertSongStatement.executeUpdate();
             connection.commit();
         }
     }
 
-    protected int insertSongIntoDownloadTable(int songId, String filePath, String fileHash) throws SQLException {
-        final String insertIntoLikedSongs = "INSERT INTO DownloadedSongs (song_id, date_downloaded) VALUES (?, CURRENT_TIMESTAMP, ?, ?);";
-        try (final PreparedStatement insertSongStatement = connection.prepareStatement(insertIntoLikedSongs, Statement.RETURN_GENERATED_KEYS)) {
+    protected void insertSongIntoDownloadTable(int songId, String filePath, String fileHash) throws SQLException {
+        final String insertIntoDownloadedSongs = "INSERT INTO DownloadedSongs (song_id, date_downloaded, file_path, file_hash) VALUES (?, CURRENT_TIMESTAMP, ?, ?);";
+        try (final PreparedStatement insertSongStatement = connection.prepareStatement(insertIntoDownloadedSongs)) {
             insertSongStatement.setInt(1, songId);
             insertSongStatement.setString(2, filePath);
             insertSongStatement.setString(3, fileHash);
             insertSongStatement.executeUpdate();
             connection.commit();
-            try (final ResultSet generatedKeys = insertSongStatement.getGeneratedKeys()) {
-                if (generatedKeys != null && generatedKeys.next()) {
-                    return generatedKeys.getInt(1);
-                } else {
-                    throw new SQLException("Failed to insert song, no ID was generated.");
-                }
-            }
         }
     }
 
-    protected int insertSongIntoLikedTable(int songId) throws SQLException {
+    protected void insertSongIntoLikedTable(int songId) throws SQLException {
         final String insertIntoLikedSongs = "INSERT INTO LikedSongs (song_id, date_liked) VALUES (?, CURRENT_TIMESTAMP);";
-        try (final PreparedStatement insertSongStatement = connection.prepareStatement(insertIntoLikedSongs, Statement.RETURN_GENERATED_KEYS)) {
+        try (final PreparedStatement insertSongStatement = connection.prepareStatement(insertIntoLikedSongs)) {
             insertSongStatement.setInt(1, songId);
             insertSongStatement.executeUpdate();
             connection.commit();
-            Logger.debug("Song insertion query committed into LikedSongs table with ID: " + songId);
-            try (final ResultSet generatedKeys = insertSongStatement.getGeneratedKeys()) {
-                if (generatedKeys != null && generatedKeys.next()) {
-                    return generatedKeys.getInt(1);
-                } else {
-                    // TODO: CI Build is hitting this
-                    throw new SQLException("Failed to insert song, no ID was generated.");
-                }
-            }
         }
     }
 
     protected void removeSongFromLikedTable(int songId) throws SQLException {
-        final String insertIntoLikedSongs = "DELETE FROM LikedSongs WHERE song_id = ?;";
-        try (final PreparedStatement insertSongStatement = connection.prepareStatement(insertIntoLikedSongs)) {
+        final String removeLikedSong = "DELETE FROM LikedSongs WHERE song_id = ?;";
+        try (final PreparedStatement insertSongStatement = connection.prepareStatement(removeLikedSong)) {
             insertSongStatement.setInt(1, songId);
             insertSongStatement.executeUpdate();
             connection.commit();
