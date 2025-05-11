@@ -12,6 +12,9 @@ import java.sql.Statement;
 import java.util.HashMap;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -305,21 +308,27 @@ public final class DatabaseRunner {
     }
 
     public Song getSongFromDownloads(Song song) {
-        try {
-            final PreparedStatement statement = connection.prepareStatement("SELECT * FROM DownloadedSongs ds INNER JOIN Songs s ON s.id = ds.song_id WHERE s.title = ? AND s.artist = ? AND s.url = ?;");
+        final String query = "SELECT * FROM DownloadedSongs ds INNER JOIN Songs s ON s.id = ds.song_id WHERE s.title = ? AND s.artist = ? AND s.url = ?;";
+        try (final PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setQueryTimeout(5);
             statement.setString(1, song.getSongName());
             statement.setString(2, song.getSongArtist());
             statement.setString(3, song.getSongLink());
-            final ResultSet rs = statement.executeQuery(queryMap.get("GET_DOWNLOADED_SONGS"));
-            if (rs.next()) {
-                song = new Song(
-                        rs.getInt("id"),
-                        rs.getString("title"),
-                        rs.getString("artist"),
-                        rs.getString("url"),
-                        rs.getString("videoId")
-                );
+            try (final ResultSet rs = statement.executeQuery()) {
+                if (rs.next()) {
+                    song = new Song(
+                            rs.getInt("id"),
+                            rs.getString("title"),
+                            rs.getString("artist"),
+                            rs.getString("url"),
+                            rs.getString("videoId"),
+                            getSongLikeStatus(song),
+                            true,
+                            false,
+                            rs.getString("file_path"),
+                            rs.getString("file_hash")
+                    );
+                }
             }
         } catch (SQLException sE) {
             handleSQLException(sE);
@@ -398,7 +407,7 @@ public final class DatabaseRunner {
 
     protected int insertSongIntoSongs(Song song) throws SQLException {
         final String insertIntoSongs = "INSERT INTO Songs (title, artist, url, videoId) VALUES (?, ?, ?, ?);";
-        try (final PreparedStatement insertSongStatement = connection.prepareStatement(insertIntoSongs)) {
+        try (final PreparedStatement insertSongStatement = connection.prepareStatement(insertIntoSongs, Statement.RETURN_GENERATED_KEYS)) {
             insertSongStatement.setString(1, song.getSongName());
             insertSongStatement.setString(2, song.getSongArtist());
             insertSongStatement.setString(3, song.getSongLink());
@@ -427,7 +436,7 @@ public final class DatabaseRunner {
 
     protected void insertSongIntoRecentlyPlayed(int songId) throws SQLException {
         final String insertIntoRecentlyPlayed = "INSERT INTO RecentlyPlayed (song_id, last_listen) VALUES (?, CURRENT_TIMESTAMP);";
-        try (final PreparedStatement insertStatement = connection.prepareStatement(insertIntoRecentlyPlayed)) {
+        try (final PreparedStatement insertStatement = connection.prepareStatement(insertIntoRecentlyPlayed, Statement.RETURN_GENERATED_KEYS)) {
             insertStatement.setInt(1, songId);
             insertStatement.executeUpdate();
             connection.commit();
@@ -436,7 +445,7 @@ public final class DatabaseRunner {
 
     protected int insertSongIntoDownloadTable(int songId, String filePath, String fileHash) throws SQLException {
         final String insertIntoLikedSongs = "INSERT INTO DownloadedSongs (song_id, date_downloaded) VALUES (?, CURRENT_TIMESTAMP, ?, ?);";
-        try (final PreparedStatement insertSongStatement = connection.prepareStatement(insertIntoLikedSongs)) {
+        try (final PreparedStatement insertSongStatement = connection.prepareStatement(insertIntoLikedSongs, Statement.RETURN_GENERATED_KEYS)) {
             insertSongStatement.setInt(1, songId);
             insertSongStatement.setString(2, filePath);
             insertSongStatement.setString(3, fileHash);
@@ -454,7 +463,7 @@ public final class DatabaseRunner {
 
     protected int insertSongIntoLikedTable(int songId) throws SQLException {
         final String insertIntoLikedSongs = "INSERT INTO LikedSongs (song_id, date_liked) VALUES (?, CURRENT_TIMESTAMP);";
-        try (final PreparedStatement insertSongStatement = connection.prepareStatement(insertIntoLikedSongs)) {
+        try (final PreparedStatement insertSongStatement = connection.prepareStatement(insertIntoLikedSongs, Statement.RETURN_GENERATED_KEYS)) {
             insertSongStatement.setInt(1, songId);
             insertSongStatement.executeUpdate();
             connection.commit();
@@ -483,7 +492,10 @@ public final class DatabaseRunner {
     private void handleSQLException(SQLException sE) {
         Logger.warn("[!] Unable to execute query on the database, please try restarting the app.");
         Logger.debug("[!] SQL error message: " + sE.getMessage());
-        sE.printStackTrace();
+        Writer buffer = new StringWriter();
+        PrintWriter printWriter = new PrintWriter(buffer);
+        sE.printStackTrace(printWriter);
+        Logger.debug("[!] SQL error stack trace: " + buffer.toString());
         try {
             connection.rollback();
         } catch (SQLException rollbackException) {
