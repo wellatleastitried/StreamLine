@@ -40,6 +40,7 @@ public class DatabaseRunnerTest {
 
     @BeforeEach
     public void setUp() throws SQLException {
+        System.err.println("Setting up DatabaseRunnerTest...");
         mockConnection = mock(Connection.class);
         mockLinker = mock(DatabaseLinker.class);
         mockStatement = mock(Statement.class);
