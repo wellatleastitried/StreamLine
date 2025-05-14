@@ -56,7 +56,7 @@ public class TerminalWindowManager {
         this.helpPage = new HelpPage(this, backend, guiThread, componentFactory).createWindow();
         this.settingsPage = new SettingsPage(this, backend, guiThread, componentFactory).createWindow();
         this.searchPage = new SearchPage(this, backend, guiThread, componentFactory, textGUI).createWindow();
-        this.likedMusicPage = new LikedMusicPage(this, backend, guiThread, componentFactory).createWindow();
+        this.likedMusicPage = new LikedMusicPage(this, backend, guiThread, componentFactory, textGUI).createWindow();
         this.playlistPage = new PlaylistPage(this, backend, guiThread, componentFactory).createWindow();
         this.recentlyPlayedPage = new RecentlyPlayedPage(this, backend, guiThread, componentFactory, textGUI).createWindow();
         this.downloadedPage = new DownloadedMusicPage(this, backend, guiThread, componentFactory, textGUI).createWindow();
@@ -85,7 +85,7 @@ public class TerminalWindowManager {
 
     public void rebuildDynamicWindows() {
         guiThread.invokeLater(() -> {
-            this.likedMusicPage = new LikedMusicPage(this, backend, guiThread, componentFactory).createWindow();
+            this.likedMusicPage = new LikedMusicPage(this, backend, guiThread, componentFactory, textGUI).createWindow();
             this.playlistPage = new PlaylistPage(this, backend, guiThread, componentFactory).createWindow();
             this.recentlyPlayedPage = new RecentlyPlayedPage(this, backend, guiThread, componentFactory, textGUI).createWindow();
             this.downloadedPage = new DownloadedMusicPage(this, backend, guiThread, componentFactory, textGUI).createWindow();
@@ -98,7 +98,7 @@ public class TerminalWindowManager {
             this.helpPage = new HelpPage(this, backend, guiThread, componentFactory).createWindow();
             this.settingsPage = new SettingsPage(this, backend, guiThread, componentFactory).createWindow();
             this.searchPage = new SearchPage(this, backend, guiThread, componentFactory, textGUI).createWindow();
-            this.likedMusicPage = new LikedMusicPage(this, backend, guiThread, componentFactory).createWindow();
+            this.likedMusicPage = new LikedMusicPage(this, backend, guiThread, componentFactory, textGUI).createWindow();
             this.playlistPage = new PlaylistPage(this, backend, guiThread, componentFactory).createWindow();
             this.recentlyPlayedPage = new RecentlyPlayedPage(this, backend, guiThread, componentFactory, textGUI).createWindow();
             this.downloadedPage = new DownloadedMusicPage(this, backend, guiThread, componentFactory, textGUI).createWindow();

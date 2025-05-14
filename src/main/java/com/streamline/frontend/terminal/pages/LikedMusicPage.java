@@ -10,13 +10,11 @@ import com.streamline.utilities.RetrievedStorage;
 import com.streamline.utilities.LanguagePeer;
 
 import java.io.IOException;
+
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import org.tinylog.Logger;
 
@@ -25,11 +23,14 @@ import org.tinylog.Logger;
  */
 public class LikedMusicPage extends BasePage {
 
+    private final TextGUI textGUI;
+
     private Map<Integer, Button> likedMusicButtons;
     Panel resultsBox = null;
 
-    public LikedMusicPage(TerminalWindowManager windowManager, Dispatcher backend, TextGUIThread guiThread, TerminalComponentFactory componentFactory) {
+    public LikedMusicPage(TerminalWindowManager windowManager, Dispatcher backend, TextGUIThread guiThread, TerminalComponentFactory componentFactory, TextGUI textGUI) {
         super(windowManager, backend, guiThread, componentFactory);
+        this.textGUI = textGUI;
     }
 
     @Override
@@ -54,7 +55,8 @@ public class LikedMusicPage extends BasePage {
 
         Set<Button> currentButtons = new LinkedHashSet<>();
         panel.addComponent(componentFactory.createEmptySpace());
-        resultsBox = handleSongRendering(currentButtons);
+        handleSongRendering(currentButtons);
+        Logger.debug("Child count of resultsBox: " + resultsBox.getChildCount());
         panel.addComponent(resultsBox);
 
         /* Back button */
@@ -71,12 +73,14 @@ public class LikedMusicPage extends BasePage {
 
     private Panel handleSongRendering(Set<Button> currentButtons) {
         RetrievedStorage results = backend.getLikedSongs();
-        if (results == null) {
+        if (results == null || results.size() < 1) {
+            Logger.debug("No liked songs found.");
             return resultsBox;
         }
 
         resultsToButtons(results);
         updateResultsDisplay(currentButtons);
+        Logger.debug("Display has been updated with {} liked songs.", results.size());
         return resultsBox;
     }
 
@@ -113,6 +117,13 @@ public class LikedMusicPage extends BasePage {
                 if (currentButtons.add(entry.getValue())) {
                     resultsBox.addComponent(entry.getValue());
                 }
+            }
+
+            try {
+                textGUI.getScreen().refresh();
+                Logger.debug("Screen refreshed successfully.");
+            } catch (IOException iE) {
+                Logger.error("[!] Error while redrawing screen, please restart the app.");
             }
         });
     }
