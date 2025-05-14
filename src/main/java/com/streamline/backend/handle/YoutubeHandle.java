@@ -170,6 +170,7 @@ public final class YoutubeHandle implements ConnectionHandle {
                 cleanupProcess(process);
             }
             song.setDownloadPath(String.format("%s_%s.m4a", song.getSongName(), song.getSongArtist()));
+            song.setFileHash("");
             return song;
         });
     }
@@ -182,7 +183,7 @@ public final class YoutubeHandle implements ConnectionHandle {
             "--ignore-errors",
             "--no-playlist",
             "--flat-playlist",
-            "--socket-timeout", "5", // Remove if necessary
+            "--socket-timeout", "5", /* Remove if necessary */
             "ytsearch20:'" + sanitizedTerm + "'",
             "--print",
             "%(title)s | %(uploader)s | %(duration>%M:%S)s | %(id)s"

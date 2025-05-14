@@ -27,6 +27,7 @@ public class RetrievedStorage {
         songToIndex.put(song, index);
         assert(indexToSong.size() == songToIndex.size());
     }
+
     public void add(Song song, int index) {
         indexToSong.put(index, song);
         songToIndex.put(song, index);

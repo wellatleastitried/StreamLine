@@ -273,40 +273,6 @@ public class DatabaseRunnerTest {
     }
 
     @Test
-    public void testDownloadSong() throws SQLException {
-        Song song = new Song(0, "Download Song", "Download Artist", "http://example.com", "vid101112");
-        Song downloadedSong = new Song(10, "Download Song", "Download Artist", "http://example.com", "vid101112", 
-                false, true, false, "/path/to/download.mp3", "hash123456");
-
-        DatabaseRunner spyRunner = spy(databaseRunner);
-        doReturn(10).when(spyRunner).getSongId(anyString(), anyString());
-        doReturn(downloadedSong).when(spyRunner).download(song);
-
-        clearInvocations(mockConnection);
-
-        spyRunner.downloadSong(song);
-
-        verify(mockConnection).setAutoCommit(false);
-        verify(spyRunner).download(song);
-        verify(spyRunner).insertSongIntoDownloadTable(10, "/path/to/download.mp3", "hash123456");
-        verify(mockConnection).commit();
-        verify(mockConnection).setAutoCommit(true);
-    }
-
-    @Test
-    public void testGenerateHashFromFile() throws IOException {
-        File tempFile = tempDir.resolve("test.mp3").toFile();
-        try (FileOutputStream fos = new FileOutputStream(tempFile)) {
-            fos.write("test data for hashing".getBytes());
-        }
-
-        String result = databaseRunner.generateHashFromFile(tempFile.getAbsolutePath());
-
-        assertNotNull(result);
-        assertEquals(64, result.length());
-    }
-
-    @Test
     public void testInsertSongIntoSongs() throws SQLException {
         Song song = new Song(0, "Insert Test", "Insert Artist", "http://example.com", "vidInsert");
 

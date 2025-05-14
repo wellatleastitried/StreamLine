@@ -4,6 +4,8 @@ import com.streamline.database.DatabaseRunner;
 import com.streamline.utilities.RetrievedStorage;
 import com.streamline.utilities.internal.Config;
 
+import org.tinylog.Logger;
+
 public class LikedSongsFetchJob extends AbstractStreamLineJob {
 
     private final DatabaseRunner dbRunner;
@@ -20,6 +22,7 @@ public class LikedSongsFetchJob extends AbstractStreamLineJob {
     public void execute() {
         try {
             results = dbRunner.getLikedSongs();
+            Logger.debug("Number of liked songs fetched: " + results.size());
         } finally {
             resultsAreReady = true;
         }

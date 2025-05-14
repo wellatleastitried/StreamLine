@@ -281,8 +281,7 @@ public final class DatabaseRunner {
             if (songId == -1) {
                 songId = insertSongIntoSongs(song);
             }
-            final Song storedSong = download(song);
-            insertSongIntoDownloadTable(songId, storedSong.getDownloadPath(), storedSong.getFileHash());
+            insertSongIntoDownloadTable(songId, song.getDownloadPath(), song.getFileHash());
         } catch (SQLException sE) {
             handleSQLException(sE);
         } finally {
@@ -348,45 +347,6 @@ public final class DatabaseRunner {
         } finally {
             restoreAutoCommit();
         }
-    }
-
-    protected Song download(Song song) {
-        final String filePath = String.format("%s_%s.m4a", song.getSongName(), song.getSongArtist()); 
-        final String fileHash = generateHashFromFile(filePath);
-        return new Song(
-                song.getSongId(),
-                song.getSongName(),
-                song.getSongArtist(),
-                song.getSongLink(),
-                song.getSongVideoId(),
-                song.isSongLiked(),
-                true,
-                song.isSongRecentlyPlayed(),
-                filePath,
-                fileHash
-                ); 
-    }
-
-    protected String generateHashFromFile(String path) {
-        try (FileInputStream fS = new FileInputStream(new File(path))) {
-            final MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            final byte[] byteArray = new byte[1024];
-            int byteCount;
-            while ((byteCount = fS.read(byteArray)) != -1) {
-                digest.update(byteArray, 0, byteCount);
-            }
-            final byte[] bytes = digest.digest();
-            final StringBuilder hexStringOfHash = new StringBuilder(new BigInteger(1, bytes).toString(16));
-            while (hexStringOfHash.length() < 64) {
-                hexStringOfHash.insert(0, '0');
-            }
-            return hexStringOfHash.toString();
-        } catch (NoSuchAlgorithmException nA) {
-            Logger.error("There is a typo in the name of the hashing algorithm being used or Java no longer supports the used algorithm. Either way, it needs to be changed.");
-        } catch (IOException iE) {
-            Logger.error("[!] There has been an error reading the bytes from the configuration file, please try reloading the app.");
-        }
-        return null;
     }
 
     protected int getSongId(String title, String artist) throws SQLException {

@@ -26,6 +26,7 @@ import org.tinylog.Logger;
 public class LikedMusicPage extends BasePage {
 
     private Map<Integer, Button> likedMusicButtons;
+    Panel resultsBox = null;
 
     public LikedMusicPage(TerminalWindowManager windowManager, Dispatcher backend, TextGUIThread guiThread, TerminalComponentFactory componentFactory) {
         super(windowManager, backend, guiThread, componentFactory);
@@ -40,7 +41,7 @@ public class LikedMusicPage extends BasePage {
         Panel panel = componentFactory.createStandardPanel();
 
         /* Panel for search results */
-        Panel resultsBox = new Panel();
+        resultsBox = new Panel();
         resultsBox.setLayoutManager(new GridLayout(1));
         resultsBox.setPreferredSize(new TerminalSize(
                     componentFactory.getTerminalSize().getColumns(), 
@@ -53,7 +54,7 @@ public class LikedMusicPage extends BasePage {
 
         Set<Button> currentButtons = new LinkedHashSet<>();
         panel.addComponent(componentFactory.createEmptySpace());
-        resultsBox = handleSongRendering(resultsBox, currentButtons);
+        resultsBox = handleSongRendering(currentButtons);
         panel.addComponent(resultsBox);
 
         /* Back button */
@@ -68,20 +69,20 @@ public class LikedMusicPage extends BasePage {
         return window;
     }
 
-    private Panel handleSongRendering(Panel resultsBox, Set<Button> currentButtons) {
+    private Panel handleSongRendering(Set<Button> currentButtons) {
         RetrievedStorage results = backend.getLikedSongs();
         if (results == null) {
             return resultsBox;
         }
 
-        resultsToButtons(resultsBox, results);
-        updateResultsDisplay(resultsBox, currentButtons);
+        resultsToButtons(results);
+        updateResultsDisplay(currentButtons);
         return resultsBox;
     }
 
-    private void resultsToButtons(Panel resultsBox, RetrievedStorage results) {
+    private void resultsToButtons(RetrievedStorage results) {
         likedMusicButtons = new HashMap<>();
-        for (int i = 0; i < results.size(); i++) {
+        for (int i = 1; i < results.size(); i++) {
             Song song = results.getSongFromIndex(i);
             if (song == null) {
                 Logger.debug("Song is null at index {}", i);
@@ -101,7 +102,7 @@ public class LikedMusicPage extends BasePage {
         }
     }
 
-    private void updateResultsDisplay(Panel resultsBox, Set<Button> currentButtons) {
+    private void updateResultsDisplay(Set<Button> currentButtons) {
         guiThread.invokeLater(() -> {
             for (Button button : currentButtons) {
                 resultsBox.removeComponent(button);
