@@ -146,7 +146,8 @@ public final class YoutubeHandle implements ConnectionHandle {
     }
 
     @Override
-    public CompletableFuture<Boolean> downloadSong(String url) {
+    public CompletableFuture<Song> downloadSong(Song song) {
+        final String url = song.getSongLink();
         return CompletableFuture.supplyAsync(() -> {
             String[] command = buildDownloadCommand(url);
             Process process = null;
@@ -154,21 +155,22 @@ public final class YoutubeHandle implements ConnectionHandle {
                 process = CommandExecutor.runCommandExpectWait(command);
                 if (process == null) {
                     Logger.warn("[!] Process was null when downloading song from: {}", url);
-                    return false;
+                    return song;
                 }
                 handleErrorStream(process);
                 if (!process.waitFor(180, TimeUnit.SECONDS)) {
                     process.destroyForcibly();
                     Logger.warn("[!] yt-dlp download timed out after 180 seconds");
-                    return false;
+                    return song;
                 }
             } catch (InterruptedException e) {
                 Logger.warn("[!] There was an error while using yt-dlp to download the song, please try again.");
-                return false;
+                return song;
             } finally {
                 cleanupProcess(process);
             }
-            return true;
+            song.setDownloadPath(String.format("%s_%s.m4a", song.getSongName(), song.getSongArtist()));
+            return song;
         });
     }
 

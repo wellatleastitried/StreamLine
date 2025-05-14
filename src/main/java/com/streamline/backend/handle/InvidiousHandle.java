@@ -145,10 +145,10 @@ public final class InvidiousHandle implements ConnectionHandle {
     }
 
     @Override
-    public CompletableFuture<Boolean> downloadSong(String url) {
+    public CompletableFuture<Song> downloadSong(Song song) {
         return CompletableFuture.supplyAsync(() -> {
             /* TODO: Implement the download logic with the Invidious API */
-            return true;
+            return song;
         });
     }
 
@@ -175,7 +175,7 @@ public final class InvidiousHandle implements ConnectionHandle {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        //if (type.contains("audio/mp4")) {
+        //if (type.contains("audio/m4a")) {
         return "";
     }
 

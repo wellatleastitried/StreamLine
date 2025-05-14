@@ -41,10 +41,10 @@ public class DownloadJob extends AbstractStreamLineJob {
 
     private void downloadSong() {
         Logger.info("[*] Downloading song: " + song.getSongName());
-        String url = config.getHandle().getAudioUrlFromVideoId(String.valueOf(song.getSongId()));
+        song.setSongLink(config.getHandle().getAudioUrlFromVideoId(String.valueOf(song.getSongId())));
         try {
-            config.getHandle().downloadSong(url).thenAccept(downloadedSong -> {
-                if (downloadedSong) {
+            config.getHandle().downloadSong(song).thenAccept(downloadedSong -> {
+                if (downloadedSong.getDownloadPath() != null) {
                     returnStatus = true;
                     dbRunner.downloadSong(song);
                     Logger.info("[*] Download completed for song: " + song.getSongName());
@@ -62,7 +62,6 @@ public class DownloadJob extends AbstractStreamLineJob {
     private void cancelDownload() {
         Logger.info("[*] Cancelling download for song: " + song.getSongName());
         config.getHandle().cancelSongDownload(song);
-        Logger.debug("[*] Cancelled download for song: " + song.getSongName());
     }
 
     private void removeDownloadedSong() {

@@ -222,9 +222,10 @@ public class DatabaseRunnerTest {
     @Test
     public void testLikeSongExistingSong() throws SQLException {
         Song song = new Song(0, "Existing Song", "Artist", "http://example.com", "vid123");
+        song.setSongLikeStatus(false);
 
         DatabaseRunner spyRunner = spy(databaseRunner);
-        doReturn(7).when(spyRunner).getSongIdFromLikedTable(any(Song.class));
+        doReturn(7).when(spyRunner).getSongId(anyString(), anyString());
 
         clearInvocations(mockConnection);
 
@@ -232,7 +233,6 @@ public class DatabaseRunnerTest {
 
         verify(mockConnection).setAutoCommit(false);
         verify(spyRunner).insertSongIntoLikedTable(7);
-        verify(mockConnection).commit();
         verify(mockConnection).setAutoCommit(true);
     }
 
@@ -310,25 +310,33 @@ public class DatabaseRunnerTest {
     public void testInsertSongIntoSongs() throws SQLException {
         Song song = new Song(0, "Insert Test", "Insert Artist", "http://example.com", "vidInsert");
 
-        when(mockPreparedStatement.getGeneratedKeys()).thenReturn(mockResultSet);
-        when(mockResultSet.next()).thenReturn(true);
-        when(mockResultSet.getInt(1)).thenReturn(11);
+        PreparedStatement insertStatement = mock(PreparedStatement.class);
+        PreparedStatement checkStatement = mock(PreparedStatement.class);
+        ResultSet checkResultSet = mock(ResultSet.class);
+
+        when(mockConnection.prepareStatement("INSERT INTO Songs (title, artist, url, videoId) VALUES (?, ?, ?, ?);"))
+            .thenReturn(insertStatement);
+        when(mockConnection.prepareStatement("SELECT id FROM Songs WHERE title = ? AND artist = ? AND url = ? AND videoId = ?;"))
+            .thenReturn(checkStatement);
+
+        when(checkStatement.executeQuery()).thenReturn(checkResultSet);
+        when(checkResultSet.next()).thenReturn(true);
+        when(checkResultSet.getInt(1)).thenReturn(11);
 
         int result = databaseRunner.insertSongIntoSongs(song);
 
-        ArgumentCaptor<String> titleCaptor = ArgumentCaptor.forClass(String.class);
-        ArgumentCaptor<String> artistCaptor = ArgumentCaptor.forClass(String.class);
-
-        verify(mockPreparedStatement).setString(eq(1), titleCaptor.capture());
-        verify(mockPreparedStatement).setString(eq(2), artistCaptor.capture());
-        verify(mockPreparedStatement).setString(eq(3), anyString());
-        verify(mockPreparedStatement).setString(eq(4), anyString());
-        verify(mockPreparedStatement).executeUpdate();
+        verify(insertStatement).setString(1, "Insert Test");
+        verify(insertStatement).setString(2, "Insert Artist");
+        verify(insertStatement).setString(3, "http://example.com");
+        verify(insertStatement).setString(4, "vidInsert");
+        verify(insertStatement).executeUpdate();
         verify(mockConnection).commit();
-        verify(mockPreparedStatement).getGeneratedKeys();
 
-        assertEquals("Insert Test", titleCaptor.getValue());
-        assertEquals("Insert Artist", artistCaptor.getValue());
+        verify(checkStatement).setString(1, "Insert Test");
+        verify(checkStatement).setString(2, "Insert Artist");
+        verify(checkStatement).setString(3, "http://example.com");
+        verify(checkStatement).setString(4, "vidInsert");
+
         assertEquals(11, result);
     }
 

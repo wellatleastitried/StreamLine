@@ -141,8 +141,16 @@ public class Song {
         return downloadPath;
     }
 
+    public void setDownloadPath(String downloadPath) {
+        this.downloadPath = downloadPath;
+    }
+
     public String getFileHash() {
         return fileHash;
+    }
+
+    public void setFileHash(String fileHash) {
+        this.fileHash = fileHash;
     }
 
     public String getDuration() {

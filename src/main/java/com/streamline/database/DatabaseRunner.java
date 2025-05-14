@@ -351,7 +351,6 @@ public final class DatabaseRunner {
     }
 
     protected Song download(Song song) {
-        // Convert video to mp3 and download
         final String filePath = String.format("%s_%s.m4a", song.getSongName(), song.getSongArtist()); 
         final String fileHash = generateHashFromFile(filePath);
         return new Song(

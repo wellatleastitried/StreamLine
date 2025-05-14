@@ -41,7 +41,7 @@ public interface ConnectionHandle {
      * @param url The URL of the song to be downloaded.
      * @return CompletableFuture<Boolean> indicating the success or failure of the download.
      */
-    public CompletableFuture<Boolean> downloadSong(String url);
+    public CompletableFuture<Song> downloadSong(Song song);
 
     /**
      * Remove the downloaded song from the local storage.
