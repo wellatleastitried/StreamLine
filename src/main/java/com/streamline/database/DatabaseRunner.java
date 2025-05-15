@@ -71,7 +71,8 @@ public final class DatabaseRunner {
                         rs.getString("title"),
                         rs.getString("artist"),
                         rs.getString("url"),
-                        rs.getString("videoId")
+                        rs.getString("videoId"),
+                        rs.getString("duration")
                 );
                 song.setSongLikeStatus(true);
                 likedSongs.add(++index, song);
@@ -95,7 +96,8 @@ public final class DatabaseRunner {
                         rs.getString("title"),
                         rs.getString("artist"),
                         rs.getString("url"),
-                        rs.getString("videoId")
+                        rs.getString("videoId"),
+                        rs.getString("duration")
                 );
                 downloadedSongs.add(++index, song);
             }
@@ -118,7 +120,8 @@ public final class DatabaseRunner {
                         rs.getString("title"),
                         rs.getString("artist"),
                         rs.getString("url"),
-                        rs.getString("videoId")
+                        rs.getString("videoId"),
+                        rs.getString("duration")
                 );
                 song.setSongRecentlyPlayedStatus(true);
                 recentlyPlayedSongs.add(++index, song);

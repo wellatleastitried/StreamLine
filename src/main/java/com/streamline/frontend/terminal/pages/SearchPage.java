@@ -110,6 +110,7 @@ public class SearchPage extends BasePage {
         } else {
             searchResultButtons = new HashMap<>();
         }
+        Logger.debug("SEARCH PAGE ResultsPanel width: {}", resultsPanel.getSize().getColumns());
         for (int i = 0; i < results.size(); i++) {
             Song song = results.getSongFromIndex(i);
             String formattedText = componentFactory.getFormattedTextForSongButton(

@@ -18,6 +18,10 @@ import java.util.Set;
 
 import org.tinylog.Logger;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.io.Writer;
+
 /**
  * Window for displaying liked music.
  */
@@ -25,11 +29,18 @@ public class LikedMusicPage extends BasePage {
 
     private final TextGUI textGUI;
 
+    private final Panel panel;
+    private final Panel resultsBox;
+
     private Map<Integer, Button> likedMusicButtons;
 
     public LikedMusicPage(TerminalWindowManager windowManager, Dispatcher backend, TextGUIThread guiThread, TerminalComponentFactory componentFactory, TextGUI textGUI) {
         super(windowManager, backend, guiThread, componentFactory);
         this.textGUI = textGUI;
+
+        panel = componentFactory.createStandardPanel();
+
+        resultsBox = new Panel();
     }
 
     @Override
@@ -38,24 +49,18 @@ public class LikedMusicPage extends BasePage {
 
         BasicWindow window = createStandardWindow(LanguagePeer.getText("window.likedMusicTitle"));
 
-        Panel panel = componentFactory.createStandardPanel();
+        panel.addComponent(componentFactory.createEmptySpace());
+        panel.addComponent(componentFactory.createLabel(LanguagePeer.getText("label.likedMusicTitle")));
 
-        /* Panel for search results */
-        Panel resultsBox = new Panel();
+        Set<Button> currentButtons = new LinkedHashSet<>();
         resultsBox.setLayoutManager(new GridLayout(1));
         resultsBox.setPreferredSize(new TerminalSize(
                     componentFactory.getTerminalSize().getColumns(), 
                     componentFactory.getTerminalSize().getRows() - panel.getSize().getRows() - 15
                     ));
         resultsBox.setFillColorOverride(TextColor.ANSI.BLACK_BRIGHT);
-
         panel.addComponent(componentFactory.createEmptySpace());
-        panel.addComponent(componentFactory.createLabel(LanguagePeer.getText("label.likedMusicTitle")));
-
-        Set<Button> currentButtons = new LinkedHashSet<>();
-        panel.addComponent(componentFactory.createEmptySpace());
-        handleSongRendering(resultsBox, currentButtons);
-        Logger.debug("Child count of resultsBox: " + resultsBox.getChildCount());
+        handleSongRendering(currentButtons);
         panel.addComponent(resultsBox);
 
         /* Back button */
@@ -70,20 +75,18 @@ public class LikedMusicPage extends BasePage {
         return window;
     }
 
-    private Panel handleSongRendering(Panel resultsBox, Set<Button> currentButtons) {
+    private void handleSongRendering(Set<Button> currentButtons) {
         RetrievedStorage results = backend.getLikedSongs();
         if (results == null || results.size() < 1) {
             Logger.debug("No liked songs found.");
-            return resultsBox;
         }
 
-        resultsToButtons(resultsBox, results);
-        updateResultsDisplay(resultsBox, currentButtons);
+        resultsToButtons(results);
+        updateResultsDisplay(currentButtons);
         Logger.debug("Display has been updated with {} liked songs.", results.size());
-        return resultsBox;
     }
 
-    private void resultsToButtons(Panel resultsBox, RetrievedStorage results) {
+    private void resultsToButtons(RetrievedStorage results) {
         if (likedMusicButtons == null) {
             likedMusicButtons = new HashMap<>();
         } else {
@@ -92,29 +95,38 @@ public class LikedMusicPage extends BasePage {
         Logger.debug("SIZE: {}", results.size());
         for (int i = 0; i < results.size(); i++) {
             int displayIndex = i + 1;
-            Song song = results.getSongFromIndex(displayIndex);
-            if (song == null) {
-                Logger.debug("Song is null at index {}", displayIndex);
+            try {
+                Song song = results.getSongFromIndex(displayIndex);
+                if (song == null) {
+                    Logger.debug("Song is null at index {}", displayIndex);
+                    continue;
+                }
+
+                Logger.debug("resultsBox columns: {}", resultsBox.getSize().getColumns());
+
+                String formattedText = componentFactory.getFormattedTextForSongButton(
+                        resultsBox.getSize().getColumns(),
+                        displayIndex,
+                        song.getSongName(),
+                        song.getSongArtist(),
+                        song.getDuration());
+                Logger.debug("Formatted text for song button: {}", formattedText);
+                likedMusicButtons.put(i, componentFactory.createButton(
+                            formattedText, 
+                            () -> handleSongSelection(song),
+                            resultsBox.getSize().getColumns(),
+                            componentFactory.getButtonHeight()));
+            } catch (Exception e) {
+                Writer buffer = new StringWriter();
+                PrintWriter printWriter = new PrintWriter(buffer);
+                e.printStackTrace(printWriter);
+                Logger.error("Error generating song button: {}", buffer.toString());
                 continue;
             }
-
-            String formattedText = componentFactory.getFormattedTextForSongButton(
-                    resultsBox.getSize().getColumns(),
-                    displayIndex,
-                    song.getSongName(),
-                    song.getSongArtist(),
-                    song.getDuration()); // TODO: Fix this being null
-            Logger.debug("Formatted text for song button: {}", formattedText);
-            Logger.debug("resultsBox.getSize().getColumns(): {}", resultsBox.getSize().getColumns());
-            likedMusicButtons.put(i, componentFactory.createButton(
-                        formattedText, 
-                        () -> handleSongSelection(song),
-                        resultsBox.getSize().getColumns(),
-                        componentFactory.getButtonHeight()));
         }
     }
 
-    private void updateResultsDisplay(Panel resultsBox, Set<Button> currentButtons) {
+    private void updateResultsDisplay(Set<Button> currentButtons) {
         guiThread.invokeLater(() -> {
             for (Button button : currentButtons) {
                 resultsBox.removeComponent(button);

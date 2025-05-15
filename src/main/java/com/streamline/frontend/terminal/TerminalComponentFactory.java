@@ -96,7 +96,7 @@ public class TerminalComponentFactory {
     }
 
     public String getFormattedTextForSongButton(int widthOfButton, int index, String title, String artist, String length) {
-        int effectiveWidth = widthOfButton - 8; /* Take 2 off the width so the text isn't touching the border */
+        int effectiveWidth = widthOfButton - 8; /* Take 8 off the width so the text isn't touching the border */
 
         final int MAX_TITLE_LENGTH = effectiveWidth / 3;
         final int MAX_ARTIST_LENGTH = effectiveWidth / 3;
@@ -130,7 +130,11 @@ public class TerminalComponentFactory {
         return formattedText;
     }
 
+    // TODO: This method is causing the error in LikedMusicPage.java
     private String formatTextToFixedLength(String text, int maxLength) {
+        if (text == null || maxLength <= 0) {
+            return "An error occurred while formatting text.";
+        }
         if (text.length() > maxLength) {
             return text.substring(0, maxLength - 3) + "...";
         }

@@ -72,7 +72,7 @@ public final class YoutubeHandle implements ConnectionHandle {
                 String videoId = fields[3];
                 String url = "https://www.youtube.com/watch?v=" + videoId;
                 if (acceptableDuration(duration)) {
-                    results.add(new Song(-1, title, author, url, duration, videoId));
+                    results.add(new Song(-1, title, author, url, videoId, duration));
                 }
             }
         }
