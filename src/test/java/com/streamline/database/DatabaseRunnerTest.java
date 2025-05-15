@@ -282,7 +282,7 @@ public class DatabaseRunnerTest {
 
         when(mockConnection.prepareStatement("INSERT INTO Songs (title, artist, url, videoId, duration) VALUES (?, ?, ?, ?, ?);"))
             .thenReturn(insertStatement);
-        when(mockConnection.prepareStatement("SELECT id FROM Songs WHERE title = ? AND artist = ? AND url = ? AND videoId = ? AND duration = ?;"))
+        when(mockConnection.prepareStatement("SELECT id FROM Songs WHERE title = ? AND artist = ? AND url = ? AND videoId = ?;"))
             .thenReturn(checkStatement);
 
         when(checkStatement.executeQuery()).thenReturn(checkResultSet);
@@ -303,7 +303,6 @@ public class DatabaseRunnerTest {
         verify(checkStatement).setString(2, "Insert Artist");
         verify(checkStatement).setString(3, "http://example.com");
         verify(checkStatement).setString(4, "vidInsert");
-        verify(checkStatement).setString(5, "3:30");
 
         assertEquals(11, result);
     }
