@@ -152,8 +152,9 @@ public final class DatabaseRunner {
             String artist = rs.getString("artist");
             String url = rs.getString("url");
             String videoId = rs.getString("videoId");
+            String duration = rs.getString("duration");
 
-            Song song = new Song(id, title, artist, url, videoId);
+            Song song = new Song(id, title, artist, url, videoId, duration);
 
             rs.close();
             return song;
@@ -176,7 +177,8 @@ public final class DatabaseRunner {
                         rs.getString("title"),
                         rs.getString("artist"),
                         rs.getString("url"),
-                        rs.getString("videoId")
+                        rs.getString("videoId"),
+                        rs.getString("duration")
                         );
                 songsFromPlaylist.add(++index, song);
             }
@@ -219,6 +221,7 @@ public final class DatabaseRunner {
                         rs.getString("artist"),
                         rs.getString("url"),
                         rs.getString("videoId"),
+                        rs.getString("duration"),
                         false,
                         true,
                         false,
@@ -320,6 +323,7 @@ public final class DatabaseRunner {
                             rs.getString("artist"),
                             rs.getString("url"),
                             rs.getString("videoId"),
+                            rs.getString("duration"),
                             getSongLikeStatus(song),
                             true,
                             false,
@@ -380,12 +384,13 @@ public final class DatabaseRunner {
     }
 
     protected int insertSongIntoSongs(Song song) throws SQLException {
-        final String insertIntoSongs = "INSERT INTO Songs (title, artist, url, videoId) VALUES (?, ?, ?, ?);";
+        final String insertIntoSongs = "INSERT INTO Songs (title, artist, url, videoId, duration) VALUES (?, ?, ?, ?, ?);";
         try (final PreparedStatement insertSongStatement = connection.prepareStatement(insertIntoSongs)) {
             insertSongStatement.setString(1, song.getSongName());
             insertSongStatement.setString(2, song.getSongArtist());
             insertSongStatement.setString(3, song.getSongLink());
             insertSongStatement.setString(4, song.getSongVideoId());
+            insertSongStatement.setString(5, song.getDuration());
             insertSongStatement.executeUpdate();
             connection.commit();
         }

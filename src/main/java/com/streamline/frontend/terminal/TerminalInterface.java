@@ -74,6 +74,8 @@ public final class TerminalInterface extends com.streamline.frontend.FrontendInt
             }
         } catch (Exception e) {
             Logger.error("[!] There was an error while initializing the windows for the terminal interface.\n[!] Error message: " + e.getMessage());
+            Logger.error("[!] Exception type: " + e.getClass().getName());
+            Logger.error("[!] Stack trace: " + e.getStackTrace());
         }
     }
 

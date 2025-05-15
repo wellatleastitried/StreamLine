@@ -26,7 +26,6 @@ public class LikedMusicPage extends BasePage {
     private final TextGUI textGUI;
 
     private Map<Integer, Button> likedMusicButtons;
-    Panel resultsBox = null;
 
     public LikedMusicPage(TerminalWindowManager windowManager, Dispatcher backend, TextGUIThread guiThread, TerminalComponentFactory componentFactory, TextGUI textGUI) {
         super(windowManager, backend, guiThread, componentFactory);
@@ -42,7 +41,7 @@ public class LikedMusicPage extends BasePage {
         Panel panel = componentFactory.createStandardPanel();
 
         /* Panel for search results */
-        resultsBox = new Panel();
+        Panel resultsBox = new Panel();
         resultsBox.setLayoutManager(new GridLayout(1));
         resultsBox.setPreferredSize(new TerminalSize(
                     componentFactory.getTerminalSize().getColumns(), 
@@ -55,7 +54,7 @@ public class LikedMusicPage extends BasePage {
 
         Set<Button> currentButtons = new LinkedHashSet<>();
         panel.addComponent(componentFactory.createEmptySpace());
-        handleSongRendering(currentButtons);
+        handleSongRendering(resultsBox, currentButtons);
         Logger.debug("Child count of resultsBox: " + resultsBox.getChildCount());
         panel.addComponent(resultsBox);
 
@@ -71,33 +70,42 @@ public class LikedMusicPage extends BasePage {
         return window;
     }
 
-    private Panel handleSongRendering(Set<Button> currentButtons) {
+    private Panel handleSongRendering(Panel resultsBox, Set<Button> currentButtons) {
         RetrievedStorage results = backend.getLikedSongs();
         if (results == null || results.size() < 1) {
             Logger.debug("No liked songs found.");
             return resultsBox;
         }
 
-        resultsToButtons(results);
-        updateResultsDisplay(currentButtons);
+        resultsToButtons(resultsBox, results);
+        updateResultsDisplay(resultsBox, currentButtons);
         Logger.debug("Display has been updated with {} liked songs.", results.size());
         return resultsBox;
     }
 
-    private void resultsToButtons(RetrievedStorage results) {
-        likedMusicButtons = new HashMap<>();
-        for (int i = 1; i < results.size(); i++) {
-            Song song = results.getSongFromIndex(i);
+    private void resultsToButtons(Panel resultsBox, RetrievedStorage results) {
+        if (likedMusicButtons == null) {
+            likedMusicButtons = new HashMap<>();
+        } else {
+            likedMusicButtons.clear();
+        }
+        Logger.debug("SIZE: {}", results.size());
+        for (int i = 0; i < results.size(); i++) {
+            int displayIndex = i + 1;
+            Song song = results.getSongFromIndex(displayIndex);
             if (song == null) {
-                Logger.debug("Song is null at index {}", i);
+                Logger.debug("Song is null at index {}", displayIndex);
                 continue;
             }
+
             String formattedText = componentFactory.getFormattedTextForSongButton(
                     resultsBox.getSize().getColumns(),
-                    results.getIndexFromSong(song) + 1,
+                    displayIndex,
                     song.getSongName(),
                     song.getSongArtist(),
-                    song.getDuration());
+                    song.getDuration()); // TODO: Fix this being null
+            Logger.debug("Formatted text for song button: {}", formattedText);
+            Logger.debug("resultsBox.getSize().getColumns(): {}", resultsBox.getSize().getColumns());
             likedMusicButtons.put(i, componentFactory.createButton(
                         formattedText, 
                         () -> handleSongSelection(song),
@@ -106,7 +114,7 @@ public class LikedMusicPage extends BasePage {
         }
     }
 
-    private void updateResultsDisplay(Set<Button> currentButtons) {
+    private void updateResultsDisplay(Panel resultsBox, Set<Button> currentButtons) {
         guiThread.invokeLater(() -> {
             for (Button button : currentButtons) {
                 resultsBox.removeComponent(button);

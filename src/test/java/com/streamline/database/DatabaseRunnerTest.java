@@ -238,7 +238,7 @@ public class DatabaseRunnerTest {
 
     @Test
     public void testLikeSongNewSong() throws SQLException {
-        Song song = new Song(0, "New Song", "New Artist", "http://example.com", "vid456");
+        Song song = new Song(0, "New Song", "New Artist", "http://example.com", "vid456", "3:30");
 
         DatabaseRunner spyRunner = spy(databaseRunner);
         doReturn(-1).when(spyRunner).getSongId(anyString(), anyString());
@@ -274,15 +274,15 @@ public class DatabaseRunnerTest {
 
     @Test
     public void testInsertSongIntoSongs() throws SQLException {
-        Song song = new Song(0, "Insert Test", "Insert Artist", "http://example.com", "vidInsert");
+        Song song = new Song(0, "Insert Test", "Insert Artist", "http://example.com", "vidInsert", "3:30");
 
         PreparedStatement insertStatement = mock(PreparedStatement.class);
         PreparedStatement checkStatement = mock(PreparedStatement.class);
         ResultSet checkResultSet = mock(ResultSet.class);
 
-        when(mockConnection.prepareStatement("INSERT INTO Songs (title, artist, url, videoId) VALUES (?, ?, ?, ?);"))
+        when(mockConnection.prepareStatement("INSERT INTO Songs (title, artist, url, videoId, duration) VALUES (?, ?, ?, ?, ?);"))
             .thenReturn(insertStatement);
-        when(mockConnection.prepareStatement("SELECT id FROM Songs WHERE title = ? AND artist = ? AND url = ? AND videoId = ?;"))
+        when(mockConnection.prepareStatement("SELECT id FROM Songs WHERE title = ? AND artist = ? AND url = ? AND videoId = ? AND duration = ?;"))
             .thenReturn(checkStatement);
 
         when(checkStatement.executeQuery()).thenReturn(checkResultSet);
@@ -295,6 +295,7 @@ public class DatabaseRunnerTest {
         verify(insertStatement).setString(2, "Insert Artist");
         verify(insertStatement).setString(3, "http://example.com");
         verify(insertStatement).setString(4, "vidInsert");
+        verify(insertStatement).setString(5, "3:30");
         verify(insertStatement).executeUpdate();
         verify(mockConnection).commit();
 
@@ -302,6 +303,7 @@ public class DatabaseRunnerTest {
         verify(checkStatement).setString(2, "Insert Artist");
         verify(checkStatement).setString(3, "http://example.com");
         verify(checkStatement).setString(4, "vidInsert");
+        verify(checkStatement).setString(5, "3:30");
 
         assertEquals(11, result);
     }
