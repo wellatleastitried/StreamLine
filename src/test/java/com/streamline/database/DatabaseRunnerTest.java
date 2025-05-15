@@ -17,7 +17,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -28,7 +28,7 @@ import static org.mockito.Mockito.*;
 public class DatabaseRunnerTest {
 
     private Connection mockConnection;
-    private HashMap<String, String> queryMap;
+    private Map<String, String> queryMap;
     private DatabaseLinker mockLinker;
     private DatabaseRunner databaseRunner;
     private Statement mockStatement;

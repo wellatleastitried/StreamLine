@@ -3,21 +3,15 @@ package com.streamline.database;
 import com.streamline.audio.Song;
 import com.streamline.utilities.RetrievedStorage;
 
-import java.io.File;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.HashMap;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.util.Map;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.math.BigInteger;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 
 import org.tinylog.Logger;
 
@@ -28,10 +22,10 @@ import org.tinylog.Logger;
 public final class DatabaseRunner {
 
     private final Connection connection;
-    private final HashMap<String, String> queryMap;
+    private final Map<String, String> queryMap;
     private final DatabaseLinker linker;
 
-    public DatabaseRunner(Connection connection, HashMap<String, String> queryMap, DatabaseLinker linker) {
+    public DatabaseRunner(Connection connection, Map<String, String> queryMap, DatabaseLinker linker) {
         this.connection = connection;
         this.queryMap = queryMap;
         this.linker = linker;
