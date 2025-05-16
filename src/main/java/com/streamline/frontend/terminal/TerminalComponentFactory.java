@@ -130,7 +130,7 @@ public class TerminalComponentFactory {
         return formattedText;
     }
 
-    // TODO: This method is causing the error in LikedMusicPage.java
+    // TODO: I need to fix this to make sure that maxLength is actually the size of the panel for results.
     private String formatTextToFixedLength(String text, int maxLength) {
         if (text == null || maxLength <= 0) {
             return "An error occurred while formatting text.";

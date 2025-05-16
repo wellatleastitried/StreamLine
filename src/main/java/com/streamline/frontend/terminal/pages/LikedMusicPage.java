@@ -30,7 +30,10 @@ public class LikedMusicPage extends BasePage {
     private final TextGUI textGUI;
 
     private final Panel panel;
+
     private final Panel resultsBox;
+    private final int RESULT_PANEL_WIDTH;
+    private final int RESULT_PANEL_HEIGHT;
 
     private Map<Integer, Button> likedMusicButtons;
 
@@ -38,9 +41,11 @@ public class LikedMusicPage extends BasePage {
         super(windowManager, backend, guiThread, componentFactory);
         this.textGUI = textGUI;
 
-        panel = componentFactory.createStandardPanel();
+        this.panel = componentFactory.createStandardPanel();
 
-        resultsBox = new Panel();
+        this.resultsBox = new Panel();
+        this.RESULT_PANEL_WIDTH = componentFactory.getTerminalSize().getColumns();
+        this.RESULT_PANEL_HEIGHT = componentFactory.getTerminalSize().getRows() - panel.getSize().getRows() - 15;
     }
 
     @Override
@@ -54,10 +59,7 @@ public class LikedMusicPage extends BasePage {
 
         Set<Button> currentButtons = new LinkedHashSet<>();
         resultsBox.setLayoutManager(new GridLayout(1));
-        resultsBox.setPreferredSize(new TerminalSize(
-                    componentFactory.getTerminalSize().getColumns(), 
-                    componentFactory.getTerminalSize().getRows() - panel.getSize().getRows() - 15
-                    ));
+        resultsBox.setPreferredSize(new TerminalSize(RESULT_PANEL_WIDTH, RESULT_PANEL_HEIGHT));
         resultsBox.setFillColorOverride(TextColor.ANSI.BLACK_BRIGHT);
         panel.addComponent(componentFactory.createEmptySpace());
         handleSongRendering(currentButtons);
@@ -102,10 +104,8 @@ public class LikedMusicPage extends BasePage {
                     continue;
                 }
 
-                Logger.debug("resultsBox columns: {}", resultsBox.getSize().getColumns());
-
                 String formattedText = componentFactory.getFormattedTextForSongButton(
-                        resultsBox.getSize().getColumns(),
+                        RESULT_PANEL_WIDTH,
                         displayIndex,
                         song.getSongName(),
                         song.getSongArtist(),
