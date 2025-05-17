@@ -9,5 +9,5 @@ else
 fi
 echo "Copying JARs to dist/"
 cp target/streamline-"$(scripts/getVersion.sh)".jar target/streamline.jar
-cp target/streamline-"$(scripts/getVersion.sh)".jar dist/
+cp target/streamline-"$(scripts/getVersion.sh)".jar dist/streamline.jar
 echo "JARs are now in dist/"
