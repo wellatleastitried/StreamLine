@@ -119,6 +119,8 @@ public class SearchPage extends BasePage {
                     song.getSongName(),
                     song.getSongArtist(),
                     song.getDuration());
+            Logger.debug("Search: {}", formattedText);
+            Logger.debug("Search Button created for song with text: {}, width: {}, height: {}", formattedText, resultsPanel.getSize().getColumns(), componentFactory.getButtonHeight());
             searchResultButtons.put(i, componentFactory.createButton(
                         formattedText, 
                         () -> handleSongSelection(song),

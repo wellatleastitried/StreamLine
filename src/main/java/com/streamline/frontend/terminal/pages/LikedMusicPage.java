@@ -31,9 +31,12 @@ public class LikedMusicPage extends BasePage {
 
     private final Panel panel;
 
-    private final Panel resultsBox;
+    private Panel resultsBox;
     private final int RESULT_PANEL_WIDTH;
     private final int RESULT_PANEL_HEIGHT;
+
+    private final int SONG_BUTTON_WIDTH;
+    private final int SONG_BUTTON_HEIGHT;
 
     private Map<Integer, Button> likedMusicButtons;
 
@@ -42,10 +45,10 @@ public class LikedMusicPage extends BasePage {
         this.textGUI = textGUI;
 
         this.panel = componentFactory.createStandardPanel();
-
-        this.resultsBox = new Panel();
         this.RESULT_PANEL_WIDTH = componentFactory.getTerminalSize().getColumns();
         this.RESULT_PANEL_HEIGHT = componentFactory.getTerminalSize().getRows() - panel.getSize().getRows() - 15;
+        this.SONG_BUTTON_WIDTH = RESULT_PANEL_WIDTH;
+        this.SONG_BUTTON_HEIGHT = componentFactory.getButtonHeight();
     }
 
     @Override
@@ -57,10 +60,12 @@ public class LikedMusicPage extends BasePage {
         panel.addComponent(componentFactory.createEmptySpace());
         panel.addComponent(componentFactory.createLabel(LanguagePeer.getText("label.likedMusicTitle")));
 
-        Set<Button> currentButtons = new LinkedHashSet<>();
+        resultsBox = new Panel();
         resultsBox.setLayoutManager(new GridLayout(1));
         resultsBox.setPreferredSize(new TerminalSize(RESULT_PANEL_WIDTH, RESULT_PANEL_HEIGHT));
         resultsBox.setFillColorOverride(TextColor.ANSI.BLACK_BRIGHT);
+
+        Set<Button> currentButtons = new LinkedHashSet<>();
         panel.addComponent(componentFactory.createEmptySpace());
         handleSongRendering(currentButtons);
         panel.addComponent(resultsBox);
@@ -105,17 +110,17 @@ public class LikedMusicPage extends BasePage {
                 }
 
                 String formattedText = componentFactory.getFormattedTextForSongButton(
-                        RESULT_PANEL_WIDTH,
+                        RESULT_PANEL_WIDTH - 6, /* Maybe God himself knows why I am having to subtract 6 on this page but not SearchPage */
                         displayIndex,
                         song.getSongName(),
                         song.getSongArtist(),
                         song.getDuration());
-                Logger.debug("Formatted text for song button: {}", formattedText);
+                Logger.debug("Like : {}", formattedText);
                 likedMusicButtons.put(i, componentFactory.createButton(
                             formattedText, 
                             () -> handleSongSelection(song),
-                            resultsBox.getSize().getColumns(),
-                            componentFactory.getButtonHeight()));
+                            SONG_BUTTON_WIDTH,
+                            SONG_BUTTON_HEIGHT));
             } catch (Exception e) {
                 Writer buffer = new StringWriter();
                 PrintWriter printWriter = new PrintWriter(buffer);
