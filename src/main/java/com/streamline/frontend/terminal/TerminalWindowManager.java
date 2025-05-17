@@ -1,64 +1,179 @@
 package com.streamline.frontend.terminal;
 
 import com.googlecode.lanterna.gui2.*;
+import com.googlecode.lanterna.screen.TerminalScreen;
+
+import com.streamline.audio.Song;
 import com.streamline.backend.Dispatcher;
+import com.streamline.frontend.terminal.pages.*;
+
+import java.io.IOException;
 
 import org.tinylog.Logger;
 
 import java.util.Collection;
+import java.util.Map;
 
 /**
  * Manages all windows and transitions between them. Responsible for creating, showing, and closing windows.
  * @author wellatleastitried
  */
 public class TerminalWindowManager {
+
     private final WindowBasedTextGUI textGUI;
     private final TextGUIThread guiThread;
     private final Dispatcher backend;
     private final TerminalComponentFactory componentFactory;
 
-    // Windows
-    protected final BasicWindow mainMenu;
-    protected final BasicWindow settingsMenu;
-    protected final BasicWindow helpMenu;
-    protected final BasicWindow searchPage;
-    protected final BasicWindow recentlyPlayedPage;
-    protected final BasicWindow downloadedPage;
-    protected final BasicWindow playlistPage;
-    protected final BasicWindow likedMusicPage;
+    public BasicWindow mainPage;
+    public BasicWindow settingsPage;
+    public BasicWindow helpPage;
+    public BasicWindow searchPage;
+    public BasicWindow recentlyPlayedPage;
+    public BasicWindow downloadedPage;
+    public BasicWindow playlistPage;
+    public BasicWindow likedMusicPage;
+    public BasicWindow languagePage;
+    public BasicWindow songOptionPage;
+    public BasicWindow playlistChoicePage;
 
-    public TerminalWindowManager(WindowBasedTextGUI textGUI, TextGUIThread guiThread, Dispatcher backend, TerminalComponentFactory componentFactory) {
+    /**
+     * Flag to indicate if the window should be rebuilt after navigating off of the page.
+     */
+    public boolean rebuildSearchPageWhenDone = false;
+    public boolean rebuildPlaylistPageWhenDone = false;
+
+    public TerminalWindowManager(TerminalScreen screen, WindowBasedTextGUI textGUI, TextGUIThread guiThread, Dispatcher backend, TerminalComponentFactory componentFactory) throws Exception {
         this.textGUI = textGUI;
         this.guiThread = guiThread;
         this.backend = backend;
         this.componentFactory = componentFactory;
 
+        new TerminalKeybinds(textGUI);
+
         // Initialize all windows
-        this.mainMenu = new MainMenuWindow(this, backend, guiThread, componentFactory).createWindow();
-        this.helpMenu = new HelpMenuWindow(this, backend, guiThread, componentFactory).createWindow();
-        this.settingsMenu = new SettingsMenuWindow(this, backend, guiThread, componentFactory).createWindow();
-        this.searchPage = new SearchPageWindow(this, backend, guiThread, componentFactory, textGUI).createWindow();
-        this.likedMusicPage = new LikedMusicWindow(this, backend, guiThread, componentFactory).createWindow();
-        this.playlistPage = new PlaylistWindow(this, backend, guiThread, componentFactory).createWindow();
-        this.recentlyPlayedPage = new RecentlyPlayedWindow(this, backend, guiThread, componentFactory).createWindow();
-        this.downloadedPage = new DownloadedMusicWindow(this, backend, guiThread, componentFactory).createWindow();
+        this.mainPage = new MainPage(this, backend, guiThread, componentFactory).createWindow();
+        this.helpPage = new HelpPage(this, backend, guiThread, componentFactory).createWindow();
+        this.settingsPage = new SettingsPage(this, backend, guiThread, componentFactory).createWindow();
+        this.searchPage = new SearchPage(this, backend, guiThread, componentFactory, textGUI).createWindow();
+        this.likedMusicPage = new LikedMusicPage(this, backend, guiThread, componentFactory, textGUI).createWindow();
+        this.playlistPage = new PlaylistPage(this, backend, guiThread, componentFactory).createWindow();
+        this.recentlyPlayedPage = new RecentlyPlayedPage(this, backend, guiThread, componentFactory, textGUI).createWindow();
+        this.downloadedPage = new DownloadedMusicPage(this, backend, guiThread, componentFactory, textGUI).createWindow();
+        this.languagePage = new LanguagePage(this, backend, guiThread, componentFactory).createWindow();
+        if (!verifyWindows()) {
+            Logger.error("[!] Error while creating windows, please restart the app.");
+            System.exit(1);
+        }
+    }
+
+    public <T extends BasePage> void buildSongOptionPage(Song song, T previousWindow) {
+        this.songOptionPage = new SongOptionPage(this, backend, guiThread, componentFactory, song, previousWindow).createWindow();
+    }
+
+    public <T extends BasePage> void buildSongOptionPage(Song song, T previousWindow, Map<Integer, Button> previousSearchResults) {
+        this.songOptionPage = new SongOptionPage(this, backend, guiThread, componentFactory, song, previousWindow, previousSearchResults).createWindow();
+    }
+
+    public <T extends BasePage> void buildPlaylistChoicePage(Song song, T previousWindow) {
+        this.playlistChoicePage = new PlaylistChoicePage(this, backend, guiThread, componentFactory, song, previousWindow).createWindow();
+    }
+
+    public <T extends BasePage> void buildPlaylistChoicePage(Song song, T previousWindow, Map<Integer, Button> previousSearchResults) {
+        this.playlistChoicePage = new PlaylistChoicePage(this, backend, guiThread, componentFactory, song, previousWindow, previousSearchResults).createWindow();
+    }
+
+    public void rebuildDynamicWindows() {
+        guiThread.invokeLater(() -> {
+            this.likedMusicPage = new LikedMusicPage(this, backend, guiThread, componentFactory, textGUI).createWindow();
+            this.playlistPage = new PlaylistPage(this, backend, guiThread, componentFactory).createWindow();
+            this.recentlyPlayedPage = new RecentlyPlayedPage(this, backend, guiThread, componentFactory, textGUI).createWindow();
+            this.downloadedPage = new DownloadedMusicPage(this, backend, guiThread, componentFactory, textGUI).createWindow();
+        });
+    }
+
+    public void rebuildAllWindows() {
+        guiThread.invokeLater(() -> {
+            this.mainPage = new MainPage(this, backend, guiThread, componentFactory).createWindow();
+            this.helpPage = new HelpPage(this, backend, guiThread, componentFactory).createWindow();
+            this.settingsPage = new SettingsPage(this, backend, guiThread, componentFactory).createWindow();
+            this.searchPage = new SearchPage(this, backend, guiThread, componentFactory, textGUI).createWindow();
+            this.likedMusicPage = new LikedMusicPage(this, backend, guiThread, componentFactory, textGUI).createWindow();
+            this.playlistPage = new PlaylistPage(this, backend, guiThread, componentFactory).createWindow();
+            this.recentlyPlayedPage = new RecentlyPlayedPage(this, backend, guiThread, componentFactory, textGUI).createWindow();
+            this.downloadedPage = new DownloadedMusicPage(this, backend, guiThread, componentFactory, textGUI).createWindow();
+            this.languagePage = new LanguagePage(this, backend, guiThread, componentFactory).createWindow();
+        });
+    }
+
+    public void rebuildSearchPage(Map<Integer, Button> searchResults) {
+        guiThread.invokeLater(() -> {
+            if (this.rebuildSearchPageWhenDone) {
+                this.rebuildSearchPageWhenDone = false;
+                this.searchPage = new SearchPage(this, backend, guiThread, componentFactory, textGUI).createWindow();
+            } else {
+                this.searchPage = new SearchPage(this, backend, guiThread, componentFactory, textGUI, searchResults).createWindow();
+            }
+            assert searchPage != null;
+        });
+    }
+
+    public void refresh() {
+        guiThread.invokeLater(() -> {
+            try {
+                textGUI.getScreen().refresh();
+            } catch (IOException iE) {
+                Logger.error("[!] Error while redrawing screen, please restart the app.");
+            }
+        });
     }
 
     public void showMainMenu() {
-        mainMenu.setVisible(true);
+        mainPage.setVisible(true);
         Collection<Window> openWindows = textGUI.getWindows();
-        if (!openWindows.contains(mainMenu)) {
-            textGUI.addWindowAndWait(mainMenu);
+        for (Window window : openWindows) {
+            if (window != mainPage) {
+                textGUI.removeWindow(window);
+            }
         }
+        if (!openWindows.contains(mainPage)) {
+            textGUI.addWindowAndWait(mainPage);
+        }
+    }
+
+    public void transitionToCachedSearchPage() {
+        this.rebuildSearchPageWhenDone = true;
+        transitionTo(searchPage);
+    }
+
+    public <T extends BasePage> void transitionToPlaylistChoicePage(T previousPage, Song song, Map<Integer, Button> previousSearchResults) {
+        if (previousSearchResults != null) {
+            buildPlaylistChoicePage(song, previousPage, previousSearchResults);
+        } else {
+            buildPlaylistChoicePage(song, previousPage);
+        }
+        transitionTo(playlistChoicePage);
     }
 
     public void transitionTo(BasicWindow window) {
         guiThread.invokeLater(() -> {
             Collection<Window> openWindows = textGUI.getWindows();
+            for (Window openWindow: openWindows) {
+                if (openWindow != window) {
+                    textGUI.removeWindow(openWindow);
+                }
+            }
             if (!openWindows.contains(window)) {
+                if (isDynamicWindow(window)) {
+                    rebuildDynamicWindows();
+                }
                 textGUI.addWindowAndWait(window);
             }
         });
+    }
+
+    private boolean isDynamicWindow(BasicWindow window) {
+        return window.equals(likedMusicPage) || window.equals(downloadedPage) || window.equals(likedMusicPage) || window.equals(playlistPage);
     }
 
     public void returnToMainMenu(BasicWindow currentWindow) {
@@ -66,6 +181,17 @@ public class TerminalWindowManager {
             textGUI.removeWindow(currentWindow);
             showMainMenu();
         });
+    }
+
+    private boolean verifyWindows() {
+        try {
+            if (mainPage == null || settingsPage == null || helpPage == null || searchPage == null || likedMusicPage == null || playlistPage == null || recentlyPlayedPage == null || downloadedPage == null) {
+                return false;
+            }
+        } catch (Exception e) {
+            return false;
+        }
+        return true;
     }
 
     public void closeAllWindows() {

@@ -27,6 +27,7 @@ public class RetrievedStorage {
         songToIndex.put(song, index);
         assert(indexToSong.size() == songToIndex.size());
     }
+
     public void add(Song song, int index) {
         indexToSong.put(index, song);
         songToIndex.put(song, index);
@@ -48,11 +49,11 @@ public class RetrievedStorage {
     }
 
     public int getIndexFromSong(Song song) {
-        return songToIndex.get(song);
+        return songToIndex.getOrDefault(song, -1);
     }
 
     public Song getSongFromIndex(int index) {
-        return indexToSong.get(index);
+        return indexToSong.getOrDefault(index, null);
     }
 
     public void clear() {
