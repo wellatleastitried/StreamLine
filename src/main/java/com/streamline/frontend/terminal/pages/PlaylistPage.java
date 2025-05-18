@@ -10,8 +10,8 @@ import com.streamline.utilities.LanguagePeer;
  */
 public class PlaylistPage extends BasePage {
     
-    public PlaylistPage(TerminalWindowManager windowManager, Dispatcher backend, TextGUIThread guiThread, TerminalComponentFactory componentFactory) {
-        super(windowManager, backend, guiThread, componentFactory);
+    public PlaylistPage(Dispatcher backend, TextGUIThread guiThread) {
+        super(backend, guiThread);
     }
 
     @Override

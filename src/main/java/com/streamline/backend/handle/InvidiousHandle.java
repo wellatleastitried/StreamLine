@@ -30,8 +30,15 @@ public final class InvidiousHandle implements ConnectionHandle {
 
     public final Config config;
 
-    public InvidiousHandle(Config config) {
+    private InvidiousHandle(Config config) {
         this.config = config;
+    }
+
+    public static InvidiousHandle getInstance(Config config) {
+        if (instance == null) {
+            instance = new InvidiousHandle(config);
+        }
+        return instance;
     }
 
     private static List<String> getPossibleHosts() {
@@ -48,14 +55,6 @@ public final class InvidiousHandle implements ConnectionHandle {
         }
         return null;
     }
-
-    public static InvidiousHandle getInstance(Config config) {
-        if (instance == null) {
-            instance = new InvidiousHandle(config);
-        }
-        return instance;
-    }
-
 
     public static String getWorkingHostnameFromApiOrDocker() {
         Map<String, Integer> workingHosts = new HashMap<>();

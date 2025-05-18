@@ -19,11 +19,11 @@ public abstract class BasePage {
     protected final TextGUIThread guiThread;
     protected final TerminalComponentFactory componentFactory;
 
-    public BasePage(TerminalWindowManager windowManager, Dispatcher backend, TextGUIThread guiThread, TerminalComponentFactory componentFactory) {
-        this.windowManager = windowManager;
+    public BasePage(Dispatcher backend, TextGUIThread guiThread) {
+        this.windowManager = TerminalWindowManager.getInstance();
         this.backend = backend;
         this.guiThread = guiThread;
-        this.componentFactory = componentFactory;
+        this.componentFactory = TerminalComponentFactory.getInstance();
     }
 
     public abstract BasicWindow createWindow();

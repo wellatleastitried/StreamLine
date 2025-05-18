@@ -11,10 +11,14 @@ public class TerminalKeybinds implements TextGUI.Listener {
     private final TextGUI textGUI;
     private TextBox currentTextBox = null;
 
-    public TerminalKeybinds(TextGUI textGUI) {
+    private TerminalKeybinds(TextGUI textGUI) {
         this.textGUI = textGUI;
         Logger.debug("Registering keybinds to terminal interface");
         this.textGUI.addListener(this);
+    }
+
+    public static void applyTo(TextGUI textGUI) {
+        new TerminalKeybinds(textGUI);
     }
 
     @Override

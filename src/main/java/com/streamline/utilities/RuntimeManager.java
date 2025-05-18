@@ -101,7 +101,7 @@ public class RuntimeManager {
             try {
                 RetrievedStorage results = new Dispatcher(config).doSearch("Cold - Give");
                 String videoId = results.getArrayOfSongs()[0].getSongVideoId();
-                String url = new YoutubeHandle(config).getAudioUrlFromVideoId(videoId);
+                String url = YoutubeHandle.getInstance(config).getAudioUrlFromVideoId(videoId);
                 new AudioPlayer().playSongFromUrl(url);
             } catch (Exception e) {
                 System.out.println("[!] An error occured during song playback, please try restarting the app.");

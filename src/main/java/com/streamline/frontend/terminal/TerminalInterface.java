@@ -9,6 +9,7 @@ import com.googlecode.lanterna.terminal.Terminal;
 
 import com.streamline.backend.Dispatcher;
 import com.streamline.utilities.LanguagePeer;
+import com.streamline.utilities.internal.LoggerUtils;
 
 import java.io.IOException;
 
@@ -57,6 +58,7 @@ public final class TerminalInterface extends com.streamline.frontend.FrontendInt
             buttonWidth = terminalSize.getColumns() / 4;
             textGUI = new MultiWindowTextGUI(screen);
             guiThread = textGUI.getGUIThread();
+            TerminalComponentFactory.createInstance(backend.config, terminalSize);
             initializeWindows();
         } catch (IOException iE) {
             Logger.error("[!] A fatal error has occured while starting StreamLine, please try reloading the app.");
@@ -66,16 +68,16 @@ public final class TerminalInterface extends com.streamline.frontend.FrontendInt
 
     private void initializeWindows() {
         try {
-            TerminalWindowManager windowManager = new TerminalWindowManager(screen, textGUI, guiThread, backend, new TerminalComponentFactory(backend.config, terminalSize));
+            TerminalWindowManager windowManager = TerminalWindowManager.createInstance(screen, textGUI, guiThread, backend);
+            windowManager.buildWindows();
             if (windowManager.mainPage == null) {
+                Logger.debug("[!] Main page is null");
                 throw new IllegalStateException("Main page is null");
             } else {
                 mainMenu = windowManager.mainPage;
             }
         } catch (Exception e) {
-            Logger.error("[!] There was an error while initializing the windows for the terminal interface.\n[!] Error message: " + e.getMessage());
-            Logger.error("[!] Exception type: " + e.getClass().getName());
-            Logger.error("[!] Stack trace: " + e.getStackTrace());
+            LoggerUtils.logErrorMessage(e);
         }
     }
 

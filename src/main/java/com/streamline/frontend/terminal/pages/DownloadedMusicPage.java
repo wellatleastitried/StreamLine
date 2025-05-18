@@ -28,8 +28,8 @@ public class DownloadedMusicPage extends BasePage {
 
     private Map<Integer, Button> downloadedButtons;
 
-    public DownloadedMusicPage(TerminalWindowManager windowManager, Dispatcher backend, TextGUIThread guiThread, TerminalComponentFactory componentFactory, TextGUI textGUI) {
-        super(windowManager, backend, guiThread, componentFactory);
+    public DownloadedMusicPage(Dispatcher backend, TextGUIThread guiThread, TextGUI textGUI) {
+        super(backend, guiThread);
         this.textGUI = textGUI;
     }
 

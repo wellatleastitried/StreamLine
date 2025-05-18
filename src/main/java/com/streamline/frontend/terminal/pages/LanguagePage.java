@@ -11,8 +11,8 @@ import com.streamline.utilities.LanguagePeer;
  */
 public class LanguagePage extends BasePage {
     
-    public LanguagePage(TerminalWindowManager windowManager, Dispatcher backend, TextGUIThread guiThread, TerminalComponentFactory componentFactory) {
-        super(windowManager, backend, guiThread, componentFactory);
+    public LanguagePage(Dispatcher backend, TextGUIThread guiThread) {
+        super(backend, guiThread);
     }
 
     @Override

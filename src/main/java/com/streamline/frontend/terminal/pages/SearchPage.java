@@ -28,13 +28,13 @@ public class SearchPage extends BasePage {
 
     private Map<Integer, Button> searchResultButtons;
 
-    public SearchPage(TerminalWindowManager windowManager, Dispatcher backend, TextGUIThread guiThread, TerminalComponentFactory componentFactory, TextGUI textGUI) {
-        super(windowManager, backend, guiThread, componentFactory);
+    public SearchPage(Dispatcher backend, TextGUIThread guiThread, TextGUI textGUI) {
+        super(backend, guiThread);
         this.textGUI = textGUI;
     }
 
-    public SearchPage(TerminalWindowManager windowManager, Dispatcher backend, TextGUIThread guiThread, TerminalComponentFactory componentFactory, TextGUI textGUI, Map<Integer, Button> searchResultButtons) {
-        super(windowManager, backend, guiThread, componentFactory);
+    public SearchPage(Dispatcher backend, TextGUIThread guiThread, TextGUI textGUI, Map<Integer, Button> searchResultButtons) {
+        super(backend, guiThread);
         this.textGUI = textGUI;
         this.searchResultButtons = searchResultButtons;
     }

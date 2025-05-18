@@ -13,17 +13,35 @@ import org.tinylog.Logger;
  * @author wellatleastitried
  */
 public class TerminalComponentFactory {
+
+    private static TerminalComponentFactory instance;
+
     private final TerminalSize terminalSize;
     private final int buttonWidth;
     private final int buttonHeight;
     private final AbstractStreamLineTheme theme;
 
-    public TerminalComponentFactory(Config config, TerminalSize terminalSize) {
+    private TerminalComponentFactory(Config config, TerminalSize terminalSize) {
         this.terminalSize = terminalSize;
         this.buttonWidth = terminalSize.getColumns() / 4;
         this.buttonHeight = 2;
         this.theme = config.getTheme();
         Logger.debug("TerminalComponentFactory: Initialized with terminal size " + terminalSize);
+    }
+
+    public static TerminalComponentFactory getInstance() {
+        if (instance == null) {
+            Logger.debug("TerminalComponentFactory: Instance not initialized. Call getInstance(Config, TerminalSize) first.");
+            throw new IllegalStateException("TerminalComponentFactory not initialized. Call getInstance(Config, TerminalSize) first.");
+        }
+        return instance;
+    }
+
+    public static TerminalComponentFactory createInstance(Config config, TerminalSize terminalSize) {
+        if (instance == null) {
+            instance = new TerminalComponentFactory(config, terminalSize);
+        }
+        return instance;
     }
 
     public Label createLabel(String text) {

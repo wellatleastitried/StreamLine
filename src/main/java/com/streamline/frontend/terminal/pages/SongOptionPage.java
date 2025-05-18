@@ -26,16 +26,16 @@ public class SongOptionPage extends BasePage {
 
     public final BasePage previousPage;
 
-    public <T extends BasePage> SongOptionPage(TerminalWindowManager windowManager, Dispatcher backend, TextGUIThread guiThread, TerminalComponentFactory componentFactory, Song selectedSong, T previousPage) {
-        super(windowManager, backend, guiThread, componentFactory);
+    public <T extends BasePage> SongOptionPage(Dispatcher backend, TextGUIThread guiThread, Song selectedSong, T previousPage) {
+        super(backend, guiThread);
         selectedSong.setSongLikeStatus(backend.isSongLiked(selectedSong));
         this.selectedSong = selectedSong;
         this.previousPage = previousPage;
         this.previousResultsForSearchPage = null;
     }
 
-    public <T extends BasePage> SongOptionPage(TerminalWindowManager windowManager, Dispatcher backend, TextGUIThread guiThread, TerminalComponentFactory componentFactory, Song selectedSong, T previousPage, Map<Integer, Button> previousResultsForSearchPage) {
-        super(windowManager, backend, guiThread, componentFactory);
+    public <T extends BasePage> SongOptionPage(Dispatcher backend, TextGUIThread guiThread, Song selectedSong, T previousPage, Map<Integer, Button> previousResultsForSearchPage) {
+        super(backend, guiThread);
         selectedSong.setSongLikeStatus(backend.isSongLiked(selectedSong));
         this.selectedSong = selectedSong;
         this.previousPage = previousPage;

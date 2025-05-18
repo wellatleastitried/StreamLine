@@ -28,8 +28,8 @@ public class RecentlyPlayedPage extends BasePage {
 
     private Map<Integer, Button> recentlyPlayedButtons;
 
-    public RecentlyPlayedPage(TerminalWindowManager windowManager, Dispatcher backend, TextGUIThread guiThread, TerminalComponentFactory componentFactory, TextGUI textGUI) {
-        super(windowManager, backend, guiThread, componentFactory);
+    public RecentlyPlayedPage(Dispatcher backend, TextGUIThread guiThread, TextGUI textGUI) {
+        super(backend, guiThread);
         this.textGUI = textGUI;
     }
 

@@ -20,15 +20,15 @@ public class PlaylistChoicePage extends BasePage {
     private BasicWindow window;
     public final BasePage previousPage;
 
-    public <T extends BasePage> PlaylistChoicePage(TerminalWindowManager windowManager, Dispatcher backend, TextGUIThread guiThread, TerminalComponentFactory componentFactory, Song selectedSong, T previousPage) {
-        super(windowManager, backend, guiThread, componentFactory);
+    public <T extends BasePage> PlaylistChoicePage(Dispatcher backend, TextGUIThread guiThread, Song selectedSong, T previousPage) {
+        super(backend, guiThread);
         this.selectedSong = selectedSong;
         this.previousPage = previousPage;
         this.previousResultsForSearchPage = null;
     }
 
-    public <T extends BasePage> PlaylistChoicePage(TerminalWindowManager windowManager, Dispatcher backend, TextGUIThread guiThread, TerminalComponentFactory componentFactory, Song selectedSong, T previousPage, Map<Integer, Button> previousResultsForSearchPage) {
-        super(windowManager, backend, guiThread, componentFactory);
+    public <T extends BasePage> PlaylistChoicePage(Dispatcher backend, TextGUIThread guiThread, Song selectedSong, T previousPage, Map<Integer, Button> previousResultsForSearchPage) {
+        super(backend, guiThread);
         this.selectedSong = selectedSong;
         this.previousPage = previousPage;
         this.previousResultsForSearchPage = previousResultsForSearchPage;

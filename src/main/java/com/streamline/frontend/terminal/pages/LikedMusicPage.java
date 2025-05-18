@@ -8,6 +8,7 @@ import com.streamline.backend.Dispatcher;
 import com.streamline.frontend.terminal.*;
 import com.streamline.utilities.RetrievedStorage;
 import com.streamline.utilities.LanguagePeer;
+import com.streamline.utilities.internal.LoggerUtils;
 
 import java.io.IOException;
 
@@ -19,10 +20,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.tinylog.Logger;
-
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.io.Writer;
 
 /**
  * Window for displaying liked music.
@@ -51,8 +48,8 @@ public class LikedMusicPage extends BasePage {
     private int CURRENT_PAGE = 0;
     private int CURRENT_PAGE_BACKEND = 0;
 
-    public LikedMusicPage(TerminalWindowManager windowManager, Dispatcher backend, TextGUIThread guiThread, TerminalComponentFactory componentFactory, TextGUI textGUI) {
-        super(windowManager, backend, guiThread, componentFactory);
+    public LikedMusicPage(Dispatcher backend, TextGUIThread guiThread, TextGUI textGUI) {
+        super(backend, guiThread);
         this.textGUI = textGUI;
         this.window = createStandardWindow(LanguagePeer.getText("window.likedMusicTitle"));
         this.panel = componentFactory.createStandardPanel();
@@ -196,10 +193,7 @@ public class LikedMusicPage extends BasePage {
                             SONG_BUTTON_HEIGHT));
                 }
             } catch (Exception e) {
-                Writer buffer = new StringWriter();
-                PrintWriter printWriter = new PrintWriter(buffer);
-                e.printStackTrace(printWriter);
-                Logger.error("Error generating song button: {}", buffer.toString());
+                LoggerUtils.logErrorMessage(e);
                 continue;
             }
         }

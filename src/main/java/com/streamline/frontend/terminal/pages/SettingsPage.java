@@ -11,8 +11,8 @@ import com.streamline.utilities.LanguagePeer;
  */
 public class SettingsPage extends BasePage {
 
-    public SettingsPage(TerminalWindowManager windowManager, Dispatcher backend, TextGUIThread guiThread, TerminalComponentFactory componentFactory) {
-        super(windowManager, backend, guiThread, componentFactory);
+    public SettingsPage(Dispatcher backend, TextGUIThread guiThread) {
+        super(backend, guiThread);
     }
 
     @Override

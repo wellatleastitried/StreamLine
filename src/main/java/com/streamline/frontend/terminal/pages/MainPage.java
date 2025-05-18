@@ -10,8 +10,8 @@ import org.tinylog.Logger;
 
 public class MainPage extends BasePage {
     
-    public MainPage(TerminalWindowManager windowManager, Dispatcher backend, TextGUIThread guiThread, TerminalComponentFactory componentFactory) {
-        super(windowManager, backend, guiThread, componentFactory);
+    public MainPage(Dispatcher backend, TextGUIThread guiThread) {
+        super(backend, guiThread);
     }
 
     @Override

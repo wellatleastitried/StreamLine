@@ -34,7 +34,7 @@ public final class YoutubeHandle implements ConnectionHandle {
     private final Map<String, List<Song>> searchCache = new ConcurrentHashMap<>();
     private final Map<String, Long> cacheTimestamps = new ConcurrentHashMap<>();
 
-    public YoutubeHandle(Config config) {
+    private YoutubeHandle(Config config) {
         this.config = config;
     }
 

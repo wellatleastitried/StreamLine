@@ -49,9 +49,9 @@ public final class Dispatcher {
 
     private ConnectionHandle getConnectionHandle() {
         if (config.getAudioSource() == 'd') {
-            return new InvidiousHandle(config);
+            return InvidiousHandle.getInstance(config);
         }
-        return new YoutubeHandle(config);
+        return YoutubeHandle.getInstance(config);
     }
 
     private DatabaseRunner initializeDatabaseConnection() {
