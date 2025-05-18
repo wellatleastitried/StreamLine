@@ -66,6 +66,7 @@ public class LikedMusicPage extends BasePage {
         this.SONG_BUTTON_HEIGHT = componentFactory.getButtonHeight();
     }
 
+    // TODO: The checks in the if statement are running before the results are even fetched from the backend so the page can't render correctly
     @Override
     public BasicWindow createWindow() {
         likedMusicButtons = new HashMap<Integer, Button>();
@@ -86,6 +87,7 @@ public class LikedMusicPage extends BasePage {
             panel.addComponent(pageUpButton);
             panel.addComponent(componentFactory.createEmptySpace());
         }
+
         handleSongRendering();
         panel.addComponent(resultPanels.get(CURRENT_PAGE_BACKEND));
         panel.addComponent(componentFactory.createEmptySpace());
@@ -101,6 +103,7 @@ public class LikedMusicPage extends BasePage {
         window.setComponent(panel);
         return window;
     }
+
     private Button createPageChangeButton(String direction) {
         if ("up".equals(direction)) {
             return componentFactory.createButton(
@@ -148,7 +151,7 @@ public class LikedMusicPage extends BasePage {
             Logger.debug("No liked songs found.");
         }
 
-        for (int i = 0; i < results.size() / 20; i++) {
+        for (int i = 0; i < Math.ceil(results.size() / 20); i++) {
             Panel panel = new Panel();
             panel.setLayoutManager(new GridLayout(1));
             panel.setPreferredSize(new TerminalSize(RESULT_PANEL_WIDTH, RESULT_PANEL_HEIGHT));
