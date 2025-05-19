@@ -2,14 +2,13 @@ package com.streamline.frontend.terminal.pages;
 
 import com.googlecode.lanterna.gui2.*;
 import com.streamline.backend.Dispatcher;
-import com.streamline.frontend.terminal.*;
 import com.streamline.utilities.LanguagePeer;
 
 /**
  * Window for displaying help information.
  * @author wellatleastitried
  */
-public class HelpPage extends BasePage {
+public class HelpPage extends AbstractBasePage {
     
     public HelpPage(Dispatcher backend, TextGUIThread guiThread) {
         super(backend, guiThread);

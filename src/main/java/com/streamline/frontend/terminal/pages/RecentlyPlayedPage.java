@@ -22,7 +22,7 @@ import org.tinylog.Logger;
  * Window for displaying recently played songs.
  * @author wellatleastitried
  */
-public class RecentlyPlayedPage extends BasePage {
+public class RecentlyPlayedPage extends AbstractDynamicPage {
 
     private final TextGUI textGUI;
 
@@ -68,6 +68,11 @@ public class RecentlyPlayedPage extends BasePage {
 
         window.setComponent(panel);
         return window;
+    }
+
+    @Override
+    public BasicWindow updateWindow() {
+        return null;
     }
 
     private Panel handleSongRendering(Panel resultsBox, Set<Button> currentButtons) {

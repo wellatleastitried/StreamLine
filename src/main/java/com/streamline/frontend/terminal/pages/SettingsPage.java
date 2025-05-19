@@ -2,14 +2,13 @@ package com.streamline.frontend.terminal.pages;
 
 import com.googlecode.lanterna.gui2.*;
 import com.streamline.backend.Dispatcher;
-import com.streamline.frontend.terminal.*;
 import com.streamline.utilities.LanguagePeer;
 
 /**
  * Window for application settings.
  * @author wellatleastitried
  */
-public class SettingsPage extends BasePage {
+public class SettingsPage extends AbstractBasePage {
 
     public SettingsPage(Dispatcher backend, TextGUIThread guiThread) {
         super(backend, guiThread);

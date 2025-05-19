@@ -22,7 +22,7 @@ import org.tinylog.Logger;
  * Window for displaying downloaded music.
  * @author wellatleastitried
  */
-public class DownloadedMusicPage extends BasePage {
+public class DownloadedMusicPage extends AbstractDynamicPage {
     
     private final TextGUI textGUI;
 
@@ -68,6 +68,11 @@ public class DownloadedMusicPage extends BasePage {
 
         window.setComponent(panel);
         return window;
+    }
+
+    @Override
+    public BasicWindow updateWindow() {
+        return null;
     }
 
     private Panel handleSongRendering(Panel resultsBox, Set<Button> currentButtons) {

@@ -22,7 +22,7 @@ import java.util.Set;
  * Window for the search functionality.
  * @author wellatleastitried
  */
-public class SearchPage extends BasePage {
+public class SearchPage extends AbstractBasePage {
 
     private final TextGUI textGUI;
 

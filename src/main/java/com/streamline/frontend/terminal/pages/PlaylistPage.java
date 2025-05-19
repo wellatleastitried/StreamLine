@@ -2,13 +2,12 @@ package com.streamline.frontend.terminal.pages;
 
 import com.googlecode.lanterna.gui2.*;
 import com.streamline.backend.Dispatcher;
-import com.streamline.frontend.terminal.*;
 import com.streamline.utilities.LanguagePeer;
 
 /**
  * Window for displaying and managing playlists.
  */
-public class PlaylistPage extends BasePage {
+public class PlaylistPage extends AbstractDynamicPage {
     
     public PlaylistPage(Dispatcher backend, TextGUIThread guiThread) {
         super(backend, guiThread);
@@ -33,6 +32,11 @@ public class PlaylistPage extends BasePage {
         
         window.setComponent(panel);
         return window;
+    }
+
+    @Override
+    public BasicWindow updateWindow() {
+        return null;
     }
 }
 

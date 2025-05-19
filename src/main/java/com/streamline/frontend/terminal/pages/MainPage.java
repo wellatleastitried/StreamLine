@@ -2,13 +2,10 @@ package com.streamline.frontend.terminal.pages;
 
 import com.googlecode.lanterna.gui2.*;
 import com.streamline.backend.Dispatcher;
-import com.streamline.frontend.terminal.*;
 import com.streamline.utilities.LanguagePeer;
 import com.streamline.utilities.RuntimeManager;
 
-import org.tinylog.Logger;
-
-public class MainPage extends BasePage {
+public class MainPage extends AbstractBasePage{
     
     public MainPage(Dispatcher backend, TextGUIThread guiThread) {
         super(backend, guiThread);

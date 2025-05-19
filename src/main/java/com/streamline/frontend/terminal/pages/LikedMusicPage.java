@@ -5,33 +5,26 @@ import com.googlecode.lanterna.TextColor;
 import com.googlecode.lanterna.gui2.*;
 import com.streamline.audio.Song;
 import com.streamline.backend.Dispatcher;
-import com.streamline.frontend.terminal.*;
 import com.streamline.utilities.RetrievedStorage;
-import com.streamline.utilities.LanguagePeer;
 import com.streamline.utilities.internal.LoggerUtils;
 
 import java.io.IOException;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.LinkedList;
 
 import org.tinylog.Logger;
 
 /**
  * Window for displaying liked music.
  */
-public class LikedMusicPage extends BasePage {
+public class LikedMusicPage extends AbstractDynamicPage {
 
     private final TextGUI textGUI;
-
     private final BasicWindow window;
-    private final Panel panel;
-
-    private final List<Panel> resultPanels;
+    private final Panel mainPanel;
+    private final Panel resultPanel;
 
     private final Button backButton;
     private final Button pageUpButton;
@@ -41,98 +34,175 @@ public class LikedMusicPage extends BasePage {
     private final int RESULT_PANEL_HEIGHT;
     private final int SONG_BUTTON_WIDTH;
     private final int SONG_BUTTON_HEIGHT;
+    private final int SONGS_PER_PAGE = 20;
 
-    private Map<Integer, Button> likedMusicButtons;
-    private Set<Button> currentButtons = new LinkedHashSet<>();
+    private List<Song> likedSongs;
+    private List<Button> songButtons;
 
-    private int CURRENT_PAGE = 0;
-    private int CURRENT_PAGE_BACKEND = 0;
+    private int currentPage = 0;
+    private int totalPages = 0;
 
     public LikedMusicPage(Dispatcher backend, TextGUIThread guiThread, TextGUI textGUI) {
         super(backend, guiThread);
         this.textGUI = textGUI;
-        this.window = createStandardWindow(LanguagePeer.getText("window.likedMusicTitle"));
-        this.panel = componentFactory.createStandardPanel();
-        this.resultPanels = new ArrayList<>();
+        this.window = createStandardWindow(get("window.likedMusicTitle"));
+        this.mainPanel = componentFactory.createStandardPanel();
+        this.RESULT_PANEL_WIDTH = componentFactory.getTerminalSize().getColumns();
+        this.RESULT_PANEL_HEIGHT = componentFactory.getTerminalSize().getRows() - mainPanel.getSize().getRows() - 15;
+        this.SONG_BUTTON_WIDTH = RESULT_PANEL_WIDTH;
+        this.SONG_BUTTON_HEIGHT = componentFactory.getButtonHeight();
+
+        this.resultPanel = new Panel();
+        this.resultPanel.setLayoutManager(new GridLayout(1));
+        this.resultPanel.setPreferredSize(new TerminalSize(RESULT_PANEL_WIDTH, RESULT_PANEL_HEIGHT));
+        this.resultPanel.setFillColorOverride(TextColor.ANSI.BLACK_BRIGHT);
+
         this.pageUpButton = createPageChangeButton("up");
         this.pageDownButton = createPageChangeButton("down");
         this.backButton = createPageChangeButton("back");
-        this.RESULT_PANEL_WIDTH = componentFactory.getTerminalSize().getColumns();
-        this.RESULT_PANEL_HEIGHT = componentFactory.getTerminalSize().getRows() - panel.getSize().getRows() - 15;
-        this.SONG_BUTTON_WIDTH = RESULT_PANEL_WIDTH;
-        this.SONG_BUTTON_HEIGHT = componentFactory.getButtonHeight();
+
+        this.songButtons = new ArrayList<>();
     }
 
-    // TODO: The checks in the if statement are running before the results are even fetched from the backend so the page can't render correctly
     @Override
     public BasicWindow createWindow() {
-        likedMusicButtons = new HashMap<Integer, Button>();
-        resultPanels.clear();
-
-        panel.addComponent(componentFactory.createEmptySpace());
-        panel.addComponent(componentFactory.createLabel(LanguagePeer.getText("label.likedMusicTitle")));
-
-        CURRENT_PAGE_BACKEND = 0;
-        resultPanels.add(new Panel());
-        resultPanels.get(CURRENT_PAGE_BACKEND).setLayoutManager(new GridLayout(1));
-        resultPanels.get(CURRENT_PAGE_BACKEND).setPreferredSize(new TerminalSize(RESULT_PANEL_WIDTH, RESULT_PANEL_HEIGHT));
-        resultPanels.get(CURRENT_PAGE_BACKEND).setFillColorOverride(TextColor.ANSI.BLACK_BRIGHT);
-
-        panel.addComponent(componentFactory.createEmptySpace());
-
-        if (currentButtons.size() > 20 && CURRENT_PAGE > 0) {
-            panel.addComponent(pageUpButton);
-            panel.addComponent(componentFactory.createEmptySpace());
-        }
-
-        handleSongRendering();
-        panel.addComponent(resultPanels.get(CURRENT_PAGE_BACKEND));
-        panel.addComponent(componentFactory.createEmptySpace());
-
-        if (currentButtons.size() > 20 && CURRENT_PAGE < currentButtons.size() - (resultPanels.size() * 20)) {
-            panel.addComponent(pageDownButton);
-            panel.addComponent(componentFactory.createEmptySpace());
-        }
-
-        /* Back button */
-        panel.addComponent(backButton);
-
-        window.setComponent(panel);
+        currentPage = 0;
+        buildPage();
         return window;
+    }
+
+    @Override
+    public BasicWindow updateWindow() {
+        buildPage();
+        window.invalidate();
+        refreshWindow();
+        return window;
+    }
+
+    private void refreshWindow() {
+        try {
+            textGUI.getScreen().refresh();
+            Logger.debug("Screen refreshed successfully.");
+        } catch (IOException iE) {
+            Logger.error("[!] Error while redrawing screen, please restart the app.");
+        }
+    }
+
+    private void buildPage() {
+        mainPanel.removeAllComponents();
+        resultPanel.removeAllComponents();
+        songButtons.clear();
+        addSpace();
+        mainPanel.addComponent(createLabel(get("label.likedMusicTitle")));
+        addSpace();
+        RetrievedStorage retrievedSongs = getLikedSongs();
+        loadSongs(retrievedSongs);
+        totalPages = (int) Math.ceil((double) likedSongs.size() / SONGS_PER_PAGE);
+        if (totalPages == 0) totalPages = 1;
+        addPageUpButton();
+        displayCurrentPage();
+        mainPanel.addComponent(resultPanel);
+        addSpace();
+        addPageDownButton();
+        mainPanel.addComponent(backButton);
+        window.setComponent(mainPanel);
+    }
+
+    private void loadSongs(RetrievedStorage songs) {
+        likedSongs = new LinkedList<>();
+        if (songs == null || songs.size() < 1) {
+            Logger.debug("No liked songs found.");
+            return;
+        }
+
+        for (int i = 0; i < songs.size(); i++) {
+            int displayIndex = i + 1;
+            try {
+                Song song = songs.getSongFromIndex(displayIndex);
+                if (song == null) {
+                    Logger.debug("Song is null at index {}", displayIndex);
+                    continue;
+                }
+                likedSongs.add(song);
+            } catch (Exception e) {
+                LoggerUtils.logErrorMessage(e);
+                continue;
+            }
+        }
+
+        /* Duplicate songs for testing pagination */
+        List<Song> originalSongs = new ArrayList<>(likedSongs);
+        for (int j = 0; j < 45 && !originalSongs.isEmpty(); j++) {
+            likedSongs.addAll(originalSongs);
+        }
+
+        Logger.debug("Loaded {} liked songs.", likedSongs.size());
+    }
+
+    private void displayCurrentPage() {
+        int startIndex = currentPage * SONGS_PER_PAGE;
+        int endIndex = Math.min(startIndex + SONGS_PER_PAGE, likedSongs.size());
+
+        for (int i = startIndex; i < endIndex; i++) {
+            Song song = likedSongs.get(i);
+            String formattedText = componentFactory.getFormattedTextForSongButton(
+                    RESULT_PANEL_WIDTH - 6, /* Maybe God himself knows why I am having to subtract 6 on this page but not SearchPage */
+                    i + 1,
+                    song.getSongName(),
+                    song.getSongArtist(),
+                    song.getDuration());
+            Button songButton = createButton(formattedText, () -> handleSongSelection(song), SONG_BUTTON_WIDTH, SONG_BUTTON_HEIGHT);
+            songButtons.add(songButton);
+            resultPanel.addComponent(songButton);
+        }
+    }
+
+    private void addPageUpButton() {
+        if (currentPage > 0) {
+            mainPanel.addComponent(pageUpButton);
+            addSpace();
+        }
+    }
+
+    private void addPageDownButton() {
+        if (currentPage < totalPages - 1) {
+            mainPanel.addComponent(pageDownButton);
+            addSpace();
+        }
+    }
+
+    private void addSpace() {
+        mainPanel.addComponent(componentFactory.createEmptySpace());
     }
 
     private Button createPageChangeButton(String direction) {
         if ("up".equals(direction)) {
-            return componentFactory.createButton(
-                    LanguagePeer.getText("button.pageUp"), 
+            return createButton(
+                    get("button.pageUp"), 
                     () -> {
-                        for (Button button : currentButtons) {
-                            resultPanels.get(CURRENT_PAGE_BACKEND).removeComponent(button);
+                        if (currentPage > 0) {
+                            currentPage--;
+                            updateWindow();
                         }
-                        currentButtons.clear();
-                        CURRENT_PAGE--;
-                        updateResultsDisplay();
                     },
                     componentFactory.getButtonWidth() / 3, 
                     componentFactory.getButtonHeight() / 2
                     );
         } else if ("down".equals(direction)) {
-            return componentFactory.createButton(
-                    LanguagePeer.getText("button.pageDown"), 
+            return createButton(
+                    get("button.pageDown"), 
                     () -> {
-                        for (Button button : currentButtons) {
-                            resultPanels.get(CURRENT_PAGE_BACKEND).removeComponent(button);
+                        if (currentPage < totalPages - 1) {
+                            currentPage++;
+                            updateWindow();
                         }
-                        currentButtons.clear();
-                        CURRENT_PAGE++;
-                        updateResultsDisplay();
                     },
                     componentFactory.getButtonWidth() / 3, 
                     componentFactory.getButtonHeight() / 2
                     );
         } else if ("back".equals(direction)) {
-            return componentFactory.createButton(
-                    LanguagePeer.getText("button.back"), 
+            return createButton(
+                    get("button.back"), 
                     () -> windowManager.returnToMainMenu(window),
                     componentFactory.getButtonWidth() / 3, 
                     componentFactory.getButtonHeight() / 2
@@ -142,100 +212,8 @@ public class LikedMusicPage extends BasePage {
         }
     }
 
-    private void handleSongRendering() {
-        RetrievedStorage results = backend.getLikedSongs();
-        if (results == null || results.size() < 1) {
-            Logger.debug("No liked songs found.");
-        }
-
-        for (int i = 0; i < Math.ceil(results.size() / 20); i++) {
-            Panel panel = new Panel();
-            panel.setLayoutManager(new GridLayout(1));
-            panel.setPreferredSize(new TerminalSize(RESULT_PANEL_WIDTH, RESULT_PANEL_HEIGHT));
-            panel.setFillColorOverride(TextColor.ANSI.BLACK_BRIGHT);
-            resultPanels.add(panel);
-        }
-
-        resultsToButtons(results);
-        updateResultsDisplay();
-        Logger.debug("Display has been updated with {} liked songs.", results.size());
-    }
-
-    private void resultsToButtons(RetrievedStorage results) {
-        if (likedMusicButtons == null) {
-            likedMusicButtons = new HashMap<>();
-        } else {
-            likedMusicButtons.clear();
-        }
-        Logger.debug("SIZE: {}", results.size());
-        for (int i = 0; i < results.size(); i++) {
-            int displayIndex = i + 1;
-            try {
-                Song song = results.getSongFromIndex(displayIndex);
-                if (song == null) {
-                    Logger.debug("Song is null at index {}", displayIndex);
-                    continue;
-                }
-
-                String formattedText = componentFactory.getFormattedTextForSongButton(
-                        RESULT_PANEL_WIDTH - 6, /* Maybe God himself knows why I am having to subtract 6 on this page but not SearchPage */
-                        displayIndex,
-                        song.getSongName(),
-                        song.getSongArtist(),
-                        song.getDuration());
-                Logger.debug("Like : {}", formattedText);
-                for (int j = 0; j < 25; j++) {
-                // likedMusicButtons.put(i, componentFactory.createButton(
-                likedMusicButtons.put(j, componentFactory.createButton(
-                            formattedText, 
-                            () -> handleSongSelection(song),
-                            SONG_BUTTON_WIDTH,
-                            SONG_BUTTON_HEIGHT));
-                }
-            } catch (Exception e) {
-                LoggerUtils.logErrorMessage(e);
-                continue;
-            }
-        }
-    }
-
-    private void updateResultsDisplay() {
-        guiThread.invokeLater(() -> {
-            List<Button> currentButtonList = new ArrayList<>(currentButtons);
-            for (int i = 1; i <= resultPanels.size(); i++) {
-                for (int j = 0; j < currentButtonList.size(); j++) {
-                    if (j >= i * 20) {
-                        break;
-                    }
-                    resultPanels.get(i - 1).removeComponent(currentButtonList.get(j));
-
-                }
-            }
-            currentButtons.clear();
-
-            int songButtonsAdded = 0;
-            for (Map.Entry<Integer, Button> entry : likedMusicButtons.entrySet()) {
-                Button button = entry.getValue();
-                if (currentButtons.add(button)) {
-                    Logger.debug("[*] Panel list size: {}, CURRENT_PAGE_BACKEND: {}", resultPanels.size(), CURRENT_PAGE_BACKEND);
-                    resultPanels.get(CURRENT_PAGE_BACKEND).addComponent(button);
-                    songButtonsAdded++;
-                    if (songButtonsAdded >= 20) {
-                        CURRENT_PAGE_BACKEND++;
-                        if (CURRENT_PAGE_BACKEND >= resultPanels.size()) {
-                            resultPanels.add(new Panel());
-                        }
-                    }
-                }
-            }
-
-            try {
-                textGUI.getScreen().refresh();
-                Logger.debug("Screen refreshed successfully.");
-            } catch (IOException iE) {
-                Logger.error("[!] Error while redrawing screen, please restart the app.");
-            }
-        });
+    private RetrievedStorage getLikedSongs() {
+        return backend.getLikedSongs();
     }
 
     private void handleSongSelection(Song song) {

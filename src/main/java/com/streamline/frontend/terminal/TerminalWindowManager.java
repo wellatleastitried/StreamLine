@@ -84,28 +84,28 @@ public class TerminalWindowManager {
         return instance;
     }
 
-    public <T extends BasePage> void buildSongOptionPage(Song song, T previousWindow) {
+    public <T extends AbstractBasePage> void buildSongOptionPage(Song song, T previousWindow) {
         this.songOptionPage = new SongOptionPage(backend, guiThread, song, previousWindow).createWindow();
     }
 
-    public <T extends BasePage> void buildSongOptionPage(Song song, T previousWindow, Map<Integer, Button> previousSearchResults) {
+    public <T extends AbstractBasePage> void buildSongOptionPage(Song song, T previousWindow, Map<Integer, Button> previousSearchResults) {
         this.songOptionPage = new SongOptionPage(backend, guiThread, song, previousWindow, previousSearchResults).createWindow();
     }
 
-    public <T extends BasePage> void buildPlaylistChoicePage(Song song, T previousWindow) {
+    public <T extends AbstractBasePage> void buildPlaylistChoicePage(Song song, T previousWindow) {
         this.playlistChoicePage = new PlaylistChoicePage(backend, guiThread, song, previousWindow).createWindow();
     }
 
-    public <T extends BasePage> void buildPlaylistChoicePage(Song song, T previousWindow, Map<Integer, Button> previousSearchResults) {
+    public <T extends AbstractBasePage> void buildPlaylistChoicePage(Song song, T previousWindow, Map<Integer, Button> previousSearchResults) {
         this.playlistChoicePage = new PlaylistChoicePage(backend, guiThread, song, previousWindow, previousSearchResults).createWindow();
     }
 
     public void rebuildDynamicWindows() {
         guiThread.invokeLater(() -> {
-            this.likedMusicPage = new LikedMusicPage(backend, guiThread, textGUI).createWindow();
-            this.playlistPage = new PlaylistPage(backend, guiThread).createWindow();
-            this.recentlyPlayedPage = new RecentlyPlayedPage(backend, guiThread, textGUI).createWindow();
-            this.downloadedPage = new DownloadedMusicPage(backend, guiThread, textGUI).createWindow();
+            this.likedMusicPage = new LikedMusicPage(backend, guiThread, textGUI).updateWindow();
+            this.playlistPage = new PlaylistPage(backend, guiThread).updateWindow();
+            this.recentlyPlayedPage = new RecentlyPlayedPage(backend, guiThread, textGUI).updateWindow();
+            this.downloadedPage = new DownloadedMusicPage(backend, guiThread, textGUI).updateWindow();
         });
     }
 
@@ -115,11 +115,8 @@ public class TerminalWindowManager {
             this.helpPage = new HelpPage(backend, guiThread).createWindow();
             this.settingsPage = new SettingsPage(backend, guiThread).createWindow();
             this.searchPage = new SearchPage(backend, guiThread, textGUI).createWindow();
-            this.likedMusicPage = new LikedMusicPage(backend, guiThread, textGUI).createWindow();
-            this.playlistPage = new PlaylistPage(backend, guiThread).createWindow();
-            this.recentlyPlayedPage = new RecentlyPlayedPage(backend, guiThread, textGUI).createWindow();
-            this.downloadedPage = new DownloadedMusicPage(backend, guiThread, textGUI).createWindow();
             this.languagePage = new LanguagePage(backend, guiThread).createWindow();
+            rebuildDynamicWindows();
         });
     }
 
@@ -163,7 +160,7 @@ public class TerminalWindowManager {
         transitionTo(searchPage);
     }
 
-    public <T extends BasePage> void transitionToPlaylistChoicePage(T previousPage, Song song, Map<Integer, Button> previousSearchResults) {
+    public <T extends AbstractBasePage> void transitionToPlaylistChoicePage(T previousPage, Song song, Map<Integer, Button> previousSearchResults) {
         if (previousSearchResults != null) {
             buildPlaylistChoicePage(song, previousPage, previousSearchResults);
         } else {
@@ -182,7 +179,7 @@ public class TerminalWindowManager {
             }
             if (!openWindows.contains(window)) {
                 if (isDynamicWindow(window)) {
-                    rebuildDynamicWindows();
+                    rebuildDynamicWindow(window);
                 }
                 textGUI.addWindowAndWait(window);
             }
@@ -191,6 +188,20 @@ public class TerminalWindowManager {
 
     private boolean isDynamicWindow(BasicWindow window) {
         return window.equals(likedMusicPage) || window.equals(downloadedPage) || window.equals(likedMusicPage) || window.equals(playlistPage);
+    }
+
+    private void rebuildDynamicWindow(BasicWindow window) {
+        if (window.equals(likedMusicPage)) {
+            this.likedMusicPage = new LikedMusicPage(backend, guiThread, textGUI).updateWindow();
+        } else if (window.equals(downloadedPage)) {
+            this.downloadedPage = new DownloadedMusicPage(backend, guiThread, textGUI).updateWindow();
+        } else if (window.equals(playlistPage)) {
+            this.playlistPage = new PlaylistPage(backend, guiThread).updateWindow();
+        } else if (window.equals(recentlyPlayedPage)) {
+            this.recentlyPlayedPage = new RecentlyPlayedPage(backend, guiThread, textGUI).updateWindow();
+        } else {
+            Logger.debug("[!] No dynamic window to rebuild.");
+        }
     }
 
     public void returnToMainMenu(BasicWindow currentWindow) {

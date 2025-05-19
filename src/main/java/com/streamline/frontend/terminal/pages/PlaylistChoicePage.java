@@ -7,27 +7,26 @@ import com.googlecode.lanterna.gui2.TextGUIThread;
 
 import com.streamline.audio.Song;
 import com.streamline.backend.Dispatcher;
-import com.streamline.frontend.terminal.*;
 import com.streamline.utilities.LanguagePeer;
 
 import java.util.Map;
 
-public class PlaylistChoicePage extends BasePage {
+public class PlaylistChoicePage extends AbstractDynamicPage {
 
     private final Song selectedSong;
     private final Map<Integer, Button> previousResultsForSearchPage;
 
     private BasicWindow window;
-    public final BasePage previousPage;
+    public final AbstractBasePage previousPage;
 
-    public <T extends BasePage> PlaylistChoicePage(Dispatcher backend, TextGUIThread guiThread, Song selectedSong, T previousPage) {
+    public <T extends AbstractBasePage> PlaylistChoicePage(Dispatcher backend, TextGUIThread guiThread, Song selectedSong, T previousPage) {
         super(backend, guiThread);
         this.selectedSong = selectedSong;
         this.previousPage = previousPage;
         this.previousResultsForSearchPage = null;
     }
 
-    public <T extends BasePage> PlaylistChoicePage(Dispatcher backend, TextGUIThread guiThread, Song selectedSong, T previousPage, Map<Integer, Button> previousResultsForSearchPage) {
+    public <T extends AbstractBasePage> PlaylistChoicePage(Dispatcher backend, TextGUIThread guiThread, Song selectedSong, T previousPage, Map<Integer, Button> previousResultsForSearchPage) {
         super(backend, guiThread);
         this.selectedSong = selectedSong;
         this.previousPage = previousPage;
@@ -53,6 +52,11 @@ public class PlaylistChoicePage extends BasePage {
                         ));
 
         window.setComponent(panel);
+        return window;
+    }
+
+    @Override
+    public BasicWindow updateWindow() {
         return window;
     }
 

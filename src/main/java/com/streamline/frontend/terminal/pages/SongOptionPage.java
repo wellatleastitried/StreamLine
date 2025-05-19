@@ -12,7 +12,7 @@ import com.streamline.utilities.LanguagePeer;
 
 import java.util.Map;
 
-public class SongOptionPage extends BasePage {
+public class SongOptionPage extends AbstractDynamicPage {
 
     private final Song selectedSong;
     private final Map<Integer, Button> previousResultsForSearchPage;
@@ -24,9 +24,9 @@ public class SongOptionPage extends BasePage {
     private Button downloadButton;
     private boolean isDownloading = false;
 
-    public final BasePage previousPage;
+    public final AbstractBasePage previousPage;
 
-    public <T extends BasePage> SongOptionPage(Dispatcher backend, TextGUIThread guiThread, Song selectedSong, T previousPage) {
+    public <T extends AbstractBasePage> SongOptionPage(Dispatcher backend, TextGUIThread guiThread, Song selectedSong, T previousPage) {
         super(backend, guiThread);
         selectedSong.setSongLikeStatus(backend.isSongLiked(selectedSong));
         this.selectedSong = selectedSong;
@@ -34,7 +34,7 @@ public class SongOptionPage extends BasePage {
         this.previousResultsForSearchPage = null;
     }
 
-    public <T extends BasePage> SongOptionPage(Dispatcher backend, TextGUIThread guiThread, Song selectedSong, T previousPage, Map<Integer, Button> previousResultsForSearchPage) {
+    public <T extends AbstractBasePage> SongOptionPage(Dispatcher backend, TextGUIThread guiThread, Song selectedSong, T previousPage, Map<Integer, Button> previousResultsForSearchPage) {
         super(backend, guiThread);
         selectedSong.setSongLikeStatus(backend.isSongLiked(selectedSong));
         this.selectedSong = selectedSong;
@@ -51,7 +51,18 @@ public class SongOptionPage extends BasePage {
         return window;
     }
 
+    @Override
+    public BasicWindow updateWindow() {
+        window.invalidate();
+        fillPanelComponents();
+        window.setComponent(panel);
+        return window;
+    }
+
     private void fillPanelComponents() {
+        if (panel.getChildren().size() > 0) {
+            panel.removeAllComponents();
+        }
         panel.addComponent(componentFactory.createEmptySpace());
         panel.addComponent(componentFactory.createLabel(LanguagePeer.getText("label.songOptionPageTitle")));
 

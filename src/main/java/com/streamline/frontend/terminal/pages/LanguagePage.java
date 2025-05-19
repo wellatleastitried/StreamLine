@@ -2,14 +2,13 @@ package com.streamline.frontend.terminal.pages;
 
 import com.googlecode.lanterna.gui2.*;
 import com.streamline.backend.Dispatcher;
-import com.streamline.frontend.terminal.*;
 import com.streamline.utilities.LanguagePeer;
 
 /**
  * Window for language selection.
  * @author wellatleastitried
  */
-public class LanguagePage extends BasePage {
+public class LanguagePage extends AbstractBasePage {
     
     public LanguagePage(Dispatcher backend, TextGUIThread guiThread) {
         super(backend, guiThread);
