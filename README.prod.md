@@ -46,9 +46,9 @@ java -jar target/StreamLine.jar
 
 ## Documentation
 
-- [User Guide](doc/USER_GUIDE.md) - Learn how to use StreamLine
-- [Developer Guide](doc/DEVELOPER_GUIDE.md) - Contribute to the project
-- [API Documentation](doc/API.md) - Technical documentation
+- [User Guide](docs/USER_GUIDE.md) - Learn how to use StreamLine
+- [Developer Guide](docs/DEVELOPER_GUIDE.md) - Contribute to the project
+- [API Documentation](docs/API.md) - Technical documentation
 
 ## Contributing
 

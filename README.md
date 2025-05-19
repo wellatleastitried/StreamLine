@@ -53,10 +53,10 @@ streamline
 
 ## Documentation
 
-- [User Guide](doc/USER_GUIDE.md) - Learn how to use StreamLine
+- [User Guide](docs/USER_GUIDE.md) - Learn how to use StreamLine
 - [Developer Guide](CONTRIBUTING.md) - Contribute to the project
-- [API Documentation](doc/API.md) - Technical documentation
-- [Changing Themes](doc/THEMES.md) - Customize the look and feel of StreamLine
+- [API Documentation](docs/API.md) - Technical documentation
+- [Changing Themes](docs/THEMES.md) - Customize the look and feel of StreamLine
 
 ## Contributing
 
