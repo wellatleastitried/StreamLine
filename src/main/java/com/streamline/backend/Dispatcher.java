@@ -99,6 +99,18 @@ public final class Dispatcher {
         submitJob(downloadJob);
     }
 
+    public RetrievedStorage getDownloads() {
+        DownloadedSongsFetchJob downloadJob = new DownloadedSongsFetchJob(config, dbRunner);
+        submitJob(downloadJob);
+
+        while (!downloadJob.resultsAreReady()) {
+            Thread.onSpinWait();
+        }
+        Logger.debug("Job is no longer running.");
+
+        return downloadJob.getResults();
+    }
+
     public RetrievedStorage doSearch(String searchTerm) {
         SearchJob searchJob = new SearchJob(config, searchTerm);
         submitJob(searchJob);

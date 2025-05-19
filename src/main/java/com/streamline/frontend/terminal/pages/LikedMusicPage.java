@@ -110,6 +110,7 @@ public class LikedMusicPage extends AbstractDynamicPage {
 
     private void loadSongs(RetrievedStorage songs) {
         likedSongs = new LinkedList<>();
+
         if (songs == null || songs.size() < 1) {
             Logger.debug("No liked songs found.");
             return;
@@ -129,14 +130,6 @@ public class LikedMusicPage extends AbstractDynamicPage {
                 continue;
             }
         }
-
-        /* Duplicate songs for testing pagination */
-        /*
-        List<Song> originalSongs = new ArrayList<>(likedSongs);
-        for (int j = 0; j < 45 && !originalSongs.isEmpty(); j++) {
-            likedSongs.addAll(originalSongs);
-        }
-        */
 
         Logger.debug("Loaded {} liked songs.", likedSongs.size());
     }

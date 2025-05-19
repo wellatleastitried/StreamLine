@@ -84,6 +84,7 @@ public final class DatabaseRunner {
     }
 
     public RetrievedStorage getDownloadedSongs() {
+        // TODO: Need to join this with the DownloadedSongs table to get the file path and hash
         final RetrievedStorage downloadedSongs = new RetrievedStorage();
         try {
             final Statement statement = connection.createStatement();
