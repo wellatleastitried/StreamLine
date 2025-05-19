@@ -131,10 +131,12 @@ public class LikedMusicPage extends AbstractDynamicPage {
         }
 
         /* Duplicate songs for testing pagination */
+        /*
         List<Song> originalSongs = new ArrayList<>(likedSongs);
         for (int j = 0; j < 45 && !originalSongs.isEmpty(); j++) {
             likedSongs.addAll(originalSongs);
         }
+        */
 
         Logger.debug("Loaded {} liked songs.", likedSongs.size());
     }
