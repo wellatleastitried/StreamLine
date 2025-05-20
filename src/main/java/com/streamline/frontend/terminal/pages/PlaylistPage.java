@@ -17,20 +17,18 @@ public class PlaylistPage extends AbstractDynamicPage {
     public BasicWindow createWindow() {
         BasicWindow window = createStandardWindow(LanguagePeer.getText("window.playlistsTitle"));
         
-        Panel panel = componentFactory.createStandardPanel();
+        addSpace();
+        mainPanel.addComponent(componentFactory.createLabel(LanguagePeer.getText("label.playlistsFeature")));
+        addSpace();
         
-        panel.addComponent(componentFactory.createEmptySpace());
-        panel.addComponent(componentFactory.createLabel(LanguagePeer.getText("label.playlistsFeature")));
-        panel.addComponent(componentFactory.createEmptySpace());
-        
-        panel.addComponent(componentFactory.createButton(
+        mainPanel.addComponent(componentFactory.createButton(
             LanguagePeer.getText("button.back"),
             () -> windowManager.returnToMainMenu(window),
             componentFactory.getButtonWidth() / 3,
             componentFactory.getButtonHeight() / 2
         ));
         
-        window.setComponent(panel);
+        window.setComponent(mainPanel);
         return window;
     }
 

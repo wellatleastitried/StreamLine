@@ -168,9 +168,9 @@ public class DatabaseRunnerTest {
         when(mockResultSet.getString("url")).thenReturn("http://example.com/5");
         when(mockResultSet.getString("videoId")).thenReturn("mno345");
 
-        RetrievedStorage result = databaseRunner.getSongsFromPlaylist("My Playlist");
+        RetrievedStorage result = databaseRunner.getSongsFromPlaylist(5);
 
-        verify(mockPreparedStatement).setString(1, "My Playlist");
+        verify(mockPreparedStatement).setInt(1, 5);
         verify(mockPreparedStatement).executeQuery();
 
         assertEquals(1, result.size());

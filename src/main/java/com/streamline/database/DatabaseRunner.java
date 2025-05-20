@@ -162,11 +162,11 @@ public final class DatabaseRunner {
         }
     }
 
-    public RetrievedStorage getSongsFromPlaylist(String playlistName) {
+    public RetrievedStorage getSongsFromPlaylist(int playlistId) {
         final RetrievedStorage songsFromPlaylist = new RetrievedStorage();
         final String playlistSongsQuery = "SELECT * FROM Songs s WHERE s.id IN (SELECT song_id FROM PlaylistSongs WHERE playlist_id = ? ORDER BY data_added_to_playlist DESC);";
         try (final PreparedStatement statement = connection.prepareStatement(playlistSongsQuery)) {
-            statement.setString(1, playlistName);
+            statement.setInt(1, playlistId);
             final ResultSet rs = statement.executeQuery();
             int index = 0;
             while (rs.next()) {
@@ -379,6 +379,32 @@ public final class DatabaseRunner {
             }
         }
         return -1;
+    }
+
+    public int getPlaylistId(String playlistName) {
+        final String getPlaylistId = "SELECT id FROM Playlists WHERE name = ?;";
+        try (PreparedStatement playlistStatement = connection.prepareStatement(getPlaylistId)) {
+            playlistStatement.setString(1, playlistName);
+            try (final ResultSet rs = playlistStatement.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        } catch (SQLException sE) {
+            handleSQLException(sE);
+        }
+        return -1;
+    }
+
+    public void createPlaylist(String playlistName) {
+        final String createPlaylist = "INSERT INTO Playlists (name) VALUES (?);";
+        try (PreparedStatement playlistStatement = connection.prepareStatement(createPlaylist)) {
+            playlistStatement.setString(1, playlistName);
+            playlistStatement.executeUpdate();
+            connection.commit();
+        } catch (SQLException sE) {
+            handleSQLException(sE);
+        }
     }
 
     protected int insertSongIntoSongs(Song song) throws SQLException {

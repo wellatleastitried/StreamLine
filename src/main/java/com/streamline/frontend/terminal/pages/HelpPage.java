@@ -18,25 +18,23 @@ public class HelpPage extends AbstractBasePage {
     public BasicWindow createWindow() {
         BasicWindow window = createStandardWindow(LanguagePeer.getText("window.helpTitle"));
         
-        Panel panel = componentFactory.createStandardPanel();
+        addSpace();
+        mainPanel.addComponent(componentFactory.createLabelWithSize(LanguagePeer.getText("label.searchHelpTitle")));
+        mainPanel.addComponent(componentFactory.createLabel(LanguagePeer.getText("label.searchHelpBody")));
+        addSpace();
+        mainPanel.addComponent(componentFactory.createLabelWithSize(LanguagePeer.getText("label.likedMusicTitle")));
+        mainPanel.addComponent(componentFactory.createLabel(LanguagePeer.getText("label.likedMusicBody")));
+        addSpace();
+        addSpace();
         
-        panel.addComponent(componentFactory.createEmptySpace());
-        panel.addComponent(componentFactory.createLabelWithSize(LanguagePeer.getText("label.searchHelpTitle")));
-        panel.addComponent(componentFactory.createLabel(LanguagePeer.getText("label.searchHelpBody")));
-        panel.addComponent(componentFactory.createEmptySpace());
-        panel.addComponent(componentFactory.createLabelWithSize(LanguagePeer.getText("label.likedMusicTitle")));
-        panel.addComponent(componentFactory.createLabel(LanguagePeer.getText("label.likedMusicBody")));
-        panel.addComponent(componentFactory.createEmptySpace());
-        panel.addComponent(componentFactory.createEmptySpace());
-        
-        panel.addComponent(componentFactory.createButton(
+        mainPanel.addComponent(componentFactory.createButton(
             LanguagePeer.getText("button.back"),
             () -> windowManager.returnToMainMenu(window),
             componentFactory.getButtonWidth() / 3,
             componentFactory.getButtonHeight() / 2
         ));
         
-        window.setComponent(panel);
+        window.setComponent(mainPanel);
         return window;
     }
 }

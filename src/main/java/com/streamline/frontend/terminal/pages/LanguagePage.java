@@ -18,12 +18,10 @@ public class LanguagePage extends AbstractBasePage {
     public BasicWindow createWindow() {
         BasicWindow window = createStandardWindow(LanguagePeer.getText("window.languageTitle"));
         
-        Panel panel = componentFactory.createStandardPanel();
-        
-        panel.addComponent(componentFactory.createEmptySpace());
+        addSpace();
         
         /* Language selection buttons */
-        panel.addComponent(componentFactory.createButton(
+        mainPanel.addComponent(componentFactory.createButton(
             LanguagePeer.getText("button.english"),
             () -> {
                 backend.changeLanguage("en");
@@ -34,7 +32,7 @@ public class LanguagePage extends AbstractBasePage {
             }
         ));
         
-        panel.addComponent(componentFactory.createButton(
+        mainPanel.addComponent(componentFactory.createButton(
             LanguagePeer.getText("button.spanish"),
             () -> {
                 LanguagePeer.setLanguage("es");
@@ -45,7 +43,7 @@ public class LanguagePage extends AbstractBasePage {
             }
         ));
         
-        panel.addComponent(componentFactory.createButton(
+        mainPanel.addComponent(componentFactory.createButton(
             LanguagePeer.getText("button.russian"),
             () -> {
                 backend.changeLanguage("ru");
@@ -56,16 +54,16 @@ public class LanguagePage extends AbstractBasePage {
             }
         ));
         
-        panel.addComponent(componentFactory.createEmptySpace());
+        addSpace();
         
-        panel.addComponent(componentFactory.createButton(
+        mainPanel.addComponent(componentFactory.createButton(
             LanguagePeer.getText("button.back"),
             () -> windowManager.returnToMainMenu(window),
             componentFactory.getButtonWidth() / 3,
             componentFactory.getButtonHeight() / 2
         ));
         
-        window.setComponent(panel);
+        window.setComponent(mainPanel);
         return window;
     }
 }

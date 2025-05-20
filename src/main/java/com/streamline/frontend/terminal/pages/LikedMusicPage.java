@@ -6,7 +6,6 @@ import com.googlecode.lanterna.gui2.*;
 import com.streamline.audio.Song;
 import com.streamline.backend.Dispatcher;
 import com.streamline.utilities.RetrievedStorage;
-import com.streamline.utilities.internal.LoggerUtils;
 
 import java.io.IOException;
 
@@ -23,7 +22,6 @@ public class LikedMusicPage extends AbstractDynamicPage {
 
     private final TextGUI textGUI;
     private final BasicWindow window;
-    private final Panel mainPanel;
     private final Panel resultPanel;
 
     private final Button backButton;
@@ -46,7 +44,6 @@ public class LikedMusicPage extends AbstractDynamicPage {
         super(backend, guiThread);
         this.textGUI = textGUI;
         this.window = createStandardWindow(get("window.likedMusicTitle"));
-        this.mainPanel = componentFactory.createStandardPanel();
         this.RESULT_PANEL_WIDTH = componentFactory.getTerminalSize().getColumns();
         this.RESULT_PANEL_HEIGHT = componentFactory.getTerminalSize().getRows() - mainPanel.getSize().getRows() - 15;
         this.SONG_BUTTON_WIDTH = RESULT_PANEL_WIDTH;
@@ -116,19 +113,12 @@ public class LikedMusicPage extends AbstractDynamicPage {
             return;
         }
 
-        for (int i = 0; i < songs.size(); i++) {
-            int displayIndex = i + 1;
-            try {
-                Song song = songs.getSongFromIndex(displayIndex);
-                if (song == null) {
-                    Logger.debug("Song is null at index {}", displayIndex);
-                    continue;
-                }
-                likedSongs.add(song);
-            } catch (Exception e) {
-                LoggerUtils.logErrorMessage(e);
+        for (Song song : songs.drain()) {
+            if (song == null) {
+                Logger.debug("Song is null");
                 continue;
             }
+            likedSongs.add(song);
         }
 
         Logger.debug("Loaded {} liked songs.", likedSongs.size());
@@ -164,10 +154,6 @@ public class LikedMusicPage extends AbstractDynamicPage {
             mainPanel.addComponent(pageDownButton);
             addSpace();
         }
-    }
-
-    private void addSpace() {
-        mainPanel.addComponent(componentFactory.createEmptySpace());
     }
 
     private Button createPageChangeButton(String direction) {

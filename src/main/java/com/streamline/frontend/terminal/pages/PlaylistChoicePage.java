@@ -37,21 +37,19 @@ public class PlaylistChoicePage extends AbstractDynamicPage {
     public BasicWindow createWindow() {
         window = createStandardWindow(LanguagePeer.getText("window.playlistChoicePageTitle"));
 
-        Panel panel = componentFactory.createStandardPanel();
+        addSpace();
+        mainPanel.addComponent(componentFactory.createLabel(LanguagePeer.getText("label.playlistChoicePageTitle")));
 
-        panel.addComponent(componentFactory.createEmptySpace());
-        panel.addComponent(componentFactory.createLabel(LanguagePeer.getText("label.playlistChoicePageTitle")));
+        addSpace();
 
-        panel.addComponent(componentFactory.createEmptySpace());
-
-        panel.addComponent(componentFactory.createButton(
+        mainPanel.addComponent(componentFactory.createButton(
                     LanguagePeer.getText("button.back"), 
                     () -> handlePageTransition(),
                     componentFactory.getButtonWidth() / 3, 
                     componentFactory.getButtonHeight() / 2
                         ));
 
-        window.setComponent(panel);
+        window.setComponent(mainPanel);
         return window;
     }
 

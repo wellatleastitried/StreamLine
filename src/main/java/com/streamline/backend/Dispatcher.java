@@ -1,5 +1,6 @@
 package com.streamline.backend;
 
+import com.streamline.audio.Playlist;
 import com.streamline.audio.Song;
 import com.streamline.backend.handle.*;
 import com.streamline.backend.jobs.*;
@@ -80,6 +81,19 @@ public final class Dispatcher {
         return id;
     }
 
+    public void changeLanguage(String languageCode) {
+        submitJob(new LanguageJob(config, languageCode));
+    }
+
+    public Song getSongFromName(String songName) {
+        return dbRunner.searchForSongName(songName);
+    }
+
+
+
+    /*
+     * Downloaded Song Operations
+     */
     public Song isSongDownloaded(Song song) {
         return dbRunner.getSongFromDownloads(song);
     }
@@ -111,6 +125,11 @@ public final class Dispatcher {
         return downloadJob.getResults();
     }
 
+
+
+    /*
+     * Search Operations
+     */
     public RetrievedStorage doSearch(String searchTerm) {
         SearchJob searchJob = new SearchJob(config, searchTerm);
         submitJob(searchJob);
@@ -125,19 +144,71 @@ public final class Dispatcher {
         return results;
     }
 
-    public void changeLanguage(String languageCode) {
-        submitJob(new LanguageJob(config, languageCode));
+
+
+    /*
+     * Playlist Operations for Songs
+     */
+    public int getPlaylistId(String playlistName) {
+        return dbRunner.getPlaylistId(playlistName);
     }
 
-    public Song getSongFromName(String songName) {
-        return dbRunner.searchForSongName(songName);
+    public RetrievedStorage getPlaylistSongs(String playlistName) {
+        return getPlaylistSongs(getPlaylistId(playlistName));
     }
-    
-    private void killCurrentAudioJobIfExists() {
-        if (audioJobId != null) {
-            AbstractStreamLineJob currentAudioJob = activeJobs.get(audioJobId);
-            currentAudioJob.cancel();
+
+    public RetrievedStorage getPlaylistSongs(int playlistId) {
+        PlaylistSongsFetchJob playlistJob = new PlaylistSongsFetchJob(config, dbRunner, playlistId);
+        submitJob(playlistJob);
+
+        while (!playlistJob.resultsAreReady()) {
+            Thread.onSpinWait();
         }
+        Logger.debug("Job is no longer running.");
+
+        return playlistJob.getResults();
+    }
+
+    public void createPlaylist(String playlistName) {
+        dbRunner.createPlaylist(playlistName);
+    }
+
+    public void addSongToPlaylist(String playlistName, Song song) {
+        Playlist playlist = new Playlist(playlistName, this);
+        playlist.addTrack(song);
+    }
+
+    public void removeSongFromPlaylist(String playlistName, Song song) {
+        Playlist playlist = new Playlist(playlistName, this);
+        playlist.removeTrack(song);
+    }
+
+
+
+    /*
+     * Recently Played Songs Operations
+     */
+    public RetrievedStorage getRecentlyPlayedSongs() {
+        RecentlyPlayedSongsFetchJob recPlayJob = new RecentlyPlayedSongsFetchJob(config, dbRunner);
+        submitJob(recPlayJob);
+
+        while (!recPlayJob.resultsAreReady()) {
+            Thread.onSpinWait();
+        }
+        Logger.debug("Job is no longer running.");
+
+        return recPlayJob.getResults();
+    }
+
+
+
+    /*
+     * "Like" Operations for Songs
+     */
+    public String handleSongLikeStatus(Song song) {
+        LikeSongJob likeJob = new LikeSongJob(config, dbRunner, song);
+        submitJob(likeJob);
+        return likeJob.getJobId();
     }
 
     public boolean isSongLiked(Song song) {
@@ -159,24 +230,11 @@ public final class Dispatcher {
         return likedJob.getResults();
     }
 
-    public RetrievedStorage getRecentlyPlayedSongs() {
-        RecentlyPlayedSongsFetchJob recPlayJob = new RecentlyPlayedSongsFetchJob(config, dbRunner);
-        submitJob(recPlayJob);
 
-        while (!recPlayJob.resultsAreReady()) {
-            Thread.onSpinWait();
-        }
-        Logger.debug("Job is no longer running.");
 
-        return recPlayJob.getResults();
-    }
-
-    public String handleSongLikeStatus(Song song) {
-        LikeSongJob likeJob = new LikeSongJob(config, dbRunner, song);
-        submitJob(likeJob);
-        return likeJob.getJobId();
-    }
-
+    /*
+     * Audio Operations
+     */
     public void playSong(Song song) {
         killCurrentAudioJobIfExists();
         submitJob(new SongPlaybackJob(config, song));;
@@ -186,6 +244,15 @@ public final class Dispatcher {
         killCurrentAudioJobIfExists();
         audioJobId = submitJob(new QueuePlaybackJob(config, songQueue));
     }
+
+    private void killCurrentAudioJobIfExists() {
+        if (audioJobId != null) {
+            AbstractStreamLineJob currentAudioJob = activeJobs.get(audioJobId);
+            currentAudioJob.cancel();
+        }
+    }
+
+
 
     public void clearCache() {
         submitJob(new CacheClearJob(config, dbRunner, CacheManager.getCacheDirectory(config.getOS())));

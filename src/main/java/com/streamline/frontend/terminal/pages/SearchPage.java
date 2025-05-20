@@ -7,7 +7,6 @@ import com.googlecode.lanterna.input.KeyStroke;
 import com.googlecode.lanterna.input.KeyType;
 import com.streamline.audio.Song;
 import com.streamline.backend.Dispatcher;
-import com.streamline.frontend.terminal.*;
 import com.streamline.utilities.RetrievedStorage;
 import com.streamline.utilities.LanguagePeer;
 import org.tinylog.Logger;
@@ -43,29 +42,27 @@ public class SearchPage extends AbstractBasePage {
     public BasicWindow createWindow() {
         BasicWindow window = createStandardWindow(LanguagePeer.getText("window.searchTitle"));
 
-        Panel panel = componentFactory.createStandardPanel();
-
         /* Panel for search results */
         Panel resultsPanel = new Panel();
         resultsPanel.setLayoutManager(new GridLayout(1));
         resultsPanel.setPreferredSize(new TerminalSize(
                     componentFactory.getTerminalSize().getColumns(), 
-                    componentFactory.getTerminalSize().getRows() - panel.getSize().getRows() - 15
+                    componentFactory.getTerminalSize().getRows() - mainPanel.getSize().getRows() - 15
                     ));
         resultsPanel.setFillColorOverride(TextColor.ANSI.BLACK_BRIGHT);
 
-        panel.addComponent(componentFactory.createEmptySpace());
-        panel.addComponent(componentFactory.createLabel(LanguagePeer.getText("label.search")));
+        addSpace();
+        mainPanel.addComponent(componentFactory.createLabel(LanguagePeer.getText("label.search")));
 
         Set<Button> currentButtons = new LinkedHashSet<>();
-        panel.addComponent(createSearchBox(resultsPanel, currentButtons));
-        panel.addComponent(componentFactory.createEmptySpace());
-        panel.addComponent(resultsPanel);
+        mainPanel.addComponent(createSearchBox(resultsPanel, currentButtons));
+        addSpace();
+        mainPanel.addComponent(resultsPanel);
         if (searchResultButtons != null && searchResultButtons.size() > 0) {
             updateResultsDisplay(resultsPanel, currentButtons);
         }
 
-        panel.addComponent(componentFactory.createButton(
+        mainPanel.addComponent(componentFactory.createButton(
                     LanguagePeer.getText("button.back"), 
                     () -> {
                         windowManager.rebuildSearchPage(null);
@@ -75,7 +72,7 @@ public class SearchPage extends AbstractBasePage {
                     componentFactory.getButtonHeight() / 2
                     ));
 
-        window.setComponent(panel);
+        window.setComponent(mainPanel);
         return window;
     }
 

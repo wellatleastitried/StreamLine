@@ -1,13 +1,16 @@
 package com.streamline.utilities;
 
 import com.streamline.audio.Song;
+
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * One-to-one map for the songs and their indices to make listing them in the app much easier and convenient.
  * @author wellatleastitried
  */
-public class RetrievedStorage {
+public class RetrievedStorage implements Iterable<Song>{
 
     private final HashMap<Integer, Song> indexToSong;
     private final HashMap<Song, Integer> songToIndex;
@@ -78,5 +81,33 @@ public class RetrievedStorage {
 
     public Song[] getArrayOfSongs() {
         return indexToSong.values().toArray(new Song[0]);
+    }
+
+    @Override
+    public Iterator<Song> iterator() {
+        return indexToSong.values().iterator();
+    }
+
+    /**
+     * Iterates over the songs in the storage, removing them after they have been iterated over.
+     * @return {@see Iterator} of the songs in the storage.
+     */
+    public Iterable<Song> drain() {
+        return () -> new Iterator<>() {
+            private final Iterator<Map.Entry<Integer, Song>> entryIterator = indexToSong.entrySet().iterator();
+
+            @Override
+            public boolean hasNext() {
+                return entryIterator.hasNext();
+            }
+
+            @Override
+            public Song next() {
+                Map.Entry<Integer, Song> entry = entryIterator.next();
+                entryIterator.remove();
+                songToIndex.remove(entry.getValue());
+                return entry.getValue();
+            }
+        };
     }
 }

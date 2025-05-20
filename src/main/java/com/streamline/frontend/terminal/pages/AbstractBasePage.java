@@ -3,6 +3,7 @@ package com.streamline.frontend.terminal.pages;
 import com.googlecode.lanterna.gui2.BasicWindow;
 import com.googlecode.lanterna.gui2.Button;
 import com.googlecode.lanterna.gui2.Label;
+import com.googlecode.lanterna.gui2.Panel;
 import com.googlecode.lanterna.gui2.TextGUIThread;
 import com.googlecode.lanterna.gui2.Window;
 
@@ -18,6 +19,8 @@ import java.util.Arrays;
  */
 public abstract class AbstractBasePage {
 
+    protected final Panel mainPanel;
+
     protected final TerminalWindowManager windowManager;
     protected final Dispatcher backend;
     protected final TextGUIThread guiThread;
@@ -28,6 +31,7 @@ public abstract class AbstractBasePage {
         this.backend = backend;
         this.guiThread = guiThread;
         this.componentFactory = TerminalComponentFactory.getInstance();
+        this.mainPanel = componentFactory.createStandardPanel();
     }
 
     public abstract BasicWindow createWindow();
@@ -49,4 +53,9 @@ public abstract class AbstractBasePage {
     protected Label createLabel(String text) {
         return componentFactory.createLabel(text);
     }
+
+    protected void addSpace() {
+        mainPanel.addComponent(componentFactory.createEmptySpace());
+    }
+
 }

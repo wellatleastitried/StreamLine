@@ -25,7 +25,6 @@ public class SongsFromPlaylistPage extends AbstractDynamicPage {
 
     private final TextGUI textGUI;
     private final BasicWindow window;
-    private final Panel mainPanel;
     private final Panel resultPanel;
 
     private final Button backButton;
@@ -49,7 +48,6 @@ public class SongsFromPlaylistPage extends AbstractDynamicPage {
         this.PLAYLIST_NAME = playlistName;
         this.textGUI = textGUI;
         this.window = createStandardWindow(get("window.songsFromPlaylistTitle"));
-        this.mainPanel = componentFactory.createStandardPanel();
         this.RESULT_PANEL_WIDTH = componentFactory.getTerminalSize().getColumns();
         this.RESULT_PANEL_HEIGHT = componentFactory.getTerminalSize().getRows() - mainPanel.getSize().getRows() - 15;
         this.SONG_BUTTON_WIDTH = RESULT_PANEL_WIDTH;
@@ -119,19 +117,12 @@ public class SongsFromPlaylistPage extends AbstractDynamicPage {
             return;
         }
 
-        for (int i = 0; i < songs.size(); i++) {
-            int displayIndex = i + 1;
-            try {
-                Song song = songs.getSongFromIndex(displayIndex);
-                if (song == null) {
-                    Logger.debug("Song is null at index {}", displayIndex);
-                    continue;
-                }
-                songsFromPlaylist.add(song);
-            } catch (Exception e) {
-                LoggerUtils.logErrorMessage(e);
+        for (Song song : songs.drain()) {
+            if (song == null) {
+                Logger.debug("Song is null.");
                 continue;
             }
+            songsFromPlaylist.add(song);
         }
 
         Logger.debug("Loaded {} songs for the playlist: {}", songsFromPlaylist.size(), PLAYLIST_NAME);
@@ -167,10 +158,6 @@ public class SongsFromPlaylistPage extends AbstractDynamicPage {
             mainPanel.addComponent(pageDownButton);
             addSpace();
         }
-    }
-
-    private void addSpace() {
-        mainPanel.addComponent(componentFactory.createEmptySpace());
     }
 
     private Button createPageChangeButton(String direction) {

@@ -7,7 +7,6 @@ import com.googlecode.lanterna.gui2.TextGUIThread;
 
 import com.streamline.audio.Song;
 import com.streamline.backend.Dispatcher;
-import com.streamline.frontend.terminal.*;
 import com.streamline.utilities.LanguagePeer;
 
 import java.util.Map;
@@ -18,7 +17,6 @@ public class SongOptionPage extends AbstractDynamicPage {
     private final Map<Integer, Button> previousResultsForSearchPage;
 
     private BasicWindow window;
-    private Panel panel;
     private Button likeButton;
 
     private Button downloadButton;
@@ -45,9 +43,8 @@ public class SongOptionPage extends AbstractDynamicPage {
     @Override
     public BasicWindow createWindow() {
         window = createStandardWindow(LanguagePeer.getText("window.songOptionPageTitle"));
-        panel = componentFactory.createStandardPanel();
         fillPanelComponents();
-        window.setComponent(panel);
+        window.setComponent(mainPanel);
         return window;
     }
 
@@ -55,35 +52,35 @@ public class SongOptionPage extends AbstractDynamicPage {
     public BasicWindow updateWindow() {
         window.invalidate();
         fillPanelComponents();
-        window.setComponent(panel);
+        window.setComponent(mainPanel);
         return window;
     }
 
     private void fillPanelComponents() {
-        if (panel.getChildren().size() > 0) {
-            panel.removeAllComponents();
+        if (mainPanel.getChildren().size() > 0) {
+            mainPanel.removeAllComponents();
         }
-        panel.addComponent(componentFactory.createEmptySpace());
-        panel.addComponent(componentFactory.createLabel(LanguagePeer.getText("label.songOptionPageTitle")));
+        addSpace();
+        mainPanel.addComponent(componentFactory.createLabel(LanguagePeer.getText("label.songOptionPageTitle")));
 
-        panel.addComponent(componentFactory.createEmptySpace());
-        panel.addComponent(componentFactory.createButton(LanguagePeer.getText("button.playSong"), () -> {
+        addSpace();
+        mainPanel.addComponent(componentFactory.createButton(LanguagePeer.getText("button.playSong"), () -> {
             backend.playSong(selectedSong);
         }));
 
 
         likeButton = createLikeButton();
-        panel.addComponent(likeButton);
+        mainPanel.addComponent(likeButton);
 
-        panel.addComponent(componentFactory.createButton(LanguagePeer.getText("button.addToPlaylist"), () -> {
+        mainPanel.addComponent(componentFactory.createButton(LanguagePeer.getText("button.addToPlaylist"), () -> {
             windowManager.transitionToPlaylistChoicePage(previousPage, selectedSong, previousResultsForSearchPage);
         }));
 
         downloadButton = createDownloadButton();
-        panel.addComponent(downloadButton);
+        mainPanel.addComponent(downloadButton);
 
-        panel.addComponent(componentFactory.createEmptySpace());
-        panel.addComponent(componentFactory.createButton(
+        addSpace();
+        mainPanel.addComponent(componentFactory.createButton(
                     LanguagePeer.getText("button.back"), 
                     () -> handlePageTransition(),
                     componentFactory.getButtonWidth() / 3, 
@@ -158,7 +155,7 @@ public class SongOptionPage extends AbstractDynamicPage {
 
     private void updatePanel() {
         guiThread.invokeLater(() -> {
-            panel.removeAllComponents();
+            mainPanel.removeAllComponents();
             fillPanelComponents();
         });
     }
