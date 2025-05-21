@@ -18,6 +18,7 @@ public class SearchJob extends AbstractStreamLineJob {
         this.searchTerm = searchTerm;
     }
 
+    @Override
     public void execute() {
         final RetrievedStorage finalResults = new RetrievedStorage();
         try {

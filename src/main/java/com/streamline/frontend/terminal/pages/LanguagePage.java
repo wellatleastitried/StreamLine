@@ -27,7 +27,7 @@ public class LanguagePage extends AbstractBasePage {
                 backend.changeLanguage("en");
                 guiThread.invokeLater(() -> {
                     windowManager.rebuildAllWindows();
-                    windowManager.transitionTo(windowManager.settingsPage);
+                    windowManager.transitionTo(windowManager.settingsPageWindow);
                 });
             }
         ));
@@ -38,7 +38,7 @@ public class LanguagePage extends AbstractBasePage {
                 LanguagePeer.setLanguage("es");
                 guiThread.invokeLater(() -> {
                     windowManager.rebuildAllWindows();
-                    windowManager.transitionTo(windowManager.settingsPage);
+                    windowManager.transitionTo(windowManager.settingsPageWindow);
                 });
             }
         ));
@@ -49,7 +49,7 @@ public class LanguagePage extends AbstractBasePage {
                 backend.changeLanguage("ru");
                 guiThread.invokeLater(() -> {
                     windowManager.rebuildAllWindows();
-                    windowManager.transitionTo(windowManager.settingsPage);
+                    windowManager.transitionTo(windowManager.settingsPageWindow);
                 });
             }
         ));

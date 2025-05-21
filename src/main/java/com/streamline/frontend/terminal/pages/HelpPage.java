@@ -24,8 +24,7 @@ public class HelpPage extends AbstractBasePage {
         addSpace();
         mainPanel.addComponent(componentFactory.createLabelWithSize(LanguagePeer.getText("label.likedMusicTitle")));
         mainPanel.addComponent(componentFactory.createLabel(LanguagePeer.getText("label.likedMusicBody")));
-        addSpace();
-        addSpace();
+        addSpace(2);
         
         mainPanel.addComponent(componentFactory.createButton(
             LanguagePeer.getText("button.back"),

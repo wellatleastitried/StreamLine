@@ -7,11 +7,17 @@ import org.tinylog.Logger;
 
 public class Playlist {
 
-    private final Dispatcher backend;
+    private Dispatcher backend;
 
     private final int id;
     private final String name;
     private RetrievedStorage songsInPlaylist = null;
+
+    public Playlist(int id, String name) {
+        this.id = id;
+        this.name = name;
+        this.backend = null;
+    }
 
     public Playlist(String name, Dispatcher backend) {
         this.name = name;
@@ -23,6 +29,10 @@ public class Playlist {
         }
     }
 
+    public int getId() {
+        return id;
+    }
+
     public String getName() {
         return name;
     }
@@ -30,6 +40,10 @@ public class Playlist {
     public RetrievedStorage getSongs() {
         songsInPlaylist = backend.getPlaylistSongs(id);
         return songsInPlaylist;
+    }
+
+    public void setBackend(Dispatcher backend) {
+        this.backend = backend;
     }
 
     public void addTrack(Song song) {

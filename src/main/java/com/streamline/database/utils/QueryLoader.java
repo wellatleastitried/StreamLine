@@ -33,6 +33,7 @@ public final class QueryLoader {
             map.put("GET_DOWNLOADED_SONGS", StatementReader.readQueryFromFile("/sql/queries/GetSongForDownloadedScreen.sql"));
             map.put("GET_RECENTLY_PLAYED_SONGS", StatementReader.readQueryFromFile("/sql/queries/GetSongForRecPlayedScreen.sql"));
             map.put("ENSURE_RECENTLY_PLAYED_SONG_COUNT", StatementReader.readQueryFromFile("/sql/updates/UpdateRecentlyPlayed.sql"));
+            map.put("GET_PLAYLISTS", StatementReader.readQueryFromFile("/sql/queries/GetPlaylists.sql"));
             map = Collections.unmodifiableMap(map);
         } catch (IOException iE) {
             System.err.println("[!] A fatal error has occured while reading premade SQL queries from configuration files.");

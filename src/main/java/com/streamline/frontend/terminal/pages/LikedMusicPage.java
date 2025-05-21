@@ -20,8 +20,8 @@ import org.tinylog.Logger;
  */
 public class LikedMusicPage extends AbstractDynamicPage {
 
-    private final TextGUI textGUI;
     private final BasicWindow window;
+    private final TextGUI textGUI;
     private final Panel resultPanel;
 
     private final Button backButton;
@@ -140,6 +140,7 @@ public class LikedMusicPage extends AbstractDynamicPage {
             songButtons.add(songButton);
             resultPanel.addComponent(songButton);
         }
+        songButtons.get(0).takeFocus();
     }
 
     private void addPageUpButton() {
@@ -199,6 +200,6 @@ public class LikedMusicPage extends AbstractDynamicPage {
 
     private void handleSongSelection(Song song) {
         windowManager.buildSongOptionPage(song, this);
-        windowManager.transitionTo(windowManager.songOptionPage);
+        windowManager.transitionTo(windowManager.songOptionPageWindow);
     }
 }

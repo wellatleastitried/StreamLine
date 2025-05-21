@@ -13,6 +13,7 @@ public class QueuePlaybackJob extends AbstractStreamLineJob {
         this.queue = queue;
     }
 
+    @Override
     public void execute() {
         AudioPlayer audioPlayer = new AudioPlayer(queue);
         audioPlayer.run();

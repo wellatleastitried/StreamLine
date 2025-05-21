@@ -13,6 +13,7 @@ public class CacheInitializationJob extends AbstractStreamLineJob {
         this.dbRunner = dbRunner;
     }
 
+    @Override
     public void execute() {
         CacheManager.clearExpiredCacheOnStartup(config.getOS(), dbRunner.getExpiredCache());
         dbRunner.clearExpiredCache();

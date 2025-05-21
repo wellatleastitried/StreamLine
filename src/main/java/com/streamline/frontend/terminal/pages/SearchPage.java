@@ -2,20 +2,29 @@ package com.streamline.frontend.terminal.pages;
 
 import com.googlecode.lanterna.TerminalSize;
 import com.googlecode.lanterna.TextColor;
-import com.googlecode.lanterna.gui2.*;
+import com.googlecode.lanterna.gui2.BasicWindow;
+import com.googlecode.lanterna.gui2.Button;
+import com.googlecode.lanterna.gui2.GridLayout;
+import com.googlecode.lanterna.gui2.Panel;
+import com.googlecode.lanterna.gui2.TextBox;
+import com.googlecode.lanterna.gui2.TextGUI;
+import com.googlecode.lanterna.gui2.TextGUIThread;
+
 import com.googlecode.lanterna.input.KeyStroke;
 import com.googlecode.lanterna.input.KeyType;
+
 import com.streamline.audio.Song;
 import com.streamline.backend.Dispatcher;
-import com.streamline.utilities.RetrievedStorage;
 import com.streamline.utilities.LanguagePeer;
-import org.tinylog.Logger;
+import com.streamline.utilities.RetrievedStorage;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+
+import org.tinylog.Logger;
 
 /**
  * Window for the search functionality.
@@ -98,7 +107,7 @@ public class SearchPage extends AbstractBasePage {
 
     private void handleSongSelection(Song song) {
         windowManager.buildSongOptionPage(song, this, searchResultButtons);
-        windowManager.transitionTo(windowManager.songOptionPage);
+        windowManager.transitionTo(windowManager.songOptionPageWindow);
     }
 
     private void resultsToButtons(RetrievedStorage results, Panel resultsPanel) {

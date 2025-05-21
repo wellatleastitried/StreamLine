@@ -19,6 +19,7 @@ public class DownloadedSongsFetchJob extends AbstractStreamLineJob {
         this.dbRunner = dbRunner;
     }
 
+    @Override
     public void execute() {
         try {
             results = dbRunner.getDownloadedSongs();

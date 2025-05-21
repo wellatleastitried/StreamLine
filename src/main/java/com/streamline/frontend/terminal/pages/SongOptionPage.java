@@ -169,15 +169,15 @@ public class SongOptionPage extends AbstractDynamicPage {
                 break;
             case "LikedMusicPage":
                 windowManager.rebuildDynamicWindows();
-                windowManager.transitionTo(windowManager.likedMusicPage);
+                windowManager.transitionTo(windowManager.likedMusicPageWindow);
                 break;
             case "DownloadedMusicPage":
                 windowManager.rebuildDynamicWindows();
-                windowManager.transitionTo(windowManager.downloadedPage);
+                windowManager.transitionTo(windowManager.downloadedPageWindow);
                 break;
             case "PlaylistPage":
                 windowManager.rebuildDynamicWindows();
-                windowManager.transitionTo(windowManager.playlistPage);
+                windowManager.transitionTo(windowManager.playlistPageWindow);
                 break;
             default:
                 windowManager.rebuildAllWindows();

@@ -6,7 +6,6 @@ import com.googlecode.lanterna.gui2.*;
 import com.streamline.audio.Song;
 import com.streamline.backend.Dispatcher;
 import com.streamline.utilities.RetrievedStorage;
-import com.streamline.utilities.internal.LoggerUtils;
 
 import java.io.IOException;
 
@@ -21,6 +20,7 @@ import org.tinylog.Logger;
  */
 public class SongsFromPlaylistPage extends AbstractDynamicPage {
 
+    private final int PLAYLIST_ID;
     private final String PLAYLIST_NAME;
 
     private final TextGUI textGUI;
@@ -43,8 +43,9 @@ public class SongsFromPlaylistPage extends AbstractDynamicPage {
     private int currentPage = 0;
     private int totalPages = 0;
 
-    public SongsFromPlaylistPage(Dispatcher backend, TextGUIThread guiThread, TextGUI textGUI, String playlistName) {
+    public SongsFromPlaylistPage(Dispatcher backend, TextGUIThread guiThread, TextGUI textGUI, int playlistId, String playlistName) {
         super(backend, guiThread);
+        this.PLAYLIST_ID = playlistId;
         this.PLAYLIST_NAME = playlistName;
         this.textGUI = textGUI;
         this.window = createStandardWindow(get("window.songsFromPlaylistTitle"));
@@ -96,7 +97,7 @@ public class SongsFromPlaylistPage extends AbstractDynamicPage {
         addSpace();
         mainPanel.addComponent(createLabel(PLAYLIST_NAME));
         addSpace();
-        RetrievedStorage retrievedSongs = getLikedSongs();
+        RetrievedStorage retrievedSongs = getSongsFromPlaylist();
         loadSongs(retrievedSongs);
         totalPages = (int) Math.ceil((double) songsFromPlaylist.size() / SONGS_PER_PAGE);
         if (totalPages == 0) totalPages = 1;
@@ -197,12 +198,12 @@ public class SongsFromPlaylistPage extends AbstractDynamicPage {
         }
     }
 
-    private RetrievedStorage getLikedSongs() {
-        return backend.getLikedSongs();
+    private RetrievedStorage getSongsFromPlaylist() {
+        return backend.getPlaylistSongs(PLAYLIST_ID, PLAYLIST_NAME);
     }
 
     private void handleSongSelection(Song song) {
         windowManager.buildSongOptionPage(song, this);
-        windowManager.transitionTo(windowManager.songOptionPage);
+        windowManager.transitionTo(windowManager.songOptionPageWindow);
     }
 }

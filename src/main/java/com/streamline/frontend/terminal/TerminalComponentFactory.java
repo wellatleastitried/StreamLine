@@ -113,6 +113,24 @@ public class TerminalComponentFactory {
         return wrapper;
     }
 
+    public String getFormattedTextForPlaylistButton(int widthOfButton, String playlistName) {
+        int effectiveWidth = widthOfButton - 8; /* Take 8 off the width so the text isn't touching the border */
+
+        final int MAX_LEAD_SPACE = effectiveWidth / 3;
+
+        String formattedPlaylistName = formatTextToFixedLength(playlistName, effectiveWidth);
+
+        String leadSpace = " ".repeat(Math.max(0, MAX_LEAD_SPACE));
+
+        if (formattedPlaylistName.length() < widthOfButton) {
+            formattedPlaylistName += " ".repeat(widthOfButton - formattedPlaylistName.length());
+        } else if (formattedPlaylistName.length() > widthOfButton) {
+            formattedPlaylistName = formattedPlaylistName.substring(0, widthOfButton);
+        }
+
+        return String.format("%s%s", leadSpace, formattedPlaylistName);
+    }
+
     public String getFormattedTextForSongButton(int widthOfButton, int index, String title, String artist, String length) {
         int effectiveWidth = widthOfButton - 8; /* Take 8 off the width so the text isn't touching the border */
 

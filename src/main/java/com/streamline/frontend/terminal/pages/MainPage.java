@@ -5,7 +5,7 @@ import com.streamline.backend.Dispatcher;
 import com.streamline.utilities.LanguagePeer;
 import com.streamline.utilities.RuntimeManager;
 
-public class MainPage extends AbstractBasePage{
+public class MainPage extends AbstractBasePage {
     
     public MainPage(Dispatcher backend, TextGUIThread guiThread) {
         super(backend, guiThread);
@@ -21,37 +21,37 @@ public class MainPage extends AbstractBasePage{
         
         mainPanel.addComponent(componentFactory.createButton(
             LanguagePeer.getText("button.searchForSong"), 
-            () -> windowManager.transitionTo(windowManager.searchPage)
+            () -> windowManager.transitionTo(windowManager.searchPageWindow)
         ));
         
         mainPanel.addComponent(componentFactory.createButton(
             LanguagePeer.getText("button.viewLikedSong"), 
-            () -> windowManager.transitionTo(windowManager.likedMusicPage)
+            () -> windowManager.transitionTo(windowManager.likedMusicPageWindow)
         ));
         
         mainPanel.addComponent(componentFactory.createButton(
             LanguagePeer.getText("button.playlists"), 
-            () -> windowManager.transitionTo(windowManager.playlistPage)
+            () -> windowManager.transitionTo(windowManager.playlistPageWindow)
         ));
         
         mainPanel.addComponent(componentFactory.createButton(
             LanguagePeer.getText("button.recentlyPlayed"), 
-            () -> windowManager.transitionTo(windowManager.recentlyPlayedPage)
+            () -> windowManager.transitionTo(windowManager.recentlyPlayedPageWindow)
         ));
         
         mainPanel.addComponent(componentFactory.createButton(
             LanguagePeer.getText("button.downloadedMusic"), 
-            () -> windowManager.transitionTo(windowManager.downloadedPage)
+            () -> windowManager.transitionTo(windowManager.downloadedPageWindow)
         ));
         
         mainPanel.addComponent(componentFactory.createButton(
             LanguagePeer.getText("button.help"), 
-            () -> windowManager.transitionTo(windowManager.helpPage)
+            () -> windowManager.transitionTo(windowManager.helpPageWindow)
         ));
         
         mainPanel.addComponent(componentFactory.createButton(
             LanguagePeer.getText("button.settings"), 
-            () -> windowManager.transitionTo(windowManager.settingsPage)
+            () -> windowManager.transitionTo(windowManager.settingsPageWindow)
         ));
         
         mainPanel.addComponent(componentFactory.createButton(

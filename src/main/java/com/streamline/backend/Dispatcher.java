@@ -11,6 +11,7 @@ import com.streamline.utilities.CacheManager;
 import com.streamline.utilities.RetrievedStorage;
 import com.streamline.utilities.internal.Config;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -157,6 +158,18 @@ public final class Dispatcher {
         return getPlaylistSongs(getPlaylistId(playlistName));
     }
 
+    public RetrievedStorage getPlaylistSongs(int playlistId, String playlistName) {
+        PlaylistSongsFetchJob playlistJob = new PlaylistSongsFetchJob(config, dbRunner, playlistId, playlistName);
+        submitJob(playlistJob);
+
+        while (!playlistJob.resultsAreReady()) {
+            Thread.onSpinWait();
+        }
+        Logger.debug("Job is no longer running.");
+
+        return playlistJob.getResults();
+    }
+
     public RetrievedStorage getPlaylistSongs(int playlistId) {
         PlaylistSongsFetchJob playlistJob = new PlaylistSongsFetchJob(config, dbRunner, playlistId);
         submitJob(playlistJob);
@@ -181,6 +194,17 @@ public final class Dispatcher {
     public void removeSongFromPlaylist(String playlistName, Song song) {
         Playlist playlist = new Playlist(playlistName, this);
         playlist.removeTrack(song);
+    }
+
+    public List<Playlist> getPlaylists() {
+        PlaylistFetchJob playlistJob = new PlaylistFetchJob(config, dbRunner);
+        submitJob(playlistJob);
+
+        while (!playlistJob.resultsAreReady()) {
+            Thread.onSpinWait();
+        }
+
+        return playlistJob.getResults();
     }
 
 

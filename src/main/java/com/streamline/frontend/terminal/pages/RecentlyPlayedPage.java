@@ -152,6 +152,6 @@ public class RecentlyPlayedPage extends AbstractDynamicPage {
 
     private void handleSongSelection(Song song) {
         windowManager.buildSongOptionPage(song, this);
-        windowManager.transitionTo(windowManager.songOptionPage);
+        windowManager.transitionTo(windowManager.songOptionPageWindow);
     }
 }

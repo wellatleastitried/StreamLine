@@ -21,13 +21,12 @@ public abstract class AbstractBasePage {
 
     protected final Panel mainPanel;
 
-    protected final TerminalWindowManager windowManager;
+    protected TerminalWindowManager windowManager;
     protected final Dispatcher backend;
     protected final TextGUIThread guiThread;
     protected final TerminalComponentFactory componentFactory;
 
     public AbstractBasePage(Dispatcher backend, TextGUIThread guiThread) {
-        this.windowManager = TerminalWindowManager.getInstance();
         this.backend = backend;
         this.guiThread = guiThread;
         this.componentFactory = TerminalComponentFactory.getInstance();
@@ -55,7 +54,16 @@ public abstract class AbstractBasePage {
     }
 
     protected void addSpace() {
-        mainPanel.addComponent(componentFactory.createEmptySpace());
+        addSpace(1);
     }
 
+    protected void addSpace(int count) {
+        for (int i = 0; i < count; i++) {
+            mainPanel.addComponent(componentFactory.createEmptySpace());
+        }
+    }
+
+    public void setWindowManager(TerminalWindowManager windowManager) {
+        this.windowManager = windowManager;
+    }
 }

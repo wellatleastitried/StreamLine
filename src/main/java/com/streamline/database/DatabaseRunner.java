@@ -1,17 +1,20 @@
 package com.streamline.database;
 
+import com.streamline.audio.Playlist;
 import com.streamline.audio.Song;
 import com.streamline.utilities.RetrievedStorage;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.io.Writer;
 
 import org.tinylog.Logger;
 
@@ -38,7 +41,7 @@ public final class DatabaseRunner {
     }
 
     public boolean getSongLikeStatus(Song song) {
-        final String songLikeStatusQuery = "SELECT ls.song_id FROM LikedSongs ls WHERE ls.song_id IN (SELECT id FROM Songs s WHERE s.title = ? AND s.artist = ? AND s.videoId = ?);";
+        final String songLikeStatusQuery = "SELECT ls.song_id FROM LikedSongs ls INNER JOIN Songs s ON ls.song_id = s.id WHERE s.title = ? AND s.artist = ? AND s.videoId = ?;";
         try (PreparedStatement statement = connection.prepareStatement(songLikeStatusQuery)) {
             statement.setString(1, song.getSongName());
             statement.setString(2, song.getSongArtist());
@@ -84,7 +87,6 @@ public final class DatabaseRunner {
     }
 
     public RetrievedStorage getDownloadedSongs() {
-        // TODO: Need to join this with the DownloadedSongs table to get the file path and hash
         final RetrievedStorage downloadedSongs = new RetrievedStorage();
         try {
             final Statement statement = connection.createStatement();
@@ -98,7 +100,12 @@ public final class DatabaseRunner {
                         rs.getString("artist"),
                         rs.getString("url"),
                         rs.getString("videoId"),
-                        rs.getString("duration")
+                        rs.getString("duration"),
+                        false,
+                        true,
+                        false,
+                        rs.getString("file_path"),
+                        rs.getString("file_hash")
                 );
                 downloadedSongs.add(++index, song);
             }
@@ -162,9 +169,38 @@ public final class DatabaseRunner {
         }
     }
 
+    public RetrievedStorage getSongsFromPlaylist(int playlistId, String playlistName) {
+        final RetrievedStorage songsFromPlaylist = new RetrievedStorage();
+        final String playlistSongsQuery = "SELECT s.* FROM Songs s INNER JOIN PlaylistSongs ps ON s.id = ps.song_id WHERE ps.playlist_id = ? AND ps.name = ? ORDER BY ps.date_added_to_playlist DESC;";
+        try (final PreparedStatement statement = connection.prepareStatement(playlistSongsQuery)) {
+            statement.setInt(1, playlistId);
+            statement.setString(2, playlistName);
+            final ResultSet rs = statement.executeQuery();
+            if (!rs.next()) {
+                Logger.info("[*] No playlist found with the name: {}, attempting to search only by id...", playlistName);
+                return getSongsFromPlaylist(playlistId);
+            }
+            int index = 0;
+            while (rs.next()) {
+                final Song song = new Song(
+                        rs.getInt("id"),
+                        rs.getString("title"),
+                        rs.getString("artist"),
+                        rs.getString("url"),
+                        rs.getString("videoId"),
+                        rs.getString("duration")
+                        );
+                songsFromPlaylist.add(++index, song);
+            }
+        } catch (SQLException sE) {
+            handleSQLException(sE);
+        }
+        return songsFromPlaylist;
+    }
+
     public RetrievedStorage getSongsFromPlaylist(int playlistId) {
         final RetrievedStorage songsFromPlaylist = new RetrievedStorage();
-        final String playlistSongsQuery = "SELECT * FROM Songs s WHERE s.id IN (SELECT song_id FROM PlaylistSongs WHERE playlist_id = ? ORDER BY data_added_to_playlist DESC);";
+        final String playlistSongsQuery = "SELECT s.* FROM Songs s INNER JOIN PlaylistSongs ps ON s.id = ps.song_id WHERE ps.playlist_id = ? ORDER BY ps.date_added_to_playlist DESC;";
         try (final PreparedStatement statement = connection.prepareStatement(playlistSongsQuery)) {
             statement.setInt(1, playlistId);
             final ResultSet rs = statement.executeQuery();
@@ -186,8 +222,30 @@ public final class DatabaseRunner {
         return songsFromPlaylist;
     }
 
+    public List<Playlist> getPlaylists() {
+        try (final Statement playlistQuery = connection.createStatement()) {
+            final ResultSet rs = playlistQuery.executeQuery(queryMap.get("GET_PLAYLISTS"));
+            List<Playlist> playlists = new ArrayList<>();
+            while (rs.next()) {
+                final Playlist playlist = new Playlist(
+                        rs.getInt("id"),
+                        rs.getString("name")
+                );
+                playlists.add(playlist);
+            }
+            if (playlists.isEmpty()) {
+                Logger.debug("No playlists found.");
+                return null;
+            }
+            return playlists;
+        } catch (SQLException sE) {
+            handleSQLException(sE);
+        }
+        return null;
+    }
+
     public int getSongIdFromLikedTable(Song songToSearch) {
-        final String likedSongQuery = "SELECT ls.song_id FROM LikedSongs ls WHERE ls.song_id IN (SELECT id FROM Songs s WHERE s.title = ? AND s.artist = ? AND s.videoId = ?);";
+        final String likedSongQuery = "SELECT ls.song_id FROM LikedSongs INNER JOIN Songs s ON ls.song_id = s.id WHERE s.title = ? AND s.artist = ? AND s.videoId = ?;";
         try (final PreparedStatement statement = connection.prepareStatement(likedSongQuery)) {
             statement.setString(1, songToSearch.getSongName());
             statement.setString(2, songToSearch.getSongArtist());

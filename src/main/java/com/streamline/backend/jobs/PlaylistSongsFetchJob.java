@@ -10,6 +10,7 @@ public class PlaylistSongsFetchJob extends AbstractStreamLineJob {
 
     private final DatabaseRunner dbRunner;
     private final int playlistId;
+    private final String playlistName;
 
     private RetrievedStorage results = null;
 
@@ -19,11 +20,24 @@ public class PlaylistSongsFetchJob extends AbstractStreamLineJob {
         super(config);
         this.dbRunner = dbRunner;
         this.playlistId = playlistId;
+        this.playlistName = null;
     }
 
+    public PlaylistSongsFetchJob(Config config, DatabaseRunner dbRunner, int playlistId, String playlistName) {
+        super(config);
+        this.dbRunner = dbRunner;
+        this.playlistId = playlistId;
+        this.playlistName = playlistName;
+    }
+
+    @Override
     public void execute() {
         try {
-            results = dbRunner.getSongsFromPlaylist(playlistId);
+            if (playlistName != null) {
+                results = dbRunner.getSongsFromPlaylist(playlistId, playlistName);
+            } else {
+                results = dbRunner.getSongsFromPlaylist(playlistId);
+            }
             Logger.debug("Number of songs fetched from playlist: " + results.size());
         } finally {
             resultsAreReady = true;

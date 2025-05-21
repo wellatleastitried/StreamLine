@@ -27,7 +27,7 @@ public class SettingsPage extends AbstractBasePage {
 
         mainPanel.addComponent(componentFactory.createButton(
                     LanguagePeer.getText("button.chooseLanguage"),
-                    () -> windowManager.transitionTo(windowManager.languagePage)
+                    () -> windowManager.transitionTo(windowManager.languagePageWindow)
         ));
 
         addSpace();
