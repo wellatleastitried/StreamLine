@@ -23,7 +23,6 @@ public class SongsFromPlaylistPage extends AbstractDynamicPage {
     private final int PLAYLIST_ID;
     private final String PLAYLIST_NAME;
 
-    private final TextGUI textGUI;
     private final BasicWindow window;
     private final Panel resultPanel;
 
@@ -43,11 +42,10 @@ public class SongsFromPlaylistPage extends AbstractDynamicPage {
     private int currentPage = 0;
     private int totalPages = 0;
 
-    public SongsFromPlaylistPage(Dispatcher backend, TextGUIThread guiThread, TextGUI textGUI, int playlistId, String playlistName) {
+    public SongsFromPlaylistPage(Dispatcher backend, TextGUIThread guiThread, int playlistId, String playlistName) {
         super(backend, guiThread);
         this.PLAYLIST_ID = playlistId;
         this.PLAYLIST_NAME = playlistName;
-        this.textGUI = textGUI;
         this.window = createStandardWindow(get("window.songsFromPlaylistTitle"));
         this.RESULT_PANEL_WIDTH = componentFactory.getTerminalSize().getColumns();
         this.RESULT_PANEL_HEIGHT = componentFactory.getTerminalSize().getRows() - mainPanel.getSize().getRows() - 15;
@@ -75,19 +73,10 @@ public class SongsFromPlaylistPage extends AbstractDynamicPage {
 
     @Override
     public BasicWindow updateWindow() {
-        buildPage();
         window.invalidate();
-        refreshWindow();
+        buildPage();
+        windowManager.refresh();
         return window;
-    }
-
-    private void refreshWindow() {
-        try {
-            textGUI.getScreen().refresh();
-            Logger.debug("Screen refreshed successfully.");
-        } catch (IOException iE) {
-            Logger.error("[!] Error while redrawing screen, please restart the app.");
-        }
     }
 
     private void buildPage() {

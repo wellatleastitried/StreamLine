@@ -77,15 +77,15 @@ public class TerminalWindowManager {
         pages.put("helpPage", helpPage);
         this.settingsPage = new SettingsPage(backend, guiThread);
         pages.put("settingsPage", settingsPage);
-        this.searchPage = new SearchPage(backend, guiThread, textGUI);
+        this.searchPage = new SearchPage(backend, guiThread);
         pages.put("searchPage", searchPage);
-        this.likedMusicPage = new LikedMusicPage(backend, guiThread, textGUI);
+        this.likedMusicPage = new LikedMusicPage(backend, guiThread);
         pages.put("likedMusicPage", likedMusicPage);
-        this.playlistPage = new PlaylistPage(backend, guiThread, textGUI);
+        this.playlistPage = new PlaylistPage(backend, guiThread);
         pages.put("playlistPage", playlistPage);
-        this.recentlyPlayedPage = new RecentlyPlayedPage(backend, guiThread, textGUI);
+        this.recentlyPlayedPage = new RecentlyPlayedPage(backend, guiThread);
         pages.put("recentlyPlayedPage", recentlyPlayedPage);
-        this.downloadedPage = new DownloadedMusicPage(backend, guiThread, textGUI);
+        this.downloadedPage = new DownloadedMusicPage(backend, guiThread);
         pages.put("downloadedPage", downloadedPage);
         this.languagePage = new LanguagePage(backend, guiThread);
         pages.put("languagePage", languagePage);
@@ -156,13 +156,13 @@ public class TerminalWindowManager {
     }
 
     public <T extends AbstractBasePage> void buildCreatePlaylistPage(T previousWindow) {
-        CreatePlaylistPage createPlaylistPage = new CreatePlaylistPage(previousWindow, backend, guiThread, textGUI);
+        CreatePlaylistPage createPlaylistPage = new CreatePlaylistPage(previousWindow, backend, guiThread);
         createPlaylistPage.setWindowManager(this);
         this.createPlaylistPageWindow = createPlaylistPage.createWindow();
     }
 
     public <T extends AbstractBasePage> void buildSongsFromPlaylistPage(Playlist playlist, T previousWindow) {
-        SongsFromPlaylistPage songsFromPlaylistPage = new SongsFromPlaylistPage(backend, guiThread, textGUI, playlist.getId(), playlist.getName());
+        SongsFromPlaylistPage songsFromPlaylistPage = new SongsFromPlaylistPage(backend, guiThread, playlist.getId(), playlist.getName());
         songsFromPlaylistPage.setWindowManager(this);
         this.songsFromPlaylistPageWindow = songsFromPlaylistPage.createWindow();
     }
@@ -191,11 +191,11 @@ public class TerminalWindowManager {
         guiThread.invokeLater(() -> {
             if (this.rebuildSearchPageWhenDone) {
                 this.rebuildSearchPageWhenDone = false;
-                SearchPage searchPage = new SearchPage(backend, guiThread, textGUI);
+                SearchPage searchPage = new SearchPage(backend, guiThread);
                 searchPage.setWindowManager(this);
                 this.searchPageWindow = searchPage.createWindow();
             } else {
-                SearchPage searchPage = new SearchPage(backend, guiThread, textGUI, searchResults);
+                SearchPage searchPage = new SearchPage(backend, guiThread, searchResults);
                 searchPage.setWindowManager(this);
                 this.searchPageWindow = searchPage.createWindow();
             }

@@ -3,9 +3,7 @@ package com.streamline.frontend.terminal.pages;
 import com.googlecode.lanterna.TerminalSize;
 import com.googlecode.lanterna.gui2.BasicWindow;
 import com.googlecode.lanterna.gui2.TextBox;
-import com.googlecode.lanterna.gui2.TextGUI;
 import com.googlecode.lanterna.gui2.TextGUIThread;
-import com.googlecode.lanterna.gui2.WindowBasedTextGUI;
 import com.googlecode.lanterna.input.KeyStroke;
 import com.googlecode.lanterna.input.KeyType;
 
@@ -18,7 +16,6 @@ public class CreatePlaylistPage extends AbstractDynamicPage {
 
     private BasicWindow window;
 
-    private final TextGUI textGUI;
     private final AbstractBasePage previousPage;
 
     private String playlistName;
@@ -27,35 +24,38 @@ public class CreatePlaylistPage extends AbstractDynamicPage {
     private Song cachedSong = null;
     private AbstractBasePage cachedPage = null;
 
-    public <T extends AbstractBasePage> CreatePlaylistPage(T previousPage, Dispatcher backend, TextGUIThread guiThread, WindowBasedTextGUI textGUI) {
+    public <T extends AbstractBasePage> CreatePlaylistPage(T previousPage, Dispatcher backend, TextGUIThread guiThread) {
         super(backend, guiThread);
         this.previousPage = previousPage;
-        this.textGUI = textGUI;
     }
 
-    public <T extends AbstractBasePage> CreatePlaylistPage(T previousPage, Dispatcher backend, TextGUIThread guiThread, WindowBasedTextGUI textGUI, Song songFromPreviousPage, T cachedPage) {
+    public <T extends AbstractBasePage> CreatePlaylistPage(T previousPage, Dispatcher backend, TextGUIThread guiThread, Song songFromPreviousPage, T cachedPage) {
         super(backend, guiThread);
         this.previousPage = previousPage;
-        this.textGUI = textGUI;
         this.cachedSong = songFromPreviousPage;
         this.cachedPage = cachedPage;
     }
 
     @Override
     public BasicWindow createWindow() {
-        return buildWindow();
+        return buildWindow("");
     }
 
     @Override
     public BasicWindow updateWindow() {
-        return buildWindow();
+        window.invalidate();
+        mainPanel.removeAllComponents();
+        window = buildWindow("");
+        windowManager.refresh();
+        return window;
     }
 
-    private BasicWindow buildWindow() {
+    private BasicWindow buildWindow(String textInTextBox) {
         window = createStandardWindow(get("window.createPlaylistTitle"));
 
         addSpace(3);
-        mainPanel.addComponent(createPlaylistNameEntryBox());
+        mainPanel.addComponent(createLabel(get("label.createPlaylist")));
+        mainPanel.addComponent(createPlaylistNameEntryBox(textInTextBox));
         addSpace();
 
         if (enableConfirmationButtons) {
@@ -93,8 +93,8 @@ public class CreatePlaylistPage extends AbstractDynamicPage {
         return window;
     }
 
-    private TextBox createPlaylistNameEntryBox() {
-        return new TextBox(new TerminalSize(componentFactory.getTerminalSize().getColumns() / 2, 5)) {
+    private TextBox createPlaylistNameEntryBox(String text) {
+        TextBox textBox = new TextBox(new TerminalSize(componentFactory.getTerminalSize().getColumns() / 2, 5)) {
             @Override
             public synchronized Result handleKeyStroke(KeyStroke keyStroke) {
                 if (keyStroke.getKeyType() == KeyType.Enter) {
@@ -102,13 +102,9 @@ public class CreatePlaylistPage extends AbstractDynamicPage {
                     if (verifyPlaylistName(playlistName)) {
                         enableConfirmationButtons = true;
                         guiThread.invokeLater(() -> {
-                            window = buildWindow();
+                            window = buildWindow(text);
                             window.invalidate();
-                            try {
-                                textGUI.getScreen().refresh();
-                            } catch (Exception e) {
-                                Logger.error("[!] Error refreshing screen: " + e.getMessage());
-                            }
+                            windowManager.refresh();
                         });
                     }
                     return Result.HANDLED;
@@ -116,6 +112,8 @@ public class CreatePlaylistPage extends AbstractDynamicPage {
                 return super.handleKeyStroke(keyStroke);
             }
         };
+        textBox.setText(text);
+        return textBox;
     }
 
     private boolean verifyPlaylistName(String name) {

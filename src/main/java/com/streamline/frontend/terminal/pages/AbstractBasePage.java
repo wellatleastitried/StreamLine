@@ -66,4 +66,5 @@ public abstract class AbstractBasePage {
     public void setWindowManager(TerminalWindowManager windowManager) {
         this.windowManager = windowManager;
     }
+
 }

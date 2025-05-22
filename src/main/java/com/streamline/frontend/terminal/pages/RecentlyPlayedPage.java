@@ -6,9 +6,6 @@ import com.googlecode.lanterna.gui2.*;
 import com.streamline.audio.Song;
 import com.streamline.backend.Dispatcher;
 import com.streamline.utilities.RetrievedStorage;
-import com.streamline.utilities.internal.LoggerUtils;
-
-import java.io.IOException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +18,6 @@ import org.tinylog.Logger;
  */
 public class RecentlyPlayedPage extends AbstractDynamicPage {
 
-    private final TextGUI textGUI;
     private final BasicWindow window;
     private final Panel resultPanel;
 
@@ -39,9 +35,8 @@ public class RecentlyPlayedPage extends AbstractDynamicPage {
     private int currentPage = 0;
     private int totalPages = 0;
 
-    public RecentlyPlayedPage(Dispatcher backend, TextGUIThread guiThread, TextGUI textGUI) {
+    public RecentlyPlayedPage(Dispatcher backend, TextGUIThread guiThread) {
         super(backend, guiThread);
-        this.textGUI = textGUI;
         this.window = createStandardWindow(get("window.downloadedMusicTitle"));
         this.RESULT_PANEL_WIDTH = componentFactory.getTerminalSize().getColumns();
         this.RESULT_PANEL_HEIGHT = componentFactory.getTerminalSize().getRows() - mainPanel.getSize().getRows() - 15;
@@ -67,19 +62,10 @@ public class RecentlyPlayedPage extends AbstractDynamicPage {
 
     @Override
     public BasicWindow updateWindow() {
-        buildPage();
         window.invalidate();
-        refreshWindow();
+        buildPage();
+        windowManager.refresh();
         return window;
-    }
-
-    private void refreshWindow() {
-        try {
-            textGUI.getScreen().refresh();
-            Logger.debug("Screen refreshed successfully.");
-        } catch (IOException iE) {
-            Logger.error("[!] Error while redrawing screen, please restart the app.");
-        }
     }
 
     private void buildPage() {
@@ -98,6 +84,11 @@ public class RecentlyPlayedPage extends AbstractDynamicPage {
         addSpace();
         mainPanel.addComponent(backButton);
         window.setComponent(mainPanel);
+        if (songButtons.size() > 0) {
+            songButtons.get(0).takeFocus();
+        } else {
+            backButton.takeFocus();
+        }
     }
 
     private void loadSongs(RetrievedStorage songs) {

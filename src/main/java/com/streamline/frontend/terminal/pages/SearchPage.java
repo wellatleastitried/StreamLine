@@ -7,7 +7,6 @@ import com.googlecode.lanterna.gui2.Button;
 import com.googlecode.lanterna.gui2.GridLayout;
 import com.googlecode.lanterna.gui2.Panel;
 import com.googlecode.lanterna.gui2.TextBox;
-import com.googlecode.lanterna.gui2.TextGUI;
 import com.googlecode.lanterna.gui2.TextGUIThread;
 
 import com.googlecode.lanterna.input.KeyStroke;
@@ -18,7 +17,6 @@ import com.streamline.backend.Dispatcher;
 import com.streamline.utilities.LanguagePeer;
 import com.streamline.utilities.RetrievedStorage;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -32,18 +30,15 @@ import org.tinylog.Logger;
  */
 public class SearchPage extends AbstractBasePage {
 
-    private final TextGUI textGUI;
 
     private Map<Integer, Button> searchResultButtons;
 
-    public SearchPage(Dispatcher backend, TextGUIThread guiThread, TextGUI textGUI) {
+    public SearchPage(Dispatcher backend, TextGUIThread guiThread) {
         super(backend, guiThread);
-        this.textGUI = textGUI;
     }
 
-    public SearchPage(Dispatcher backend, TextGUIThread guiThread, TextGUI textGUI, Map<Integer, Button> searchResultButtons) {
+    public SearchPage(Dispatcher backend, TextGUIThread guiThread, Map<Integer, Button> searchResultButtons) {
         super(backend, guiThread);
-        this.textGUI = textGUI;
         this.searchResultButtons = searchResultButtons;
     }
 
@@ -147,12 +142,7 @@ public class SearchPage extends AbstractBasePage {
                     resultsPanel.addComponent(entry.getValue());
                 }
             }
-
-            try {
-                textGUI.getScreen().refresh();
-            } catch (IOException iE) {
-                Logger.error("[!] Error while redrawing screen, please restart the app.");
-            }
+            windowManager.refresh();
         });
     }
 }

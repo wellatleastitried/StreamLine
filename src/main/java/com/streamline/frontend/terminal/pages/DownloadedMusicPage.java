@@ -20,7 +20,6 @@ import org.tinylog.Logger;
  */
 public class DownloadedMusicPage extends AbstractDynamicPage {
 
-    private final TextGUI textGUI;
     private final BasicWindow window;
     private final Panel resultPanel;
 
@@ -40,9 +39,8 @@ public class DownloadedMusicPage extends AbstractDynamicPage {
     private int currentPage = 0;
     private int totalPages = 0;
 
-    public DownloadedMusicPage(Dispatcher backend, TextGUIThread guiThread, TextGUI textGUI) {
+    public DownloadedMusicPage(Dispatcher backend, TextGUIThread guiThread) {
         super(backend, guiThread);
-        this.textGUI = textGUI;
         this.window = createStandardWindow(get("window.downloadedMusicTitle"));
         this.RESULT_PANEL_WIDTH = componentFactory.getTerminalSize().getColumns();
         this.RESULT_PANEL_HEIGHT = componentFactory.getTerminalSize().getRows() - mainPanel.getSize().getRows() - 15;
@@ -70,19 +68,10 @@ public class DownloadedMusicPage extends AbstractDynamicPage {
 
     @Override
     public BasicWindow updateWindow() {
-        buildPage();
         window.invalidate();
-        refreshWindow();
+        buildPage();
+        windowManager.refresh();
         return window;
-    }
-
-    private void refreshWindow() {
-        try {
-            textGUI.getScreen().refresh();
-            Logger.debug("Screen refreshed successfully.");
-        } catch (IOException iE) {
-            Logger.error("[!] Error while redrawing screen, please restart the app.");
-        }
     }
 
     private void buildPage() {
@@ -103,6 +92,11 @@ public class DownloadedMusicPage extends AbstractDynamicPage {
         addPageDownButton();
         mainPanel.addComponent(backButton);
         window.setComponent(mainPanel);
+        if (songButtons.size() > 0) {
+            songButtons.get(0).takeFocus();
+        } else {
+            backButton.takeFocus();
+        }
     }
 
     private void loadSongs(RetrievedStorage songs) {

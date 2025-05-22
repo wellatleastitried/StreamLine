@@ -5,7 +5,6 @@ import com.googlecode.lanterna.TerminalSize;
 import com.googlecode.lanterna.gui2.Button;
 import com.googlecode.lanterna.gui2.BasicWindow;
 import com.googlecode.lanterna.gui2.GridLayout;
-import com.googlecode.lanterna.gui2.TextGUI;
 import com.googlecode.lanterna.gui2.TextGUIThread;
 import com.googlecode.lanterna.gui2.Panel;
 
@@ -13,18 +12,13 @@ import com.googlecode.lanterna.gui2.Panel;
 import com.streamline.audio.Playlist;
 import com.streamline.backend.Dispatcher;
 
-import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
-
-import org.tinylog.Logger;
 
 /**
  * Window for displaying and managing playlists.
  */
 public class PlaylistPage extends AbstractDynamicPage {
-
-    private final TextGUI textGUI;
 
     private final BasicWindow window;
     private final Panel resultPanel;
@@ -39,9 +33,8 @@ public class PlaylistPage extends AbstractDynamicPage {
 
     private int currentPage = 0;
     
-    public PlaylistPage(Dispatcher backend, TextGUIThread guiThread, TextGUI textGUI) {
+    public PlaylistPage(Dispatcher backend, TextGUIThread guiThread) {
         super(backend, guiThread);
-        this.textGUI = textGUI;
         this.window = createStandardWindow(get("window.playlistsTitle"));
 
         this.RESULT_PANEL_WIDTH = componentFactory.getTerminalSize().getColumns();
@@ -64,9 +57,9 @@ public class PlaylistPage extends AbstractDynamicPage {
 
     @Override
     public BasicWindow updateWindow() {
-        buildPage();
         window.invalidate();
-        refreshWindow();
+        buildPage();
+        windowManager.refresh();
         return window;
     }
 
@@ -115,15 +108,6 @@ public class PlaylistPage extends AbstractDynamicPage {
             Button playlistButton = createButton(formattedText, () -> handlePlaylistSelection(playlist), PLAYLIST_BUTTON_WIDTH, PLAYLIST_BUTTON_HEIGHT);
             displayedPlaylists.add(playlistButton);
             resultPanel.addComponent(playlistButton);
-        }
-    }
-
-    private void refreshWindow() {
-        try {
-            textGUI.getScreen().refresh();
-            Logger.debug("Screen refreshed successfully.");
-        } catch (IOException iE) {
-            Logger.error("[!] Error while redrawing screen, please restart the app.");
         }
     }
 

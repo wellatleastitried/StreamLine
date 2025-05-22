@@ -7,8 +7,6 @@ import com.streamline.audio.Song;
 import com.streamline.backend.Dispatcher;
 import com.streamline.utilities.RetrievedStorage;
 
-import java.io.IOException;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.LinkedList;
@@ -21,7 +19,6 @@ import org.tinylog.Logger;
 public class LikedMusicPage extends AbstractDynamicPage {
 
     private final BasicWindow window;
-    private final TextGUI textGUI;
     private final Panel resultPanel;
 
     private final Button backButton;
@@ -40,9 +37,8 @@ public class LikedMusicPage extends AbstractDynamicPage {
     private int currentPage = 0;
     private int totalPages = 0;
 
-    public LikedMusicPage(Dispatcher backend, TextGUIThread guiThread, TextGUI textGUI) {
+    public LikedMusicPage(Dispatcher backend, TextGUIThread guiThread) {
         super(backend, guiThread);
-        this.textGUI = textGUI;
         this.window = createStandardWindow(get("window.likedMusicTitle"));
         this.RESULT_PANEL_WIDTH = componentFactory.getTerminalSize().getColumns();
         this.RESULT_PANEL_HEIGHT = componentFactory.getTerminalSize().getRows() - mainPanel.getSize().getRows() - 15;
@@ -70,19 +66,10 @@ public class LikedMusicPage extends AbstractDynamicPage {
 
     @Override
     public BasicWindow updateWindow() {
-        buildPage();
         window.invalidate();
-        refreshWindow();
+        buildPage();
+        windowManager.refresh();
         return window;
-    }
-
-    private void refreshWindow() {
-        try {
-            textGUI.getScreen().refresh();
-            Logger.debug("Screen refreshed successfully.");
-        } catch (IOException iE) {
-            Logger.error("[!] Error while redrawing screen, please restart the app.");
-        }
     }
 
     private void buildPage() {
@@ -103,6 +90,11 @@ public class LikedMusicPage extends AbstractDynamicPage {
         addPageDownButton();
         mainPanel.addComponent(backButton);
         window.setComponent(mainPanel);
+        if (songButtons.size() > 0) {
+            songButtons.get(0).takeFocus();
+        } else {
+            backButton.takeFocus();
+        }
     }
 
     private void loadSongs(RetrievedStorage songs) {
@@ -140,7 +132,6 @@ public class LikedMusicPage extends AbstractDynamicPage {
             songButtons.add(songButton);
             resultPanel.addComponent(songButton);
         }
-        songButtons.get(0).takeFocus();
     }
 
     private void addPageUpButton() {
