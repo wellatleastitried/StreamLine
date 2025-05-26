@@ -48,12 +48,12 @@ public final class DatabaseLinker {
      * @return The established connection to the database.
      */
     public Connection getConnection() {
-        return this.connection;
+        return connection;
     }
 
     private boolean setupNewDatabase(String query) {
         try {
-            final Statement statement = this.connection.createStatement();
+            final Statement statement = connection.createStatement();
             statement.setQueryTimeout(30);
             statement.executeUpdate(query);
         } catch (SQLException sE) {
