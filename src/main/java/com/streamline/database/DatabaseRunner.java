@@ -455,6 +455,10 @@ public final class DatabaseRunner {
     }
 
     public void createPlaylist(String playlistName) {
+        if (getPlaylistId(playlistName) != -1) {
+            Logger.warn("[!] Playlist with name '{}' already exists.", playlistName);
+            return;
+        }
         final String createPlaylist = "INSERT INTO Playlists (name) VALUES (?);";
         try (PreparedStatement playlistStatement = connection.prepareStatement(createPlaylist)) {
             playlistStatement.setString(1, playlistName);

@@ -14,7 +14,7 @@ import org.tinylog.Logger;
 
 public class CreatePlaylistPage extends AbstractDynamicPage {
 
-    private BasicWindow window;
+    private final BasicWindow window;
 
     private final AbstractBasePage previousPage;
 
@@ -24,34 +24,38 @@ public class CreatePlaylistPage extends AbstractDynamicPage {
     private Song cachedSong = null;
     private AbstractBasePage cachedPage = null;
 
-    public <T extends AbstractBasePage> CreatePlaylistPage(T previousPage, Dispatcher backend, TextGUIThread guiThread) {
+    public <T extends AbstractBasePage> CreatePlaylistPage(T previousPage, Dispatcher backend,
+            TextGUIThread guiThread) {
         super(backend, guiThread);
         this.previousPage = previousPage;
+        this.window = createStandardWindow(get("window.createPlaylistTitle"));
     }
 
-    public <T extends AbstractBasePage> CreatePlaylistPage(T previousPage, Dispatcher backend, TextGUIThread guiThread, Song songFromPreviousPage, T cachedPage) {
+    public <T extends AbstractBasePage> CreatePlaylistPage(T previousPage, Dispatcher backend, TextGUIThread guiThread,
+            Song songFromPreviousPage, T cachedPage) {
         super(backend, guiThread);
         this.previousPage = previousPage;
         this.cachedSong = songFromPreviousPage;
         this.cachedPage = cachedPage;
+        this.window = createStandardWindow(get("window.createPlaylistTitle"));
     }
 
     @Override
     public BasicWindow createWindow() {
-        return buildWindow("");
+        buildWindowContent("");
+        return window;
     }
 
     @Override
     public BasicWindow updateWindow() {
         window.invalidate();
-        mainPanel.removeAllComponents();
-        window = buildWindow("");
+        buildWindowContent(playlistName != null ? playlistName : "");
         windowManager.refresh();
         return window;
     }
 
-    private BasicWindow buildWindow(String textInTextBox) {
-        window = createStandardWindow(get("window.createPlaylistTitle"));
+    private void buildWindowContent(String textInTextBox) {
+        mainPanel.removeAllComponents();
 
         addSpace(3);
         mainPanel.addComponent(createLabel(get("label.createPlaylist")));
@@ -60,37 +64,33 @@ public class CreatePlaylistPage extends AbstractDynamicPage {
 
         if (enableConfirmationButtons) {
             mainPanel.addComponent(createButton(
-                        get("button.createPlaylistConfirm"),
-                        () -> {
-                            enableConfirmationButtons = false;
-                            backend.createPlaylist(playlistName);
-                            handlePageTransition();
-                        },
-                        componentFactory.getButtonWidth() / 2,
-                        componentFactory.getButtonHeight() / 2
-                        ));
+                    get("button.createPlaylistConfirm"),
+                    () -> {
+                        enableConfirmationButtons = false;
+                        backend.createPlaylist(playlistName);
+                        handlePageTransition();
+                    },
+                    componentFactory.getButtonWidth() / 2,
+                    componentFactory.getButtonHeight() / 2));
             mainPanel.addComponent(createButton(
-                        get("button.createPlaylistCancel"),
-                        () -> {
-                            enableConfirmationButtons = false;
-                            handlePageTransition();
-                        },
-                        componentFactory.getButtonWidth() / 2,
-                        componentFactory.getButtonHeight() / 2
-                        ));
+                    get("button.createPlaylistCancel"),
+                    () -> {
+                        enableConfirmationButtons = false;
+                        handlePageTransition();
+                    },
+                    componentFactory.getButtonWidth() / 2,
+                    componentFactory.getButtonHeight() / 2));
         }
 
         addSpace();
 
         mainPanel.addComponent(componentFactory.createButton(
-            get("button.back"),
-            () -> windowManager.returnToMainMenu(window),
-            componentFactory.getButtonWidth() / 3,
-            componentFactory.getButtonHeight() / 2
-        ));
-        
+                get("button.back"),
+                () -> windowManager.returnToMainMenu(window),
+                componentFactory.getButtonWidth() / 3,
+                componentFactory.getButtonHeight() / 2));
+
         window.setComponent(mainPanel);
-        return window;
     }
 
     private TextBox createPlaylistNameEntryBox(String text) {
@@ -102,9 +102,7 @@ public class CreatePlaylistPage extends AbstractDynamicPage {
                     if (verifyPlaylistName(playlistName)) {
                         enableConfirmationButtons = true;
                         guiThread.invokeLater(() -> {
-                            window = buildWindow(text);
-                            window.invalidate();
-                            windowManager.refresh();
+                            updateWindow();
                         });
                     }
                     return Result.HANDLED;
@@ -145,4 +143,3 @@ public class CreatePlaylistPage extends AbstractDynamicPage {
         }
     }
 }
-

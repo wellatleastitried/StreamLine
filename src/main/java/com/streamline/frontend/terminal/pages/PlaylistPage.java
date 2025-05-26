@@ -21,9 +21,13 @@ import java.util.List;
 public class PlaylistPage extends AbstractDynamicPage {
 
     private final BasicWindow window;
+
     private final Panel resultPanel;
     private final int RESULT_PANEL_WIDTH;
     private final int RESULT_PANEL_HEIGHT;
+
+    private final Button createPlaylistButton;
+
     private final int PLAYLIST_BUTTON_WIDTH;
     private final int PLAYLIST_BUTTON_HEIGHT;
     private final int PLAYLISTS_PER_PAGE = 20;
@@ -46,6 +50,8 @@ public class PlaylistPage extends AbstractDynamicPage {
         this.resultPanel.setLayoutManager(new GridLayout(1));
         this.resultPanel.setPreferredSize(new TerminalSize(RESULT_PANEL_WIDTH, RESULT_PANEL_HEIGHT));
         this.resultPanel.setFillColorOverride(TextColor.ANSI.BLACK_BRIGHT);
+
+        this.createPlaylistButton = buildCreatePlaylistButton();
     }
 
     @Override
@@ -70,14 +76,7 @@ public class PlaylistPage extends AbstractDynamicPage {
         addSpace();
         mainPanel.addComponent(componentFactory.createLabel(get("label.playlistsFeature")));
         addSpace();
-        mainPanel.addComponent(createButton(
-                    get("button.createPlaylist"),
-                    () -> {
-                        handleCreatePlaylist();
-                    },
-                    componentFactory.getButtonWidth() / 2,
-                    componentFactory.getButtonHeight() / 2
-                    ));
+        mainPanel.addComponent(createPlaylistButton);
         
         addSpace();
         displayCurrentPage();
@@ -90,6 +89,9 @@ public class PlaylistPage extends AbstractDynamicPage {
         ));
         
         window.setComponent(mainPanel);
+        if (mainPanel.containsComponent(createPlaylistButton)) {
+            createPlaylistButton.takeFocus();
+        }
     }
 
     private void displayCurrentPage() {
@@ -109,6 +111,16 @@ public class PlaylistPage extends AbstractDynamicPage {
             displayedPlaylists.add(playlistButton);
             resultPanel.addComponent(playlistButton);
         }
+        mainPanel.addComponent(resultPanel);
+    }
+
+    private Button buildCreatePlaylistButton() {
+        return createButton(
+            get("button.createPlaylist"),
+            this::handleCreatePlaylist,
+            componentFactory.getButtonWidth() / 2,
+            componentFactory.getButtonHeight() / 2
+        );
     }
 
     private void handleCreatePlaylist() {
