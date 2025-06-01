@@ -8,6 +8,7 @@ import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
 import com.googlecode.lanterna.terminal.Terminal;
 
 import com.streamline.backend.Dispatcher;
+import com.streamline.frontend.terminal.window.*;
 import com.streamline.utilities.LanguagePeer;
 import com.streamline.utilities.internal.LoggerUtils;
 
