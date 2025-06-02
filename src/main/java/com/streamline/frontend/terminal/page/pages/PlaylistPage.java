@@ -107,7 +107,7 @@ public class PlaylistPage extends AbstractDynamicPage {
     private void displayCurrentPage() {
         if (playlists == null || playlists.isEmpty()) {
             // Add a message when no playlists are found
-            resultPanel.addComponent(componentFactory.createLabel("playlists.noPlaylistsFound"));
+            resultPanel.addComponent(componentFactory.createLabel(getText("label.noPlaylistsFound")));
             mainPanel.addComponent(resultPanel);
             return;
         }
