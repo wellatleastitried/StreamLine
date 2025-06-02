@@ -2,6 +2,7 @@ package com.streamline.frontend.terminal.page.pages;
 
 import com.googlecode.lanterna.TerminalSize;
 import com.googlecode.lanterna.gui2.BasicWindow;
+import com.googlecode.lanterna.gui2.Button;
 import com.googlecode.lanterna.gui2.TextBox;
 import com.googlecode.lanterna.gui2.TextGUIThread;
 import com.googlecode.lanterna.input.KeyStroke;
@@ -129,11 +130,13 @@ public class CreatePlaylistPage extends AbstractDynamicPage {
     }
 
     private void addConfirmationButtons() {
-        mainPanel.addComponent(createButton(
-                    getText("button.createPlaylistConfirm"),
-                    this::handleConfirmation,
-                    componentFactory.getButtonWidth() / 2,
-                    componentFactory.getButtonHeight() / 2));
+        Button confirmButton = createButton(
+                getText("button.createPlaylistConfirm"),
+                this::handleConfirmation,
+                componentFactory.getButtonWidth() / 2,
+                componentFactory.getButtonHeight() / 2);
+        mainPanel.addComponent(confirmButton);
+        confirmButton.takeFocus();
         mainPanel.addComponent(createButton(
                     getText("button.createPlaylistCancel"),
                     this::handleCancellation,

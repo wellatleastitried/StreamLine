@@ -147,7 +147,8 @@ public class TerminalComponentFactory {
         int titleToArtistPadding = totalPaddingNeeded / 2;
         int artistToLengthPadding = totalPaddingNeeded - titleToArtistPadding;
 
-        String titleArtistSeparator = " ".repeat(Math.max(0, titleToArtistPadding));
+        int spacesToRemove = String.valueOf(index).length() - 1;
+        String titleArtistSeparator = " ".repeat(Math.max(0, titleToArtistPadding - spacesToRemove));
         String artistLengthSeparator = " ".repeat(Math.max(0, artistToLengthPadding));
 
         String formattedText = String.format("%s%s%s%s%s%s",

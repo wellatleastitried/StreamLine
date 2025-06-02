@@ -33,11 +33,7 @@ public class PlaylistSongsFetchJob extends AbstractStreamLineJob {
     @Override
     public void execute() {
         try {
-            if (playlistName != null) {
-                results = dbRunner.getSongsFromPlaylist(playlistId, playlistName);
-            } else {
-                results = dbRunner.getSongsFromPlaylist(playlistId);
-            }
+            results = dbRunner.getSongsFromPlaylist(playlistId);
             Logger.debug("Number of songs fetched from playlist: " + results.size());
         } finally {
             resultsAreReady = true;

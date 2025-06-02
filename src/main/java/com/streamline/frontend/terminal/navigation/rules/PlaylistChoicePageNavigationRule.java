@@ -8,6 +8,7 @@ import com.streamline.frontend.terminal.page.pages.LikedMusicPage;
 import com.streamline.frontend.terminal.page.pages.DownloadedMusicPage;
 import com.streamline.frontend.terminal.page.pages.PlaylistPage;
 import com.streamline.frontend.terminal.page.pages.SongsFromPlaylistPage;
+import com.streamline.frontend.terminal.page.pages.SongOptionPage;
 
 public class PlaylistChoicePageNavigationRule implements NavigationRule {
 
@@ -37,6 +38,8 @@ public class PlaylistChoicePageNavigationRule implements NavigationRule {
         } else if (previousPage instanceof SongsFromPlaylistPage) {
             context.setContextData("requiresRebuild", true);
             return NavigationDestination.SONGS_IN_PLAYLIST;
+        } else if (previousPage instanceof SongOptionPage) {
+            return NavigationDestination.SONG_OPTIONS;
         } else {
             // Default fallback - go to main menu
             return NavigationDestination.MAIN_MENU;

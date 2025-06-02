@@ -155,4 +155,9 @@ public class SongOptionPage extends AbstractDynamicPage {
             fillPanelComponents();
         });
     }
+
+    @Override
+    protected AbstractBasePage getPreviousPage() {
+        return previousPage;
+    }
 }

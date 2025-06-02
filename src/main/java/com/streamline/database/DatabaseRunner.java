@@ -169,35 +169,6 @@ public final class DatabaseRunner {
         }
     }
 
-    public RetrievedStorage getSongsFromPlaylist(int playlistId, String playlistName) {
-        final RetrievedStorage songsFromPlaylist = new RetrievedStorage();
-        final String playlistSongsQuery = "SELECT s.* FROM Songs s INNER JOIN PlaylistSongs ps ON s.id = ps.song_id WHERE ps.playlist_id = ? AND ps.name = ? ORDER BY ps.date_added_to_playlist DESC;";
-        try (final PreparedStatement statement = connection.prepareStatement(playlistSongsQuery)) {
-            statement.setInt(1, playlistId);
-            statement.setString(2, playlistName);
-            final ResultSet rs = statement.executeQuery();
-            if (!rs.next()) {
-                Logger.info("[*] No playlist found with the name: {}, attempting to search only by id...", playlistName);
-                return getSongsFromPlaylist(playlistId);
-            }
-            int index = 0;
-            while (rs.next()) {
-                final Song song = new Song(
-                        rs.getInt("id"),
-                        rs.getString("title"),
-                        rs.getString("artist"),
-                        rs.getString("url"),
-                        rs.getString("videoId"),
-                        rs.getString("duration")
-                        );
-                songsFromPlaylist.add(++index, song);
-            }
-        } catch (SQLException sE) {
-            handleSQLException(sE);
-        }
-        return songsFromPlaylist;
-    }
-
     public RetrievedStorage getSongsFromPlaylist(int playlistId) {
         final RetrievedStorage songsFromPlaylist = new RetrievedStorage();
         final String playlistSongsQuery = "SELECT s.* FROM Songs s INNER JOIN PlaylistSongs ps ON s.id = ps.song_id WHERE ps.playlist_id = ? ORDER BY ps.date_added_to_playlist DESC;";
@@ -460,12 +431,17 @@ public final class DatabaseRunner {
             return;
         }
         final String createPlaylist = "INSERT INTO Playlists (name) VALUES (?);";
-        try (PreparedStatement playlistStatement = connection.prepareStatement(createPlaylist)) {
-            playlistStatement.setString(1, playlistName);
-            playlistStatement.executeUpdate();
-            connection.commit();
+        try {
+            connection.setAutoCommit(false);
+            try (PreparedStatement playlistStatement = connection.prepareStatement(createPlaylist)) {
+                playlistStatement.setString(1, playlistName);
+                playlistStatement.executeUpdate();
+                connection.commit();
+            }
         } catch (SQLException sE) {
             handleSQLException(sE);
+        } finally {
+            restoreAutoCommit();
         }
     }
 

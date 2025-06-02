@@ -54,4 +54,9 @@ public class PlaylistChoicePage extends AbstractDynamicPage {
     protected void rebuildContent() {
         // PlaylistChoicePage is static, no dynamic content to rebuild
     }
+
+    @Override
+    protected AbstractBasePage getPreviousPage() {
+        return previousPage;
+    }
 }

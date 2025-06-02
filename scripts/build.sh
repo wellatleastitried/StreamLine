@@ -1,7 +1,7 @@
 #!/bin/bash
 
-if [ -f ~/.local/share/StreamLine/streamline.db ]; then
-    rm ~/.local/share/StreamLine/streamline.db
+if [ -f ~/.local/share/StreamLine/storage/streamline.db ]; then
+    rm ~/.local/share/StreamLine/storage/streamline.db
 fi
 
 if [ -f /tmp/StreamLine/streamline.log ]; then

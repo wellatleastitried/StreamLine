@@ -54,18 +54,19 @@ public class PlaylistPage extends AbstractDynamicPage {
     @Override
     public BasicWindow createWindow() {
         currentPage = 0;
+        playlists = null;
         rebuildContent();
         return window;
     }
 
     @Override
     protected void rebuildContent() {
-        buildPage();
-    }
-
-    private void buildPage() {
         mainPanel.removeAllComponents();
         resultPanel.removeAllComponents();
+        
+        if (playlists == null) {
+            playlists = backend.getPlaylists();
+        }
 
         addSpace();
         mainPanel.addComponent(componentFactory.createLabel(getText("label.playlistsFeature")));
@@ -88,8 +89,26 @@ public class PlaylistPage extends AbstractDynamicPage {
         }
     }
 
+    /**
+     * Refreshes the playlists by reloading them from the backend.
+     * This should be called when playlists might have been updated.
+     */
+    public void refreshPlaylists() {
+        playlists = null;
+        rebuildContent();
+    }
+    
+    @Override
+    protected void preUpdateHook() {
+        // Always refresh playlists before updating the page
+        playlists = null;
+    }
+    
     private void displayCurrentPage() {
-        if (playlists == null) {
+        if (playlists == null || playlists.isEmpty()) {
+            // Add a message when no playlists are found
+            resultPanel.addComponent(componentFactory.createLabel("playlists.noPlaylistsFound"));
+            mainPanel.addComponent(resultPanel);
             return;
         }
 

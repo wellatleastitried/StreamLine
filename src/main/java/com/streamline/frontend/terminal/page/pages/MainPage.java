@@ -2,11 +2,7 @@ package com.streamline.frontend.terminal.page.pages;
 
 import com.googlecode.lanterna.gui2.*;
 import com.streamline.backend.Dispatcher;
-import com.streamline.frontend.terminal.navigation.NavigationDestination;
 import com.streamline.utilities.RuntimeManager;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class MainPage extends AbstractBasePage {
     
@@ -70,44 +66,30 @@ public class MainPage extends AbstractBasePage {
     
     // Navigation methods
     private void navigateToSearch() {
-        Map<String, Object> contextData = new HashMap<>();
-        contextData.put("targetDestination", NavigationDestination.SEARCH);
-        navigateBack(contextData);
+        windowManager.transitionTo(windowManager.searchPageWindow);
     }
 
     private void navigateToLikedMusic() {
-        Map<String, Object> contextData = new HashMap<>();
-        contextData.put("targetDestination", NavigationDestination.LIKED_MUSIC);
-        navigateBack(contextData);
+        windowManager.transitionTo(windowManager.likedMusicPageWindow);
     }
 
     private void navigateToPlaylists() {
-        Map<String, Object> contextData = new HashMap<>();
-        contextData.put("targetDestination", NavigationDestination.PLAYLISTS);
-        navigateBack(contextData);
+        windowManager.transitionTo(windowManager.playlistPageWindow);
     }
 
     private void navigateToRecentlyPlayed() {
-        Map<String, Object> contextData = new HashMap<>();
-        contextData.put("targetDestination", NavigationDestination.RECENTLY_PLAYED);
-        navigateBack(contextData);
+        windowManager.transitionTo(windowManager.recentlyPlayedPageWindow);
     }
 
     private void navigateToDownloadedMusic() {
-        Map<String, Object> contextData = new HashMap<>();
-        contextData.put("targetDestination", NavigationDestination.DOWNLOADS);
-        navigateBack(contextData);
+        windowManager.transitionTo(windowManager.downloadedPageWindow);
     }
 
     private void navigateToHelp() {
-        Map<String, Object> contextData = new HashMap<>();
-        contextData.put("targetDestination", NavigationDestination.HELP);
-        navigateBack(contextData);
+        windowManager.transitionTo(windowManager.helpPageWindow);
     }
 
     private void navigateToSettings() {
-        Map<String, Object> contextData = new HashMap<>();
-        contextData.put("targetDestination", NavigationDestination.SETTINGS);
-        navigateBack(contextData);
+        windowManager.transitionTo(windowManager.settingsPageWindow);
     }
 }
