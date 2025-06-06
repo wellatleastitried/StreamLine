@@ -9,6 +9,7 @@ import com.googlecode.lanterna.terminal.Terminal;
 
 import com.streamline.backend.Dispatcher;
 import com.streamline.frontend.terminal.window.*;
+import com.streamline.frontend.terminal.window.NewTerminalWindowManager;
 import com.streamline.utilities.LanguagePeer;
 import com.streamline.utilities.internal.LoggerUtils;
 
@@ -55,11 +56,16 @@ public final class TerminalInterface extends com.streamline.frontend.FrontendInt
             terminal = terminalFactory.createTerminal();
             screen = new TerminalScreen(terminal);
             terminalSize = screen.getTerminalSize();
+
             buttonHeight = 2;
             buttonWidth = terminalSize.getColumns() / 4;
+
             textGUI = new MultiWindowTextGUI(screen);
+            TerminalKeybinds.applyTo(textGUI);
+
             guiThread = textGUI.getGUIThread();
             TerminalComponentFactory.createInstance(backend.config, terminalSize);
+
             initializeWindows();
         } catch (IOException iE) {
             Logger.error("[!] A fatal error has occured while starting StreamLine, please try reloading the app.");
@@ -69,7 +75,7 @@ public final class TerminalInterface extends com.streamline.frontend.FrontendInt
 
     private void initializeWindows() {
         try {
-            TerminalWindowManager windowManager = TerminalWindowManager.createInstance(screen, textGUI, guiThread, backend);
+            NewTerminalWindowManager windowManager = NewTerminalWindowManager.createInstance(textGUI, guiThread, backend);
             windowManager.buildWindows();
             if (windowManager.mainPageWindow == null) {
                 Logger.debug("[!] Main page is null");

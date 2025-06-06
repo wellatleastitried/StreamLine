@@ -3,7 +3,7 @@ package com.streamline.frontend.terminal.navigation.commands;
 import com.googlecode.lanterna.gui2.Button;
 
 import com.streamline.frontend.terminal.page.pages.AbstractBasePage;
-import com.streamline.frontend.terminal.window.TerminalWindowManager;
+import com.streamline.frontend.terminal.window.NewTerminalWindowManager;
 
 import java.util.Map;
 
@@ -28,7 +28,7 @@ public class RebuildAndNavigateCommand<T extends AbstractBasePage> implements Na
     }
     
     @Override
-    public void execute(TerminalWindowManager windowManager) {
+    public void execute(NewTerminalWindowManager windowManager) {
         if (rebuildBefore) {
             rebuildPage(windowManager);
         }
@@ -38,7 +38,7 @@ public class RebuildAndNavigateCommand<T extends AbstractBasePage> implements Na
         navigateCommand.execute(windowManager);
     }
     
-    private void rebuildPage(TerminalWindowManager windowManager) {
+    private void rebuildPage(NewTerminalWindowManager windowManager) {
         String className = targetPageClass.getSimpleName();
         
         // Rebuild dynamic pages that support it

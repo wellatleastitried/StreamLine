@@ -66,10 +66,7 @@ public class SearchPage extends AbstractBasePage {
 
         mainPanel.addComponent(componentFactory.createButton(
                     getText("button.back"), 
-                    () -> {
-                        windowManager.rebuildSearchPage(null);
-                        windowManager.returnToMainMenu(window);
-                    },
+                    this::navigateBack,
                     componentFactory.getButtonWidth() / 3, 
                     componentFactory.getButtonHeight() / 2
                     ));

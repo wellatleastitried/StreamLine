@@ -1,7 +1,9 @@
 package com.streamline.frontend.terminal.navigation.commands;
 
 import com.streamline.frontend.terminal.navigation.NavigationDestination;
-import com.streamline.frontend.terminal.window.TerminalWindowManager;
+import com.streamline.frontend.terminal.window.NewTerminalWindowManager;
+
+import org.tinylog.Logger;
 
 public class RebuildDynamicPagesCommand implements NavigationCommand {
     
@@ -12,12 +14,14 @@ public class RebuildDynamicPagesCommand implements NavigationCommand {
     }
     
     @Override
-    public void execute(TerminalWindowManager windowManager) {
+    public void execute(NewTerminalWindowManager windowManager) {
+        Logger.debug("RebuildDynamicPagesCommand.execute() - rebuilding dynamic windows");
         // Rebuild dynamic windows first
         windowManager.rebuildDynamicWindows();
         
         // Then navigate to the target destination
         if (targetDestination != null) {
+            Logger.debug("Navigating to target destination: {}", targetDestination);
             NavigateToPageCommand<?> navigateCommand = 
                 new NavigateToPageCommand<>(targetDestination.getPageClass());
             navigateCommand.execute(windowManager);

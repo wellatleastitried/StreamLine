@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.tinylog.Logger;
+
 public class NavigationContext {
 
     private final AbstractBasePage currentPage;
@@ -33,18 +35,26 @@ public class NavigationContext {
     }
 
     public NavigationDestination getDestination() {
+        Logger.debug("Getting navigation destination, rules count: {}", applicableRules.size());
         for (NavigationRule rule : applicableRules) {
+            Logger.debug("Checking rule: {}", rule.getClass().getSimpleName());
             if (rule.appliesTo(this)) {
-                return rule.getDestination(this);
+                NavigationDestination destination = rule.getDestination(this);
+                Logger.debug("Rule applies, destination: {}", destination);
+                return destination;
             }
         }
-        return getDefaultDestination();
+        NavigationDestination defaultDestination = getDefaultDestination();
+        Logger.debug("Using default destination: {}", defaultDestination);
+        return defaultDestination;
     }
 
     private NavigationDestination getDefaultDestination() {
         if (previousPage != null) {
+            Logger.debug("Default destination based on previousPage: {}", previousPage.getClass().getSimpleName());
             return NavigationDestination.fromPageClass(previousPage.getClass());
         }
+        Logger.debug("No previousPage, default destination is MAIN_MENU");
         return NavigationDestination.MAIN_MENU;
     }
 

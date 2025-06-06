@@ -4,6 +4,8 @@ import com.googlecode.lanterna.input.KeyStroke;
 import com.googlecode.lanterna.input.KeyType;
 import com.googlecode.lanterna.gui2.*;
 
+import com.streamline.utilities.RuntimeManager;
+
 import org.tinylog.Logger;
 
 public class TerminalKeybinds implements TextGUI.Listener {
@@ -17,8 +19,8 @@ public class TerminalKeybinds implements TextGUI.Listener {
         this.textGUI.addListener(this);
     }
 
-    public static void applyTo(TextGUI textGUI) {
-        new TerminalKeybinds(textGUI);
+    public static TerminalKeybinds applyTo(TextGUI textGUI) {
+        return new TerminalKeybinds(textGUI);
     }
 
     @Override
@@ -100,6 +102,9 @@ public class TerminalKeybinds implements TextGUI.Listener {
                 }
                 mappedKey = null;
                 break;
+            case 'q':
+                Logger.info("Exit requested via keybind, shutting down StreamLine.");
+                RuntimeManager.shutdown();
             default:
                 return false;
         }

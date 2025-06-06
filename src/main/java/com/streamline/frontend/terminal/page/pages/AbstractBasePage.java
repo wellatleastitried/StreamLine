@@ -12,7 +12,7 @@ import com.streamline.frontend.terminal.navigation.NavigationContext;
 import com.streamline.frontend.terminal.navigation.commands.NavigationCommand;
 import com.streamline.frontend.terminal.navigation.commands.NavigationCommandFactory;
 import com.streamline.frontend.terminal.window.TerminalComponentFactory;
-import com.streamline.frontend.terminal.window.TerminalWindowManager;
+import com.streamline.frontend.terminal.window.NewTerminalWindowManager;
 import com.streamline.utilities.LanguagePeer;
 
 import org.tinylog.Logger;
@@ -29,7 +29,7 @@ public abstract class AbstractBasePage {
     protected BasicWindow window;
     protected final Panel mainPanel;
 
-    protected TerminalWindowManager windowManager;
+    protected NewTerminalWindowManager windowManager;
     protected final Dispatcher backend;
     protected final TextGUIThread guiThread;
     protected final TerminalComponentFactory componentFactory;
@@ -89,15 +89,19 @@ public abstract class AbstractBasePage {
 
     // Navigation methods using the new navigation system
     protected final void navigateBack() {
+        Logger.debug("Navigating back from {}", getClass().getSimpleName());
         NavigationContext context = createNavigationContext();
         NavigationCommand command = NavigationCommandFactory.createNavigationCommand(context);
+        Logger.debug("Created navigation command: {}", command.getDescription());
         executeNavigation(command);
     }
     
     protected final void navigateBack(Map<String, Object> contextData) {
+        Logger.debug("Navigating back from {} with context data", getClass().getSimpleName());
         NavigationContext context = createNavigationContext();
         contextData.forEach(context::setContextData);
         NavigationCommand command = NavigationCommandFactory.createNavigationCommand(context);
+        Logger.debug("Created navigation command with context: {}", command.getDescription());
         executeNavigation(command);
     }
     
@@ -112,18 +116,24 @@ public abstract class AbstractBasePage {
     }
     
     private void executeNavigation(NavigationCommand command) {
+        Logger.debug("Executing navigation command in {}: {}", getClass().getSimpleName(), command.getDescription());
         if (command.canExecute()) {
             try {
+                Logger.debug("Command can execute, calling execute() with windowManager");
                 command.execute(windowManager);
+                Logger.debug("Navigation command executed successfully");
             } catch (Exception e) {
                 Logger.error("Navigation failed: " + command.getDescription(), e);
                 // Fallback navigation
+                Logger.debug("Using fallback navigation - returnToMainMenu");
                 windowManager.returnToMainMenu(window);
             }
+        } else {
+            Logger.debug("Command cannot execute");
         }
     }
 
-    public void setWindowManager(TerminalWindowManager windowManager) {
+    public void setWindowManager(NewTerminalWindowManager windowManager) {
         this.windowManager = windowManager;
     }
 

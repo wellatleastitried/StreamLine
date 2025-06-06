@@ -15,16 +15,25 @@ public abstract class AbstractDynamicPage extends AbstractBasePage {
 
     public final BasicWindow updateWindow() {
         try {
+            Logger.debug("Starting updateWindow() in {}", getClass().getSimpleName());
             if (!canUpdate()) {
+                Logger.debug("Cannot update window in {}", getClass().getSimpleName());
                 return window;
             }
+            Logger.debug("Calling preUpdateHook() in {}", getClass().getSimpleName());
             preUpdateHook();
+            Logger.debug("Clearing window content in {}", getClass().getSimpleName());
             clearWindowContent();
+            Logger.debug("Calling rebuildContent() in {}", getClass().getSimpleName());
             rebuildContent();
+            Logger.debug("Finalizing update in {}", getClass().getSimpleName());
             finalizeUpdate();
+            Logger.debug("Calling postUpdateHook() in {}", getClass().getSimpleName());
             postUpdateHook();
+            Logger.debug("Completed updateWindow() in {}, returning window", getClass().getSimpleName());
             return window;
         } catch (Exception e) {
+            Logger.error("Error in updateWindow() for {}: {}", getClass().getSimpleName(), e.getMessage(), e);
             handleUpdateError(e);
             return window;
         }

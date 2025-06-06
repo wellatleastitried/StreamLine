@@ -69,28 +69,39 @@ public class LikedMusicPage extends AbstractDynamicPage {
     }
 
     private void buildPage() {
+        Logger.debug("Starting LikedMusicPage.buildPage()");
         mainPanel.removeAllComponents();
         resultPanel.removeAllComponents();
         songButtons.clear();
         addSpace();
         mainPanel.addComponent(createLabel(getText("label.likedMusicTitle")));
         addSpace();
+        Logger.debug("About to get liked songs from backend");
         RetrievedStorage retrievedSongs = getLikedSongs();
+        Logger.debug("Got retrievedSongs: {}", retrievedSongs == null ? "null" : retrievedSongs.size() + " songs");
         loadSongs(retrievedSongs);
+        Logger.debug("Loaded likedSongs: {}", likedSongs == null ? "null" : likedSongs.size() + " songs");
         totalPages = (int) Math.ceil((double) likedSongs.size() / SONGS_PER_PAGE);
         if (totalPages == 0) totalPages = 1;
+        Logger.debug("totalPages: {}", totalPages);
         addPageUpButton();
+        Logger.debug("About to display current page");
         displayCurrentPage();
+        Logger.debug("Displayed current page, adding to main panel");
         mainPanel.addComponent(resultPanel);
         addSpace();
         addPageDownButton();
         mainPanel.addComponent(backButton);
+        Logger.debug("Setting window component to mainPanel");
         window.setComponent(mainPanel);
         if (songButtons.size() > 0) {
+            Logger.debug("Taking focus on first song button");
             songButtons.get(0).takeFocus();
         } else {
+            Logger.debug("Taking focus on back button");
             backButton.takeFocus();
         }
+        Logger.debug("Completed LikedMusicPage.buildPage()");
     }
 
     private void loadSongs(RetrievedStorage songs) {
