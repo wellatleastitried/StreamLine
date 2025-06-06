@@ -1,15 +1,17 @@
 package com.streamline.backend;
 
+import com.streamline.audio.Playlist;
 import com.streamline.audio.Song;
+import com.streamline.backend.handle.*;
 import com.streamline.backend.jobs.*;
 import com.streamline.database.DatabaseLinker;
 import com.streamline.database.DatabaseRunner;
 import com.streamline.database.utils.QueryLoader;
 import com.streamline.utilities.CacheManager;
-import com.streamline.utilities.LanguagePeer;
 import com.streamline.utilities.RetrievedStorage;
 import com.streamline.utilities.internal.Config;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -23,8 +25,8 @@ import org.tinylog.Logger;
  */
 public final class Dispatcher {
     
-    private final Config config;
-    private final ConcurrentHashMap<String, StreamLineJob> activeJobs;
+    public final Config config;
+    private final ConcurrentHashMap<String, AbstractStreamLineJob> activeJobs;
     private final ExecutorService jobExecutor;
 
     private final DatabaseRunner dbRunner;
@@ -43,16 +45,15 @@ public final class Dispatcher {
 
     private void initializeServices() {
         submitJob(new CacheInitializationJob(config, dbRunner));
-        setShutdownHandler();
         config.setHandle(getConnectionHandle());
         submitJob(new ConnectionMonitorJob(config));
     }
 
     private ConnectionHandle getConnectionHandle() {
         if (config.getAudioSource() == 'd') {
-            return new InvidiousHandle(config);
+            return InvidiousHandle.getInstance(config);
         }
-        return new YoutubeHandle(config);
+        return YoutubeHandle.getInstance(config);
     }
 
     private DatabaseRunner initializeDatabaseConnection() {
@@ -61,7 +62,11 @@ public final class Dispatcher {
         return new DatabaseRunner(linker.getConnection(), QueryLoader.getMapOfQueries(), linker);
     }
 
-    public <T extends StreamLineJob> String submitJob(T job) {
+    public AbstractStreamLineJob getJob(String jobId) {
+        return activeJobs.get(jobId);
+    }
+
+    public <T extends AbstractStreamLineJob> String submitJob(T job) {
         String id = job.getJobId();
         activeJobs.put(id, job);
         jobExecutor.submit(() -> {
@@ -77,39 +82,186 @@ public final class Dispatcher {
         return id;
     }
 
-    public RetrievedStorage doSearch(String searchTerm) {
-        SearchJob searchJob = new SearchJob(config, searchTerm);
-        submitJob(searchJob);
-
-        while (!searchJob.resultsAreReady()) {
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                break;
-            }
-        }
-        Logger.debug("Job is no longer running.");
-
-        RetrievedStorage test = searchJob.getResults();
-        Logger.debug(test != null ? "results contains data" : "results is null");
-        return test;
+    public void changeLanguage(String languageCode) {
+        submitJob(new LanguageJob(config, languageCode));
     }
 
     public Song getSongFromName(String songName) {
         return dbRunner.searchForSongName(songName);
     }
-    
-    private void killCurrentAudioJobIfExists() {
-        if (audioJobId != null) {
-            StreamLineJob currentAudioJob = activeJobs.get(audioJobId);
-            currentAudioJob.cancel();
-        }
+
+
+
+    /*
+     * Downloaded Song Operations
+     */
+    public Song isSongDownloaded(Song song) {
+        return dbRunner.getSongFromDownloads(song);
     }
 
+    public void downloadSong(Song song) {
+        DownloadJob downloadJob = new DownloadJob(config, song, dbRunner, 0);
+        submitJob(downloadJob);
+    }
+
+    public void cancelSongDownload(Song song) {
+        DownloadJob downloadJob = new DownloadJob(config, song, dbRunner, 1);
+        submitJob(downloadJob);
+    }
+
+    public void removeDownloadedSong(Song song) {
+        DownloadJob downloadJob = new DownloadJob(config, song, dbRunner, 2);
+        submitJob(downloadJob);
+    }
+
+    public RetrievedStorage getDownloads() {
+        DownloadedSongsFetchJob downloadJob = new DownloadedSongsFetchJob(config, dbRunner);
+        submitJob(downloadJob);
+
+        while (!downloadJob.resultsAreReady()) {
+            Thread.onSpinWait();
+        }
+        Logger.debug("Job is no longer running.");
+
+        return downloadJob.getResults();
+    }
+
+
+
+    /*
+     * Search Operations
+     */
+    public RetrievedStorage doSearch(String searchTerm) {
+        SearchJob searchJob = new SearchJob(config, searchTerm);
+        submitJob(searchJob);
+
+        while (!searchJob.resultsAreReady()) {
+            Thread.onSpinWait();
+        }
+        Logger.debug("SearchJob is no longer running.");
+
+        RetrievedStorage results = searchJob.getResults();
+        Logger.debug(results != null ? "results contains data" : "results is null");
+        return results;
+    }
+
+
+
+    /*
+     * Playlist Operations for Songs
+     */
+    public int getPlaylistId(String playlistName) {
+        return dbRunner.getPlaylistId(playlistName);
+    }
+
+    public RetrievedStorage getPlaylistSongs(String playlistName) {
+        return getPlaylistSongs(getPlaylistId(playlistName));
+    }
+
+    public RetrievedStorage getPlaylistSongs(int playlistId, String playlistName) {
+        PlaylistSongsFetchJob playlistJob = new PlaylistSongsFetchJob(config, dbRunner, playlistId, playlistName);
+        submitJob(playlistJob);
+
+        while (!playlistJob.resultsAreReady()) {
+            Thread.onSpinWait();
+        }
+        Logger.debug("Job is no longer running.");
+
+        return playlistJob.getResults();
+    }
+
+    public RetrievedStorage getPlaylistSongs(int playlistId) {
+        PlaylistSongsFetchJob playlistJob = new PlaylistSongsFetchJob(config, dbRunner, playlistId);
+        submitJob(playlistJob);
+
+        while (!playlistJob.resultsAreReady()) {
+            Thread.onSpinWait();
+        }
+        Logger.debug("Job is no longer running.");
+
+        return playlistJob.getResults();
+    }
+
+    public void createPlaylist(String playlistName) {
+        dbRunner.createPlaylist(playlistName);
+    }
+
+    public void addSongToPlaylist(String playlistName, Song song) {
+        Playlist playlist = new Playlist(playlistName, this);
+        playlist.addTrack(song);
+    }
+
+    public void removeSongFromPlaylist(String playlistName, Song song) {
+        Playlist playlist = new Playlist(playlistName, this);
+        playlist.removeTrack(song);
+    }
+
+    public List<Playlist> getPlaylists() {
+        PlaylistFetchJob playlistJob = new PlaylistFetchJob(config, dbRunner);
+        submitJob(playlistJob);
+
+        while (!playlistJob.resultsAreReady()) {
+            Thread.onSpinWait();
+        }
+
+        return playlistJob.getResults();
+    }
+
+
+
+    /*
+     * Recently Played Songs Operations
+     */
+    public RetrievedStorage getRecentlyPlayedSongs() {
+        RecentlyPlayedSongsFetchJob recPlayJob = new RecentlyPlayedSongsFetchJob(config, dbRunner);
+        submitJob(recPlayJob);
+
+        while (!recPlayJob.resultsAreReady()) {
+            Thread.onSpinWait();
+        }
+        Logger.debug("Job is no longer running.");
+
+        return recPlayJob.getResults();
+    }
+
+
+
+    /*
+     * "Like" Operations for Songs
+     */
+    public String handleSongLikeStatus(Song song) {
+        LikeSongJob likeJob = new LikeSongJob(config, dbRunner, song);
+        submitJob(likeJob);
+        return likeJob.getJobId();
+    }
+
+    public boolean isSongLiked(Song song) {
+        Logger.debug("Checking if song is liked: {}", song.getSongName());
+        boolean isLiked = dbRunner.getSongLikeStatus(song);
+        Logger.debug("Song like status: {}", isLiked);
+        return isLiked;
+    }
+
+    public RetrievedStorage getLikedSongs() {
+        LikedSongsFetchJob likedJob = new LikedSongsFetchJob(config, dbRunner);
+        submitJob(likedJob);
+
+        while (!likedJob.resultsAreReady()) {
+            Thread.onSpinWait();
+        }
+        Logger.debug("Job is no longer running.");
+
+        return likedJob.getResults();
+    }
+
+
+
+    /*
+     * Audio Operations
+     */
     public void playSong(Song song) {
         killCurrentAudioJobIfExists();
-        audioJobId = submitJob(new SongPlaybackJob(config, song));;
+        submitJob(new SongPlaybackJob(config, song));;
     }
 
     public void playQueue(RetrievedStorage songQueue) {
@@ -117,18 +269,22 @@ public final class Dispatcher {
         audioJobId = submitJob(new QueuePlaybackJob(config, songQueue));
     }
 
+    private void killCurrentAudioJobIfExists() {
+        if (audioJobId != null) {
+            AbstractStreamLineJob currentAudioJob = activeJobs.get(audioJobId);
+            currentAudioJob.cancel();
+        }
+    }
+
+
+
     public void clearCache() {
         submitJob(new CacheClearJob(config, dbRunner, CacheManager.getCacheDirectory(config.getOS())));
     }
 
-    private void setShutdownHandler() {
-        Runtime.getRuntime().addShutdownHook(new Thread(this::shutdown));
-    }
-
     public void shutdown() {
-        // getThreadStates();
         if (!exitedGracefully) {
-            for (StreamLineJob job : activeJobs.values()) {
+            for (AbstractStreamLineJob job : activeJobs.values()) {
                 job.cancel();
             }
 
@@ -140,27 +296,6 @@ public final class Dispatcher {
 
             jobExecutor.shutdown();
             exitedGracefully = true;
-            System.out.println("[*] " + LanguagePeer.getText("app.goodbye"));
-        }
-    }
-
-    /*
-     * This is a method that I am leaving for potential debugging in the future.
-     */
-    private void getThreadStates() {
-        Map<Thread, StackTraceElement[]> threads = Thread.getAllStackTraces();
-        System.out.println("Currently running threads:");
-        for (Map.Entry<Thread, StackTraceElement[]> entry : threads.entrySet()) {
-            Thread thread = entry.getKey();
-            StackTraceElement[] sTE = entry.getValue();
-            if (thread.getId() != 3) {
-                System.out.println(thread.getName() + " (ID: " + thread.getId() + ") -> " + thread.getState());
-            } else {
-                System.out.println("Thread: " + thread.getName() + " (ID: " + thread.getId() + ") -> " + thread.getState());
-                for (StackTraceElement element : sTE) {
-                    System.out.println("\t" + element);
-                }
-            }
         }
     }
 }
