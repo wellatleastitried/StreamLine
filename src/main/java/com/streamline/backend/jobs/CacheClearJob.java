@@ -4,7 +4,7 @@ import com.streamline.database.DatabaseRunner;
 import com.streamline.utilities.CacheManager;
 import com.streamline.utilities.internal.Config;
 
-public class CacheClearJob extends StreamLineJob {
+public class CacheClearJob extends AbstractStreamLineJob {
 
     final DatabaseRunner dbRunner;
     final String cacheDirectory;
@@ -15,6 +15,7 @@ public class CacheClearJob extends StreamLineJob {
         this.cacheDirectory = cacheDirectory;
     }
 
+    @Override
     public void execute() {
         CacheManager.clearExpiredCacheOnStartup(cacheDirectory, dbRunner.getExpiredCache());
         dbRunner.clearExpiredCache();

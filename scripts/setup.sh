@@ -22,6 +22,7 @@ echo "All bash scripts have been marked as executable!"
 APP_DIR=~/.local/share/StreamLine/config
 if [ ! -f "$APP_DIR"/config.properties ]; then
     echo 'language=en' > "$APP_DIR"/config.properties
+    echo 'theme=default' >> "$APP_DIR"/config.properties
     echo "config.properties has been created and the language for the app has been set to English."
 fi
 

@@ -1,0 +1,16 @@
+com.streamline
+com.streamline.audio
+com.streamline.backend
+com.streamline.backend.handle
+com.streamline.backend.jobs
+com.streamline.communicate
+com.streamline.communicate.jsonobjects
+com.streamline.database
+com.streamline.database.utils
+com.streamline.frontend
+com.streamline.frontend.desktop
+com.streamline.frontend.terminal
+com.streamline.frontend.terminal.pages
+com.streamline.frontend.terminal.themes
+com.streamline.utilities
+com.streamline.utilities.internal
