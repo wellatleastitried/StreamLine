@@ -9,13 +9,14 @@ import com.streamline.audio.Song;
 import com.streamline.backend.Dispatcher;
 import com.streamline.frontend.terminal.page.pages.*;
 import com.streamline.frontend.terminal.page.PageState;
+import com.streamline.frontend.terminal.navigation.NavigationContext;
 import com.streamline.frontend.terminal.navigation.NavigationDestination;
 import org.tinylog.Logger;
 
 import java.util.Map;
 import java.util.HashMap;
 
-public class NewTerminalWindowManager {
+public class TerminalWindowManager {
 
     private final TextGUIThread guiThread;
     private final Dispatcher backend;
@@ -56,9 +57,9 @@ public class NewTerminalWindowManager {
     public boolean rebuildSearchPageWhenDone = false;
     public boolean rebuildPlaylistPageWhenDone = false;
 
-    private static NewTerminalWindowManager instance;
+    private static TerminalWindowManager instance;
 
-    public NewTerminalWindowManager(WindowBasedTextGUI textGUI, TextGUIThread guiThread, Dispatcher backend) throws Exception {
+    public TerminalWindowManager(WindowBasedTextGUI textGUI, TextGUIThread guiThread, Dispatcher backend) throws Exception {
         this.guiThread = guiThread;
         this.backend = backend;
 
@@ -191,14 +192,9 @@ public class NewTerminalWindowManager {
         Logger.debug("Built SongsFromPlaylistPage for playlist: {}", playlist.getName());
     }
 
-    public void navigateTo(NavigationDestination destination) {
-        // TODO: Implement simplified navigation without NavigationContext dependency
-        Logger.debug("Navigation to destination: {}", destination);
-    }
-
-    public void navigateTo(NavigationDestination destination, Object context) {
-        // TODO: Implement simplified navigation without NavigationContext dependency
-        Logger.debug("Navigation to destination: {} with context", destination);
+    public void navigateTo(NavigationContext context) {
+        Logger.debug("Navigation to destination: {} with context", context.getDestination());
+        navigationManager.navigateToDestination(context.getDestination(), context);
     }
 
     public void navigateBack(AbstractBasePage currentPage) {
@@ -335,16 +331,16 @@ public class NewTerminalWindowManager {
         Logger.debug("Closed all windows");
     }
 
-    public static NewTerminalWindowManager getInstance() {
+    public static TerminalWindowManager getInstance() {
         if (instance == null) {
             throw new IllegalStateException("NewTerminalWindowManager has not been initialized yet.");
         }
         return instance;
     }
 
-    public static NewTerminalWindowManager createInstance(WindowBasedTextGUI textGUI, TextGUIThread guiThread, Dispatcher backend) throws Exception {
+    public static TerminalWindowManager createInstance(WindowBasedTextGUI textGUI, TextGUIThread guiThread, Dispatcher backend) throws Exception {
         if (instance == null) {
-            instance = new NewTerminalWindowManager(textGUI, guiThread, backend);
+            instance = new TerminalWindowManager(textGUI, guiThread, backend);
         }
         return instance;
     }

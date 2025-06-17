@@ -1,8 +1,7 @@
 package com.streamline.frontend.terminal.navigation.commands;
 
-import com.googlecode.lanterna.gui2.BasicWindow;
 import com.streamline.frontend.terminal.page.pages.AbstractBasePage;
-import com.streamline.frontend.terminal.window.NewTerminalWindowManager;
+import com.streamline.frontend.terminal.window.TerminalWindowManager;
 
 import org.tinylog.Logger;
 
@@ -23,58 +22,54 @@ public class NavigateToPageCommand<T extends AbstractBasePage> implements Naviga
     }
     
     @Override
-    public void execute(NewTerminalWindowManager windowManager) {
-        // For now, use existing window manager methods
-        // This will be enhanced once PageRegistry is implemented
-        
-        // Navigate to the appropriate static page window
-        navigateToStaticPage(windowManager);
+    public void execute(TerminalWindowManager wm) {
+        navigateToPage(wm);
     }
     
-    private void navigateToStaticPage(NewTerminalWindowManager windowManager) {
+    private void navigateToPage(TerminalWindowManager wm) {
         String className = targetPageClass.getSimpleName();
         Logger.debug("NavigateToPageCommand.navigateToStaticPage for {}", className);
         
         switch (className) {
             case "MainPage":
                 Logger.debug("Navigating to MainPage");
-                windowManager.showMainMenu();
+                wm.showMainMenu();
                 break;
             case "SearchPage":
                 Logger.debug("Navigating to SearchPage");
-                windowManager.transitionTo(windowManager.getSearchPageWindow());
+                wm.transitionTo(wm.getSearchPageWindow());
                 break;
             case "LikedMusicPage":
-                windowManager.transitionTo(windowManager.getLikedMusicPageWindow());
+                wm.transitionTo(wm.getLikedMusicPageWindow());
                 break;
             case "PlaylistPage":
                 Logger.debug("Navigating to PlaylistPage");
-                windowManager.transitionTo(windowManager.getPlaylistPageWindow());
+                wm.transitionTo(wm.getPlaylistPageWindow());
                 break;
             case "RecentlyPlayedPage":
                 Logger.debug("Navigating to RecentlyPlayedPage");
-                windowManager.transitionTo(windowManager.getRecentlyPlayedPageWindow());
+                wm.transitionTo(wm.getRecentlyPlayedPageWindow());
                 break;
             case "DownloadedMusicPage":
                 Logger.debug("Navigating to DownloadedMusicPage");
-                windowManager.transitionTo(windowManager.getDownloadedPageWindow());
+                wm.transitionTo(wm.getDownloadedPageWindow());
                 break;
             case "SettingsPage":
                 Logger.debug("Navigating to SettingsPage");
-                windowManager.transitionTo(windowManager.getSettingsPageWindow());
+                wm.transitionTo(wm.getSettingsPageWindow());
                 break;
             case "LanguagePage":
                 Logger.debug("Navigating to LanguagePage");
-                windowManager.transitionTo(windowManager.getLanguagePageWindow());
+                wm.transitionTo(wm.getLanguagePageWindow());
                 break;
             case "HelpPage":
                 Logger.debug("Navigating to HelpPage");
-                windowManager.transitionTo(windowManager.getHelpPageWindow());
+                wm.transitionTo(wm.getHelpPageWindow());
                 break;
             default:
                 // Fallback to main menu for unknown pages
                 Logger.debug("Unknown page class {}, falling back to MainPage", className);
-                windowManager.showMainMenu();
+                wm.showMainMenu();
                 break;
         }
     }

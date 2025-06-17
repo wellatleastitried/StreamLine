@@ -70,7 +70,7 @@ public class SongOptionPage extends AbstractDynamicPage {
         mainPanel.addComponent(likeButton);
 
         mainPanel.addComponent(componentFactory.createButton(getText("button.addToPlaylist"), () -> {
-            windowManager.transitionToPlaylistChoicePage(previousPage, selectedSong, previousResultsForSearchPage);
+            wm.transitionToPlaylistChoicePage(previousPage, selectedSong, previousResultsForSearchPage);
         }));
 
         downloadButton = createDownloadButton();
@@ -93,7 +93,7 @@ public class SongOptionPage extends AbstractDynamicPage {
             selectedSong.setSongLikeStatus(backend.isSongLiked(selectedSong));
             likeButton = createLikeButton();
             updatePanel();
-            windowManager.refresh();
+            wm.refresh();
         });
     }
 
@@ -108,11 +108,11 @@ public class SongOptionPage extends AbstractDynamicPage {
                 backend.downloadSong(selectedSong);
                 isDownloading = false;
                 if (previousResultsForSearchPage != null) {
-                    windowManager.buildSongOptionPage(selectedSong, previousPage, previousResultsForSearchPage);
+                    wm.buildSongOptionPage(selectedSong, previousPage, previousResultsForSearchPage);
                 } else {
-                    windowManager.buildSongOptionPage(selectedSong, previousPage);
+                    wm.buildSongOptionPage(selectedSong, previousPage);
                 }
-                windowManager.refresh();
+                wm.refresh();
             };
         } else if (!songIsDownloaded && isDownloading) {
             buttonText = getText("button.cancelDownload");
@@ -120,11 +120,11 @@ public class SongOptionPage extends AbstractDynamicPage {
                 backend.cancelSongDownload(selectedSong);
                 isDownloading = false;
                 if (previousResultsForSearchPage != null) {
-                    windowManager.buildSongOptionPage(selectedSong, previousPage, previousResultsForSearchPage);
+                    wm.buildSongOptionPage(selectedSong, previousPage, previousResultsForSearchPage);
                 } else {
-                    windowManager.buildSongOptionPage(selectedSong, previousPage);
+                    wm.buildSongOptionPage(selectedSong, previousPage);
                 }
-                windowManager.refresh();
+                wm.refresh();
             };
         } else {
             songIsDownloaded = false;
@@ -133,11 +133,11 @@ public class SongOptionPage extends AbstractDynamicPage {
                 backend.removeDownloadedSong(selectedSong);
                 isDownloading = false;
                 if (previousResultsForSearchPage != null) {
-                    windowManager.buildSongOptionPage(selectedSong, previousPage, previousResultsForSearchPage);
+                    wm.buildSongOptionPage(selectedSong, previousPage, previousResultsForSearchPage);
                 } else {
-                    windowManager.buildSongOptionPage(selectedSong, previousPage);
+                    wm.buildSongOptionPage(selectedSong, previousPage);
                 }
-                windowManager.refresh();
+                wm.refresh();
             };
         }
         if (isDownloading) {

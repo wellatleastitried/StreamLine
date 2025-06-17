@@ -66,30 +66,30 @@ public class MainPage extends AbstractBasePage {
     
     // Navigation methods
     private void navigateToSearch() {
-        windowManager.transitionTo(windowManager.searchPageWindow);
+        wm.transitionTo(wm.searchPageWindow);
     }
 
     private void navigateToLikedMusic() {
-        windowManager.transitionTo(windowManager.likedMusicPageWindow);
+        wm.transitionTo(wm.likedMusicPageWindow);
     }
 
     private void navigateToPlaylists() {
-        windowManager.transitionTo(windowManager.playlistPageWindow);
+        wm.transitionTo(wm.playlistPageWindow);
     }
 
     private void navigateToRecentlyPlayed() {
-        windowManager.transitionTo(windowManager.recentlyPlayedPageWindow);
+        wm.transitionTo(wm.recentlyPlayedPageWindow);
     }
 
     private void navigateToDownloadedMusic() {
-        windowManager.transitionTo(windowManager.downloadedPageWindow);
+        wm.transitionTo(wm.downloadedPageWindow);
     }
 
     private void navigateToHelp() {
-        windowManager.transitionTo(windowManager.helpPageWindow);
+        wm.transitionTo(wm.helpPageWindow);
     }
 
     private void navigateToSettings() {
-        windowManager.transitionTo(windowManager.settingsPageWindow);
+        wm.transitionTo(wm.settingsPageWindow);
     }
 }

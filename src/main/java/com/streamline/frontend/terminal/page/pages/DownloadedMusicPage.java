@@ -188,7 +188,7 @@ public class DownloadedMusicPage extends AbstractDynamicPage {
     }
 
     private void handleSongSelection(Song song) {
-        windowManager.buildSongOptionPage(song, this);
-        windowManager.transitionTo(windowManager.songOptionPageWindow);
+        wm.buildSongOptionPage(song, this);
+        wm.transitionTo(wm.songOptionPageWindow);
     }
 }

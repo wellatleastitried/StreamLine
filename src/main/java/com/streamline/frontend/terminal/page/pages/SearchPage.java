@@ -96,8 +96,8 @@ public class SearchPage extends AbstractBasePage {
     }
 
     private void handleSongSelection(Song song) {
-        windowManager.buildSongOptionPage(song, this, searchResultButtons);
-        windowManager.transitionTo(windowManager.songOptionPageWindow);
+        wm.buildSongOptionPage(song, this, searchResultButtons);
+        wm.transitionTo(wm.songOptionPageWindow);
     }
 
     private void resultsToButtons(RetrievedStorage results, Panel resultsPanel) {
@@ -137,7 +137,7 @@ public class SearchPage extends AbstractBasePage {
                     resultsPanel.addComponent(entry.getValue());
                 }
             }
-            windowManager.refresh();
+            wm.refresh();
         });
     }
 }

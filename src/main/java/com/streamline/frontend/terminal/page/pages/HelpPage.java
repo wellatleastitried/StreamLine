@@ -26,7 +26,7 @@ public class HelpPage extends AbstractBasePage {
         
         mainPanel.addComponent(componentFactory.createButton(
             getText("button.back"),
-            () -> windowManager.returnToMainMenu(window),
+            () -> wm.returnToMainMenu(window),
             componentFactory.getButtonWidth() / 3,
             componentFactory.getButtonHeight() / 2
         ));

@@ -137,13 +137,13 @@ public class PlaylistPage extends AbstractDynamicPage {
     }
 
     private void handleCreatePlaylist() {
-        windowManager.buildCreatePlaylistPage(this);
-        windowManager.transitionTo(windowManager.createPlaylistPageWindow);
+        wm.buildCreatePlaylistPage(this);
+        wm.transitionTo(wm.createPlaylistPageWindow);
     }
 
     private void handlePlaylistSelection(Playlist playlist) {
-        windowManager.buildSongsFromPlaylistPage(playlist, this);
-        windowManager.transitionTo(windowManager.songsFromPlaylistPageWindow);
+        wm.buildSongsFromPlaylistPage(playlist, this);
+        wm.transitionTo(wm.songsFromPlaylistPageWindow);
     }
 }
 

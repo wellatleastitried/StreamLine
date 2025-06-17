@@ -28,6 +28,13 @@ public class NavigationContext {
         contextData.put(key, value);
     }
 
+    public <T> T get(String key, Class<T> type) {
+        if (contextData.containsKey(key) && type.isInstance(contextData.get(key))) {
+            return type.cast(contextData.get(key));
+        }
+        return null;
+    }
+
     @SuppressWarnings("unchecked")
     public <T> T getContextData(String key, Class<T> type) {
         Object value = contextData.get(key);

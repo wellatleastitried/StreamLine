@@ -25,8 +25,8 @@ public class LanguagePage extends AbstractBasePage {
             () -> {
                 backend.changeLanguage("en");
                 guiThread.invokeLater(() -> {
-                    windowManager.rebuildAllWindows();
-                    windowManager.transitionTo(windowManager.settingsPageWindow);
+                    wm.rebuildAllWindows();
+                    wm.transitionTo(wm.settingsPageWindow);
                 });
             }
         ));
@@ -36,8 +36,8 @@ public class LanguagePage extends AbstractBasePage {
             () -> {
                 LanguagePeer.setLanguage("es");
                 guiThread.invokeLater(() -> {
-                    windowManager.rebuildAllWindows();
-                    windowManager.transitionTo(windowManager.settingsPageWindow);
+                    wm.rebuildAllWindows();
+                    wm.transitionTo(wm.settingsPageWindow);
                 });
             }
         ));
@@ -47,8 +47,8 @@ public class LanguagePage extends AbstractBasePage {
             () -> {
                 backend.changeLanguage("ru");
                 guiThread.invokeLater(() -> {
-                    windowManager.rebuildAllWindows();
-                    windowManager.transitionTo(windowManager.settingsPageWindow);
+                    wm.rebuildAllWindows();
+                    wm.transitionTo(wm.settingsPageWindow);
                 });
             }
         ));
@@ -57,7 +57,7 @@ public class LanguagePage extends AbstractBasePage {
         
         mainPanel.addComponent(componentFactory.createButton(
             getText("button.back"),
-            () -> windowManager.returnToMainMenu(window),
+            () -> wm.returnToMainMenu(window),
             componentFactory.getButtonWidth() / 3,
             componentFactory.getButtonHeight() / 2
         ));

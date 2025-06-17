@@ -9,7 +9,7 @@ import org.tinylog.Logger;
 import java.util.Stack;
 
 /**
- * Enhanced navigation manager that handles all navigation responsibilities.
+ * Navigation manager that handles all navigation responsibilities.
  * Manages navigation history, commands, and transitions between pages.
  */
 public class TerminalWindowNavigationManager {
@@ -26,10 +26,8 @@ public class TerminalWindowNavigationManager {
     public void navigateTo(Class<?> targetPageClass) {
         Logger.debug("Navigating to {}", targetPageClass.getSimpleName());
         
-        // Add to navigation history
         navigationHistory.push(targetPageClass);
         
-        // Create navigation context for the target page
         NavigationDestination destination = NavigationDestination.fromPageClass(targetPageClass);
         NavigationContext context = new NavigationContext(null, null);
         context.setContextData("directDestination", destination);
@@ -41,11 +39,10 @@ public class TerminalWindowNavigationManager {
     public void navigateBack() {
         Logger.debug("Navigating back");
         if (canNavigateBack()) {
-            navigationHistory.pop(); // Remove current page
+            navigationHistory.pop();
             if (!navigationHistory.isEmpty()) {
                 Class<?> previousPageClass = navigationHistory.peek();
                 Logger.debug("Navigating back to {}", previousPageClass.getSimpleName());
-                // Navigate back without adding to history again
                 navigateBackTo(previousPageClass);
             } else {
                 Logger.debug("Navigation history empty, returning to main menu");
@@ -57,13 +54,9 @@ public class TerminalWindowNavigationManager {
         }
     }
 
-    /**
-     * Navigate to a page without modifying navigation history (used for back navigation).
-     */
     private void navigateBackTo(Class<?> targetPageClass) {
         Logger.debug("Navigating back to {} without history modification", targetPageClass.getSimpleName());
         
-        // Create navigation context for the target page
         NavigationDestination destination = NavigationDestination.fromPageClass(targetPageClass);
         NavigationContext context = new NavigationContext(null, null);
         context.setContextData("directDestination", destination);
@@ -77,7 +70,6 @@ public class TerminalWindowNavigationManager {
         clearNavigationHistory();
         
         if (lifecycleManager != null) {
-            // Use enhanced lifecycle manager
             lifecycleManager.showMainMenu();
         } else {
             Logger.error("No lifecycle manager available for returnToMainMenu");
@@ -89,19 +81,17 @@ public class TerminalWindowNavigationManager {
             try {
                 Logger.debug("Executing navigation command: {}", command.getDescription());
                 
-                // Get the current NewTerminalWindowManager instance
-                NewTerminalWindowManager windowManager = NewTerminalWindowManager.getInstance();
-                if (windowManager != null) {
-                    // Execute the navigation command with the new window manager
-                    command.execute(windowManager);
+                TerminalWindowManager wm = TerminalWindowManager.getInstance();
+                if (wm != null) {
+                    command.execute(wm);
                     Logger.debug("Successfully executed navigation command: {}", command.getDescription());
                 } else {
-                    Logger.error("NewTerminalWindowManager instance not available for navigation");
+                    Logger.error("TerminalWindowManager instance not available for navigation");
                     returnToMainMenu();
                 }
             } catch (Exception e) {
                 Logger.error("Navigation command execution failed: {}", e.getMessage());
-                // Fallback to main menu on navigation failure
+                /* Fallback to main menu on navigation failure */
                 returnToMainMenu();
             }
         } else {
@@ -124,7 +114,6 @@ public class TerminalWindowNavigationManager {
         Logger.debug("Navigation history cleared");
     }
 
-    // Enhanced navigation methods for better control
     public void navigateWithContext(Class<?> targetPageClass, NavigationContext context) {
         Logger.debug("Navigating to {} with context", targetPageClass.getSimpleName());
         
@@ -140,7 +129,7 @@ public class TerminalWindowNavigationManager {
         Logger.debug("Replacing current page with {}", targetPageClass.getSimpleName());
         
         if (!navigationHistory.isEmpty()) {
-            navigationHistory.pop(); // Remove current page
+            navigationHistory.pop();
         }
         navigateTo(targetPageClass);
     }
@@ -168,7 +157,6 @@ public class TerminalWindowNavigationManager {
                (navigationHistory.size() == 1 && "MainPage".equals(getCurrentPage().getSimpleName()));
     }
 
-    // Transition management methods
     public void transitionToPage(Class<?> pageClass) {
         if (lifecycleManager != null) {
             lifecycleManager.transitionTo(pageClass);

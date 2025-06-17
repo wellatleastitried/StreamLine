@@ -50,7 +50,7 @@ public class CreatePlaylistPage extends AbstractDynamicPage {
     public void rebuildContent() {
         window.invalidate();
         buildWindowContent(playlistName != null ? playlistName : "");
-        windowManager.refresh();
+        wm.refresh();
     }
 
     private void buildWindowContent(String textInTextBox) {

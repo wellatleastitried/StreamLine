@@ -1,6 +1,6 @@
 package com.streamline.frontend.terminal.navigation.commands;
 
-import com.streamline.frontend.terminal.window.NewTerminalWindowManager;
+import com.streamline.frontend.terminal.window.TerminalWindowManager;
 import org.tinylog.Logger;
 
 public class RebuildCachedSearchCommand implements NavigationCommand {
@@ -11,10 +11,10 @@ public class RebuildCachedSearchCommand implements NavigationCommand {
     }
 
     @Override
-    public void execute(NewTerminalWindowManager windowManager) {
+    public void execute(TerminalWindowManager wm) {
         try {
             Logger.debug("Executing rebuild cached search command");
-            windowManager.transitionToCachedSearchPage();
+            wm.transitionToCachedSearchPage();
         } catch (Exception e) {
             Logger.error("Failed to execute rebuild cached search command", e);
             throw e;

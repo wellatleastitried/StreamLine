@@ -3,7 +3,7 @@ package com.streamline.frontend.terminal.navigation.commands;
 import com.googlecode.lanterna.gui2.Button;
 
 import com.streamline.frontend.terminal.page.pages.AbstractBasePage;
-import com.streamline.frontend.terminal.window.NewTerminalWindowManager;
+import com.streamline.frontend.terminal.window.TerminalWindowManager;
 
 import java.util.Map;
 
@@ -28,17 +28,17 @@ public class RebuildAndNavigateCommand<T extends AbstractBasePage> implements Na
     }
     
     @Override
-    public void execute(NewTerminalWindowManager windowManager) {
+    public void execute(TerminalWindowManager wm) {
         if (rebuildBefore) {
-            rebuildPage(windowManager);
+            rebuildPage(wm);
         }
         
         // Navigate to the rebuilt page
         NavigateToPageCommand<T> navigateCommand = new NavigateToPageCommand<>(targetPageClass);
-        navigateCommand.execute(windowManager);
+        navigateCommand.execute(wm);
     }
     
-    private void rebuildPage(NewTerminalWindowManager windowManager) {
+    private void rebuildPage(TerminalWindowManager wm) {
         String className = targetPageClass.getSimpleName();
         
         // Rebuild dynamic pages that support it
@@ -47,21 +47,21 @@ public class RebuildAndNavigateCommand<T extends AbstractBasePage> implements Na
             case "PlaylistPage":
             case "RecentlyPlayedPage":
             case "DownloadedMusicPage":
-                windowManager.rebuildDynamicWindows();
+                wm.rebuildDynamicWindows();
                 break;
             case "SearchPage":
                 if (rebuildArgs.length > 0 && rebuildArgs[0] instanceof Map) {
                     @SuppressWarnings("unchecked")
                     Map<Integer, Button> searchResults = 
                         (Map<Integer, Button>) rebuildArgs[0];
-                    windowManager.rebuildSearchPage(searchResults);
+                    wm.rebuildSearchPage(searchResults);
                 } else {
-                    windowManager.rebuildSearchPage(null);
+                    wm.rebuildSearchPage(null);
                 }
                 break;
             default:
                 // For other pages, rebuild all windows
-                windowManager.rebuildAllWindows();
+                wm.rebuildAllWindows();
                 break;
         }
     }

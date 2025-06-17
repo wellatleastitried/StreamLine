@@ -2,10 +2,8 @@ package com.streamline.frontend.terminal.page.pages;
 
 import com.googlecode.lanterna.gui2.*;
 import com.streamline.backend.Dispatcher;
+import com.streamline.frontend.terminal.navigation.NavigationContext;
 import com.streamline.frontend.terminal.navigation.NavigationDestination;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Window for application settings.
@@ -47,15 +45,8 @@ public class SettingsPage extends AbstractBasePage {
     }
 
     private void navigateToLanguagePage() {
-        // Use the navigation system instead of direct transitionTo call
-        Map<String, Object> contextData = new HashMap<>();
-        contextData.put("targetDestination", NavigationDestination.LANGUAGE);
-        navigateBack(contextData);
-    }
-
-    @Override
-    protected AbstractBasePage getPreviousPage() {
-        // SettingsPage typically returns to main menu
-        return null;
+        NavigationContext context = createNavigationContext();
+        context.setContextData("desiredPage", NavigationDestination.LANGUAGE);
+        navigateTo(context);
     }
 }
