@@ -1,20 +1,20 @@
 package com.streamline.database;
 
+import com.streamline.audio.Playlist;
 import com.streamline.audio.Song;
 import com.streamline.utilities.RetrievedStorage;
 
-import java.io.File;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.HashMap;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.math.BigInteger;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 import org.tinylog.Logger;
 
@@ -25,10 +25,10 @@ import org.tinylog.Logger;
 public final class DatabaseRunner {
 
     private final Connection connection;
-    private final HashMap<String, String> queryMap;
+    private final Map<String, String> queryMap;
     private final DatabaseLinker linker;
 
-    public DatabaseRunner(Connection connection, HashMap<String, String> queryMap, DatabaseLinker linker) {
+    public DatabaseRunner(Connection connection, Map<String, String> queryMap, DatabaseLinker linker) {
         this.connection = connection;
         this.queryMap = queryMap;
         this.linker = linker;
@@ -38,6 +38,27 @@ public final class DatabaseRunner {
             Logger.error("[!] Unable to disable auto-commit feature with connection, please restart the app.");
             System.exit(1);
         }
+    }
+
+    public boolean getSongLikeStatus(Song song) {
+        final String songLikeStatusQuery = "SELECT ls.song_id FROM LikedSongs ls INNER JOIN Songs s ON ls.song_id = s.id WHERE s.title = ? AND s.artist = ? AND s.videoId = ?;";
+        try (PreparedStatement statement = connection.prepareStatement(songLikeStatusQuery)) {
+            statement.setString(1, song.getSongName());
+            statement.setString(2, song.getSongArtist());
+            statement.setString(3, song.getSongVideoId());
+            final ResultSet rs = statement.executeQuery();
+            if (!rs.isBeforeFirst()) {
+                Logger.debug("Song not found in LikedSongs table.");
+                return false;
+            }
+            while (rs.next()) {
+                Logger.debug("Song found in LikedSongs table with ID: " + rs.getInt("song_id"));
+                return true;
+            }
+        } catch (SQLException sE) {
+            handleSQLException(sE);
+        }
+        return false;
     }
 
     public RetrievedStorage getLikedSongs() {
@@ -53,7 +74,8 @@ public final class DatabaseRunner {
                         rs.getString("title"),
                         rs.getString("artist"),
                         rs.getString("url"),
-                        rs.getString("videoId")
+                        rs.getString("videoId"),
+                        rs.getString("duration")
                 );
                 song.setSongLikeStatus(true);
                 likedSongs.add(++index, song);
@@ -77,7 +99,13 @@ public final class DatabaseRunner {
                         rs.getString("title"),
                         rs.getString("artist"),
                         rs.getString("url"),
-                        rs.getString("videoId")
+                        rs.getString("videoId"),
+                        rs.getString("duration"),
+                        false,
+                        true,
+                        false,
+                        rs.getString("file_path"),
+                        rs.getString("file_hash")
                 );
                 downloadedSongs.add(++index, song);
             }
@@ -100,7 +128,8 @@ public final class DatabaseRunner {
                         rs.getString("title"),
                         rs.getString("artist"),
                         rs.getString("url"),
-                        rs.getString("videoId")
+                        rs.getString("videoId"),
+                        rs.getString("duration")
                 );
                 song.setSongRecentlyPlayedStatus(true);
                 recentlyPlayedSongs.add(++index, song);
@@ -128,9 +157,10 @@ public final class DatabaseRunner {
             String artist = rs.getString("artist");
             String url = rs.getString("url");
             String videoId = rs.getString("videoId");
-            
-            Song song = new Song(id, title, artist, url, videoId);
-            
+            String duration = rs.getString("duration");
+
+            Song song = new Song(id, title, artist, url, videoId, duration);
+
             rs.close();
             return song;
         } catch (SQLException e) {
@@ -139,11 +169,11 @@ public final class DatabaseRunner {
         }
     }
 
-    public RetrievedStorage getSongsFromPlaylist(String playlistName) {
+    public RetrievedStorage getSongsFromPlaylist(int playlistId) {
         final RetrievedStorage songsFromPlaylist = new RetrievedStorage();
-        final String playlistSongsQuery = "SELECT * FROM Songs s WHERE s.id IN (SELECT song_id FROM PlaylistSongs WHERE playlist_id = ? ORDER BY data_added_to_playlist DESC);";
+        final String playlistSongsQuery = "SELECT s.* FROM Songs s INNER JOIN PlaylistSongs ps ON s.id = ps.song_id WHERE ps.playlist_id = ? ORDER BY ps.date_added_to_playlist DESC;";
         try (final PreparedStatement statement = connection.prepareStatement(playlistSongsQuery)) {
-            statement.setString(1, playlistName);
+            statement.setInt(1, playlistId);
             final ResultSet rs = statement.executeQuery();
             int index = 0;
             while (rs.next()) {
@@ -152,8 +182,9 @@ public final class DatabaseRunner {
                         rs.getString("title"),
                         rs.getString("artist"),
                         rs.getString("url"),
-                        rs.getString("videoId")
-                );
+                        rs.getString("videoId"),
+                        rs.getString("duration")
+                        );
                 songsFromPlaylist.add(++index, song);
             }
         } catch (SQLException sE) {
@@ -161,6 +192,48 @@ public final class DatabaseRunner {
         }
         return songsFromPlaylist;
     }
+
+    public List<Playlist> getPlaylists() {
+        try (final Statement playlistQuery = connection.createStatement()) {
+            final ResultSet rs = playlistQuery.executeQuery(queryMap.get("GET_PLAYLISTS"));
+            List<Playlist> playlists = new ArrayList<>();
+            while (rs.next()) {
+                final Playlist playlist = new Playlist(
+                        rs.getInt("id"),
+                        rs.getString("name")
+                );
+                playlists.add(playlist);
+            }
+            if (playlists.isEmpty()) {
+                Logger.debug("No playlists found.");
+                return null;
+            }
+            return playlists;
+        } catch (SQLException sE) {
+            handleSQLException(sE);
+        }
+        return null;
+    }
+
+    public int getSongIdFromLikedTable(Song songToSearch) {
+        final String likedSongQuery = "SELECT ls.song_id FROM LikedSongs INNER JOIN Songs s ON ls.song_id = s.id WHERE s.title = ? AND s.artist = ? AND s.videoId = ?;";
+        try (final PreparedStatement statement = connection.prepareStatement(likedSongQuery)) {
+            statement.setString(1, songToSearch.getSongName());
+            statement.setString(2, songToSearch.getSongArtist());
+            statement.setString(3, songToSearch.getSongVideoId());
+            final ResultSet rs = statement.executeQuery();
+            if (!rs.isBeforeFirst()) {
+                return -1;
+            }
+            while (rs.next()) {
+                return rs.getInt("id");
+            }
+        } catch (SQLException sE) {
+            handleSQLException(sE);
+        }
+        return -1;
+    }
+
 
     public RetrievedStorage getExpiredCache() {
         final RetrievedStorage expiredSongs = new RetrievedStorage();
@@ -175,12 +248,13 @@ public final class DatabaseRunner {
                         rs.getString("artist"),
                         rs.getString("url"),
                         rs.getString("videoId"),
+                        rs.getString("duration"),
                         false,
                         true,
                         false,
                         rs.getString("file_path"),
                         rs.getString("file_hash")
-                );
+                        );
                 expiredSongs.add(++index, song);
             }
         } catch (SQLException sE) {
@@ -188,7 +262,7 @@ public final class DatabaseRunner {
         }
         return expiredSongs;
     }
-    
+
     public void clearExpiredCache() {
         try (final Statement statement = connection.createStatement()) {
             statement.setQueryTimeout(30);
@@ -202,20 +276,32 @@ public final class DatabaseRunner {
     /**
      * This function is called when a song is liked. The other functions (such as insertSongIntoLikedSongs()) are for internal use as they do not provide verification of the existence of the song in other tables on their own.
      */
-    public void likeSong(Song song) {
+    public boolean handleLikeSong(Song song) {
         try {
             connection.setAutoCommit(false);
-            // TODO: NEED TO CHECK LIKEDSONGS TABLE AS WELL
             int songId = getSongId(song.getSongName(), song.getSongArtist());
+            Logger.debug("Song ID from Songs query: " + songId);
             if (songId == -1) {
+                Logger.debug("Song not found in the Songs table; making sure it exists in the Songs table.");
                 songId = insertSongIntoSongs(song);
+                Logger.debug("Song inserted into Songs table with ID: " + songId);
             }
-            insertSongIntoLikedTable(songId);
+            if (song.isSongLiked()) {
+                Logger.debug("Removing song from LikedSongs table with song_id: " + songId);
+                removeSongFromLikedTable(songId);
+                Logger.debug("Song removed from LikedSongs table with song_id: " + songId);
+            } else {
+                Logger.debug("Inserting song into LikedSongs table with song_id: " + songId);
+                insertSongIntoLikedTable(songId);
+                Logger.debug("Song inserted into LikedSongs table with song_id: " + songId);
+            }
+            return true;
         } catch (SQLException sE) {
             handleSQLException(sE);
         } finally {
             restoreAutoCommit();
         }
+        return false;
     }
 
     public void downloadSong(Song song) {
@@ -225,13 +311,58 @@ public final class DatabaseRunner {
             if (songId == -1) {
                 songId = insertSongIntoSongs(song);
             }
-            final Song storedSong = download(song);
-            insertSongIntoDownloadTable(songId, storedSong.getDownloadPath(), storedSong.getFileHash());
+            insertSongIntoDownloadTable(songId, song.getDownloadPath(), song.getFileHash());
         } catch (SQLException sE) {
             handleSQLException(sE);
         } finally {
             restoreAutoCommit();
         }
+    }
+
+    public void removeDownloadedSong(Song song) {
+        try {
+            final PreparedStatement statement = connection.prepareStatement("DELETE ds FROM DownloadedSongs ds INNER JOIN Songs s ON ds.song_id = s.id WHERE s.title = ? AND s.artist = ? and s.url = ?");
+            statement.setQueryTimeout(5);
+            statement.setString(1, song.getSongName());
+            statement.setString(2, song.getSongArtist());
+            statement.setString(3, song.getSongLink());
+            statement.executeUpdate();
+            connection.commit();
+        } catch (SQLException sE) {
+            handleSQLException(sE);
+        } finally {
+            restoreAutoCommit();
+        }
+    }
+
+    public Song getSongFromDownloads(Song song) {
+        final String query = "SELECT * FROM DownloadedSongs ds INNER JOIN Songs s ON s.id = ds.song_id WHERE s.title = ? AND s.artist = ? AND s.url = ?;";
+        try (final PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setQueryTimeout(5);
+            statement.setString(1, song.getSongName());
+            statement.setString(2, song.getSongArtist());
+            statement.setString(3, song.getSongLink());
+            try (final ResultSet rs = statement.executeQuery()) {
+                if (rs.next()) {
+                    song = new Song(
+                            rs.getInt("id"),
+                            rs.getString("title"),
+                            rs.getString("artist"),
+                            rs.getString("url"),
+                            rs.getString("videoId"),
+                            rs.getString("duration"),
+                            getSongLikeStatus(song),
+                            true,
+                            false,
+                            rs.getString("file_path"),
+                            rs.getString("file_hash")
+                            );
+                }
+            }
+        } catch (SQLException sE) {
+            handleSQLException(sE);
+        }
+        return song;
     }
 
     public void addToRecents(Song song) {
@@ -249,47 +380,6 @@ public final class DatabaseRunner {
         }
     }
 
-    protected Song download(Song song) {
-        // Convert video to mp3 and download
-        final String filePath = String.format("%s-%s.mp3", song.getSongName(), song.getSongArtist()); 
-        final String fileHash = generateHashFromFile(filePath);
-        // TODO: Actually download the song
-        return new Song(
-                song.getSongId(),
-                song.getSongName(),
-                song.getSongArtist(),
-                song.getSongLink(),
-                song.getSongVideoId(),
-                song.isSongLiked(),
-                true,
-                song.isSongRecentlyPlayed(),
-                filePath,
-                fileHash
-        ); 
-    }
-
-    protected String generateHashFromFile(String path) {
-        try (FileInputStream fS = new FileInputStream(new File(path))) {
-            final MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            final byte[] byteArray = new byte[1024];
-            int byteCount;
-            while ((byteCount = fS.read(byteArray)) != -1) {
-                digest.update(byteArray, 0, byteCount);
-            }
-            final byte[] bytes = digest.digest();
-            final StringBuilder hexStringOfHash = new StringBuilder(new BigInteger(1, bytes).toString(16));
-            while (hexStringOfHash.length() < 64) {
-                hexStringOfHash.insert(0, '0');
-            }
-            return hexStringOfHash.toString();
-        } catch (NoSuchAlgorithmException nA) {
-            Logger.error("There is a typo in the name of the hashing algorithm being used or Java no longer supports the used algorithm. Either way, it needs to be changed.");
-        } catch (IOException iE) {
-            Logger.error("[!] There has been an error reading the bytes from the configuration file, please try reloading the app.");
-        }
-        return null;
-    }
-
     protected int getSongId(String title, String artist) throws SQLException {
         final String checkIfSongExists = "SELECT id FROM Songs WHERE title = ? AND artist = ?;";
         try (PreparedStatement checkSong = connection.prepareStatement(checkIfSongExists)) {
@@ -304,23 +394,69 @@ public final class DatabaseRunner {
         return -1;
     }
 
+    protected int getSongId(Song song) throws SQLException {
+        final String checkIfSongExists = "SELECT id FROM Songs WHERE title = ? AND artist = ? AND url = ? AND videoId = ?;";
+        try (PreparedStatement checkSong = connection.prepareStatement(checkIfSongExists)) {
+            checkSong.setString(1, song.getSongName());
+            checkSong.setString(2, song.getSongArtist());
+            checkSong.setString(3, song.getSongLink());
+            checkSong.setString(4, song.getSongVideoId());
+            try (final ResultSet rs = checkSong.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        }
+        return -1;
+    }
+
+    public int getPlaylistId(String playlistName) {
+        final String getPlaylistId = "SELECT id FROM Playlists WHERE name = ?;";
+        try (PreparedStatement playlistStatement = connection.prepareStatement(getPlaylistId)) {
+            playlistStatement.setString(1, playlistName);
+            try (final ResultSet rs = playlistStatement.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        } catch (SQLException sE) {
+            handleSQLException(sE);
+        }
+        return -1;
+    }
+
+    public void createPlaylist(String playlistName) {
+        if (getPlaylistId(playlistName) != -1) {
+            Logger.warn("[!] Playlist with name '{}' already exists.", playlistName);
+            return;
+        }
+        final String createPlaylist = "INSERT INTO Playlists (name) VALUES (?);";
+        try {
+            connection.setAutoCommit(false);
+            try (PreparedStatement playlistStatement = connection.prepareStatement(createPlaylist)) {
+                playlistStatement.setString(1, playlistName);
+                playlistStatement.executeUpdate();
+                connection.commit();
+            }
+        } catch (SQLException sE) {
+            handleSQLException(sE);
+        } finally {
+            restoreAutoCommit();
+        }
+    }
+
     protected int insertSongIntoSongs(Song song) throws SQLException {
-        final String insertIntoSongs = "INSERT OR IGNORE INTO Songs (title, artist, url, videoId) VALUES(?, ?, ?, ?);";
+        final String insertIntoSongs = "INSERT INTO Songs (title, artist, url, videoId, duration) VALUES (?, ?, ?, ?, ?);";
         try (final PreparedStatement insertSongStatement = connection.prepareStatement(insertIntoSongs)) {
             insertSongStatement.setString(1, song.getSongName());
             insertSongStatement.setString(2, song.getSongArtist());
             insertSongStatement.setString(3, song.getSongLink());
             insertSongStatement.setString(4, song.getSongVideoId());
+            insertSongStatement.setString(5, song.getDuration());
             insertSongStatement.executeUpdate();
             connection.commit();
-            try (final ResultSet generatedKeys = insertSongStatement.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    return generatedKeys.getInt(1);
-                } else {
-                    throw new SQLException("Failed to insert song, no ID was generated.");
-                }
-            }
         }
+        return getSongId(song);
     }
 
     public void clearCachedSongs() {
@@ -335,16 +471,16 @@ public final class DatabaseRunner {
 
     protected void insertSongIntoRecentlyPlayed(int songId) throws SQLException {
         final String insertIntoRecentlyPlayed = "INSERT INTO RecentlyPlayed (song_id, last_listen) VALUES (?, CURRENT_TIMESTAMP);";
-        try (final PreparedStatement insertStatement = connection.prepareStatement(insertIntoRecentlyPlayed)) {
-            insertStatement.setInt(1, songId);
-            insertStatement.executeUpdate();
+        try (final PreparedStatement insertSongStatement = connection.prepareStatement(insertIntoRecentlyPlayed)) {
+            insertSongStatement.setInt(1, songId);
+            insertSongStatement.executeUpdate();
             connection.commit();
         }
     }
 
     protected void insertSongIntoDownloadTable(int songId, String filePath, String fileHash) throws SQLException {
-        final String insertIntoLikedSongs = "INSERT INTO DownloadedSongs (song_id, date_downloaded, file_path, file_hash) VALUES (?, CURRENT_TIMESTAMP, ?, ?);";
-        try (final PreparedStatement insertSongStatement = connection.prepareStatement(insertIntoLikedSongs)) {
+        final String insertIntoDownloadedSongs = "INSERT INTO DownloadedSongs (song_id, date_downloaded, file_path, file_hash) VALUES (?, CURRENT_TIMESTAMP, ?, ?);";
+        try (final PreparedStatement insertSongStatement = connection.prepareStatement(insertIntoDownloadedSongs)) {
             insertSongStatement.setInt(1, songId);
             insertSongStatement.setString(2, filePath);
             insertSongStatement.setString(3, fileHash);
@@ -362,11 +498,27 @@ public final class DatabaseRunner {
         }
     }
 
+    protected void removeSongFromLikedTable(int songId) throws SQLException {
+        final String removeLikedSong = "DELETE FROM LikedSongs WHERE song_id = ?;";
+        try (final PreparedStatement insertSongStatement = connection.prepareStatement(removeLikedSong)) {
+            insertSongStatement.setInt(1, songId);
+            insertSongStatement.executeUpdate();
+            connection.commit();
+            Logger.debug("Song deletion query committed into LikedSongs table with ID: " + songId);
+        }
+    }
+
     private void handleSQLException(SQLException sE) {
         Logger.warn("[!] Unable to execute query on the database, please try restarting the app.");
+        Logger.debug("[!] SQL error message: " + sE.getMessage());
+        Writer buffer = new StringWriter();
+        PrintWriter printWriter = new PrintWriter(buffer);
+        sE.printStackTrace(printWriter);
+        Logger.debug("[!] SQL error stack trace: " + buffer.toString());
         try {
             connection.rollback();
         } catch (SQLException rollbackException) {
+            Logger.error("[!] Fatal database error:");
             Logger.error("[!] Unable to rollback changes to database after an error.");
             System.exit(1);
         }
