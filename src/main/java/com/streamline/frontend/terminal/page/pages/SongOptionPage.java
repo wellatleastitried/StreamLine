@@ -76,12 +76,12 @@ public class SongOptionPage extends AbstractDynamicPage {
         downloadButton = createDownloadButton();
         mainPanel.addComponent(downloadButton);
 
-        addSpace();        mainPanel.addComponent(componentFactory.createButton(
+        addSpace();
+        mainPanel.addComponent(componentFactory.createButton(
                     getText("button.back"), 
                     this::navigateBack,
                     componentFactory.getButtonWidth() / 3, 
-                    componentFactory.getButtonHeight() / 2
-                        ));
+                    componentFactory.getButtonHeight() / 2));
     }
 
     private Button createLikeButton() {
@@ -93,6 +93,7 @@ public class SongOptionPage extends AbstractDynamicPage {
             selectedSong.setSongLikeStatus(backend.isSongLiked(selectedSong));
             likeButton = createLikeButton();
             updatePanel();
+            wm.markWindowAsDirty(LikedMusicPage.class, wm.likedMusicPage);
             wm.refresh();
         });
     }
@@ -112,6 +113,7 @@ public class SongOptionPage extends AbstractDynamicPage {
                 } else {
                     wm.buildSongOptionPage(selectedSong, previousPage);
                 }
+                wm.markWindowAsDirty(DownloadedMusicPage.class, wm.downloadedPage);
                 wm.refresh();
             };
         } else if (!songIsDownloaded && isDownloading) {
@@ -124,6 +126,7 @@ public class SongOptionPage extends AbstractDynamicPage {
                 } else {
                     wm.buildSongOptionPage(selectedSong, previousPage);
                 }
+                wm.markWindowAsDirty(DownloadedMusicPage.class, wm.downloadedPage);
                 wm.refresh();
             };
         } else {
@@ -137,6 +140,7 @@ public class SongOptionPage extends AbstractDynamicPage {
                 } else {
                     wm.buildSongOptionPage(selectedSong, previousPage);
                 }
+                wm.markWindowAsDirty(DownloadedMusicPage.class, wm.downloadedPage);
                 wm.refresh();
             };
         }

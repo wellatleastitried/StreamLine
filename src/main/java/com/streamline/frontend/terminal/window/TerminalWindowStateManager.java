@@ -5,8 +5,6 @@ import com.streamline.frontend.terminal.page.pages.*;
 import org.tinylog.Logger;
 
 import java.util.Map;
-import java.util.Set;
-import java.util.HashSet;
 import java.util.HashMap;
 
 /**
@@ -15,33 +13,42 @@ import java.util.HashMap;
  */
 public class TerminalWindowStateManager {
 
-    private final Set<Class<?>> dirtyWindows;
+    private final TerminalWindowManager wm;
+
+    private final Map<Class<?>, AbstractDynamicPage> dirtyWindows;
     private final Map<Class<?>, PageState> pageStates;
     private final Map<Class<?>, Boolean> rebuildFlags;
 
     public TerminalWindowStateManager() {
-        this.dirtyWindows = new HashSet<>();
+        this.wm = TerminalWindowManager.getInstance();
+        this.dirtyWindows = new HashMap<>();
         this.pageStates = new HashMap<>();
         this.rebuildFlags = new HashMap<>();
         initializeRebuildFlags();
     }
 
     private void initializeRebuildFlags() {
-        // Initialize rebuild flags for specific pages
         rebuildFlags.put(SearchPage.class, false);
         rebuildFlags.put(PlaylistPage.class, false);
         Logger.debug("Initialized rebuild flags for window state manager");
     }
 
-    public void markWindowDirty(Class<?> pageClass) {
-        dirtyWindows.add(pageClass);
+    public void markWindowDirty(Class<?> pageClass, AbstractDynamicPage instance) {
+        dirtyWindows.put(pageClass, instance);
         Logger.debug("Marked window dirty: {}", pageClass.getSimpleName());
     }
 
     public void rebuildDirtyWindows() {
         if (!dirtyWindows.isEmpty()) {
-            Logger.debug("Rebuilding {} dirty windows", dirtyWindows.size());
-            dirtyWindows.clear();
+            for (Class<?> pageClass : dirtyWindows.keySet()) {
+                AbstractDynamicPage instance = dirtyWindows.get(pageClass);
+                if (instance != null) {
+                    instance.updateWindow();
+                    Logger.debug("Rebuilt content for dirty window: {}", pageClass.getSimpleName());
+                } else {
+                    Logger.warn("No instance found for dirty window: {}", pageClass.getSimpleName());
+                }
+            }
         }
     }
 
@@ -55,7 +62,7 @@ public class TerminalWindowStateManager {
     }
 
     public boolean isWindowDirty(Class<?> pageClass) {
-        return dirtyWindows.contains(pageClass);
+        return dirtyWindows.containsKey(pageClass);
     }
 
     public void clearDirtyFlag(Class<?> pageClass) {
@@ -63,16 +70,15 @@ public class TerminalWindowStateManager {
         Logger.debug("Cleared dirty flag for {}", pageClass.getSimpleName());
     }
 
-    public Set<Class<?>> getDirtyWindows() {
-        return new HashSet<>(dirtyWindows);
+    public HashMap<Class<?>, AbstractDynamicPage> getDirtyWindows() {
+        return new HashMap<>(dirtyWindows);
     }
 
     public void markDynamicWindowsDirty() {
-        // Mark all dynamic pages as dirty
-        markWindowDirty(LikedMusicPage.class);
-        markWindowDirty(PlaylistPage.class);
-        markWindowDirty(RecentlyPlayedPage.class);
-        markWindowDirty(DownloadedMusicPage.class);
+        markWindowDirty(LikedMusicPage.class, wm.likedMusicPage);
+        markWindowDirty(PlaylistPage.class, wm.playlistPage);
+        markWindowDirty(RecentlyPlayedPage.class, wm.recentlyPlayedPage);
+        markWindowDirty(DownloadedMusicPage.class, wm.downloadedPage);
         Logger.debug("Marked all dynamic windows as dirty");
     }
 
@@ -81,7 +87,6 @@ public class TerminalWindowStateManager {
         Logger.debug("Cleared all dirty flags");
     }
 
-    // Rebuild flag management
     public void setRebuildFlag(Class<?> pageClass, boolean shouldRebuild) {
         rebuildFlags.put(pageClass, shouldRebuild);
         Logger.debug("Set rebuild flag for {} to {}", pageClass.getSimpleName(), shouldRebuild);
@@ -101,7 +106,6 @@ public class TerminalWindowStateManager {
         Logger.debug("Cleared all rebuild flags");
     }
 
-    // Convenience methods for specific pages
     public boolean shouldRebuildSearchPage() {
         return getRebuildFlag(SearchPage.class);
     }
@@ -118,7 +122,6 @@ public class TerminalWindowStateManager {
         setRebuildFlag(PlaylistPage.class, shouldRebuild);
     }
 
-    // State validation and cleanup
     public void validateState() {
         Logger.debug("Validating window state - {} dirty windows, {} page states, {} rebuild flags", 
                     dirtyWindows.size(), pageStates.size(), rebuildFlags.size());

@@ -76,6 +76,7 @@ public final class TerminalInterface extends com.streamline.frontend.FrontendInt
     private void initializeWindows() {
         try {
             TerminalWindowManager windowManager = TerminalWindowManager.createInstance(textGUI, guiThread, backend);
+            windowManager.setAsWindowManager(textGUI);
             windowManager.buildWindows();
             if (windowManager.mainPageWindow == null) {
                 Logger.debug("[!] Main page is null");

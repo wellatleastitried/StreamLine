@@ -4,7 +4,6 @@ import com.googlecode.lanterna.gui2.BasicWindow;
 import com.googlecode.lanterna.gui2.WindowBasedTextGUI;
 import com.googlecode.lanterna.gui2.TextGUIThread;
 import com.googlecode.lanterna.gui2.Window;
-import com.streamline.backend.Dispatcher;
 import com.streamline.frontend.terminal.page.pages.*;
 import org.tinylog.Logger;
 
@@ -18,18 +17,18 @@ import java.util.Collection;
  */
 public class TerminalWindowLifecycleManager {
 
+    private final TerminalWindowManager wm;
     private final Map<Class<?>, BasicWindow> windowCache;
     private final Map<Class<?>, AbstractBasePage> pageCache;
     private final WindowBasedTextGUI textGUI;
     private final TextGUIThread guiThread;
-    private final Dispatcher backend;
 
-    public TerminalWindowLifecycleManager(WindowBasedTextGUI textGUI, TextGUIThread guiThread, Dispatcher backend) {
+    public TerminalWindowLifecycleManager(WindowBasedTextGUI textGUI, TextGUIThread guiThread) {
+        this.wm = TerminalWindowManager.getInstance();
         this.windowCache = new HashMap<>();
         this.pageCache = new HashMap<>();
         this.textGUI = textGUI;
         this.guiThread = guiThread;
-        this.backend = backend;
         Logger.debug("Initialized window lifecycle manager");
     }
 
@@ -75,7 +74,7 @@ public class TerminalWindowLifecycleManager {
     }
 
     public void cleanupUnusedWindows() {
-        // Memory management - remove unused windows
+        // TODO: Memory management - remove unused windows
         Logger.debug("Cleanup called for {} cached windows", windowCache.size());
     }
 
@@ -89,7 +88,6 @@ public class TerminalWindowLifecycleManager {
         return windowCache.size();
     }
 
-    // Window transition and management
     public void transitionTo(BasicWindow targetWindow) {
         Logger.debug("Transitioning to window: {}", targetWindow != null ? targetWindow.toString() : "null");
         guiThread.invokeLater(() -> {
@@ -139,7 +137,6 @@ public class TerminalWindowLifecycleManager {
     }
 
     public void showMainMenu() {
-        // Find the main window in cache
         BasicWindow mainWindow = windowCache.get(com.streamline.frontend.terminal.page.pages.MainPage.class);
         if (mainWindow != null) {
             showMainMenu(mainWindow);
@@ -167,7 +164,6 @@ public class TerminalWindowLifecycleManager {
         });
     }
 
-    // Window rebuilding support
     public void rebuildWindow(Class<?> pageClass) {
         AbstractBasePage page = pageCache.get(pageClass);
         if (page != null) {
@@ -202,7 +198,6 @@ public class TerminalWindowLifecycleManager {
         return windowCache.get(pageClass);
     }
 
-    // Screen refresh support
     public void refresh() {
         guiThread.invokeLater(() -> {
             try {

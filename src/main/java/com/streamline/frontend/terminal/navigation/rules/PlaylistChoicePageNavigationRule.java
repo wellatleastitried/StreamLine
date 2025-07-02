@@ -22,7 +22,6 @@ public class PlaylistChoicePageNavigationRule implements NavigationRule {
         AbstractBasePage previousPage = context.getPreviousPage();
 
         if (previousPage instanceof SearchPage) {
-            // Special handling for SearchPage - needs to rebuild with search results
             context.setContextData("requiresRebuild", true);
             context.setContextData("rebuildType", "cachedSearch");
             return NavigationDestination.SEARCH;
@@ -41,7 +40,6 @@ public class PlaylistChoicePageNavigationRule implements NavigationRule {
         } else if (previousPage instanceof SongOptionPage) {
             return NavigationDestination.SONG_OPTIONS;
         } else {
-            // Default fallback - go to main menu
             return NavigationDestination.MAIN_MENU;
         }
     }

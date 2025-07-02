@@ -10,7 +10,6 @@ import com.streamline.backend.Dispatcher;
 import com.streamline.frontend.terminal.page.pages.*;
 import com.streamline.frontend.terminal.page.PageState;
 import com.streamline.frontend.terminal.navigation.NavigationContext;
-import com.streamline.frontend.terminal.navigation.NavigationDestination;
 import org.tinylog.Logger;
 
 import java.util.Map;
@@ -21,19 +20,19 @@ public class TerminalWindowManager {
     private final TextGUIThread guiThread;
     private final Dispatcher backend;
 
-    private final TerminalWindowStateManager stateManager;
-    private final TerminalWindowLifecycleManager lifecycleManager;
-    private final TerminalWindowNavigationManager navigationManager;
+    private TerminalWindowStateManager stateManager;
+    private TerminalWindowLifecycleManager lifecycleManager;
+    private TerminalWindowNavigationManager navigationManager;
 
-    private final MainPage mainPage;
-    private final HelpPage helpPage;
-    private final SettingsPage settingsPage;
-    private final LanguagePage languagePage;
-    private final SearchPage searchPage;
-    private final LikedMusicPage likedMusicPage;
-    private final PlaylistPage playlistPage;
-    private final RecentlyPlayedPage recentlyPlayedPage;
-    private final DownloadedMusicPage downloadedPage;
+    public final MainPage mainPage;
+    public final HelpPage helpPage;
+    public final SettingsPage settingsPage;
+    public final LanguagePage languagePage;
+    public final SearchPage searchPage;
+    public final LikedMusicPage likedMusicPage;
+    public final PlaylistPage playlistPage;
+    public final RecentlyPlayedPage recentlyPlayedPage;
+    public final DownloadedMusicPage downloadedPage;
 
     private static final Map<String, AbstractBasePage> pages = new HashMap<>();
     
@@ -59,13 +58,9 @@ public class TerminalWindowManager {
 
     private static TerminalWindowManager instance;
 
-    public TerminalWindowManager(WindowBasedTextGUI textGUI, TextGUIThread guiThread, Dispatcher backend) throws Exception {
+    public TerminalWindowManager(TextGUIThread guiThread, Dispatcher backend) throws Exception {
         this.guiThread = guiThread;
         this.backend = backend;
-
-        this.stateManager = new TerminalWindowStateManager();
-        this.lifecycleManager = new TerminalWindowLifecycleManager(textGUI, guiThread, backend);
-        this.navigationManager = new TerminalWindowNavigationManager(lifecycleManager);
 
         this.mainPage = new MainPage(backend, guiThread);
         pages.put("mainPage", mainPage);
@@ -88,7 +83,13 @@ public class TerminalWindowManager {
 
         initializePageStates();
 
-        Logger.debug("Initialized NewTerminalWindowManager with enhanced navigation and state management");
+        Logger.debug("Initialized TerminalWindowManager with enhanced navigation and state management");
+    }
+
+    public void setAsWindowManager(WindowBasedTextGUI textGUI) {
+        this.stateManager = new TerminalWindowStateManager();
+        this.lifecycleManager = new TerminalWindowLifecycleManager(textGUI, guiThread);
+        this.navigationManager = new TerminalWindowNavigationManager(lifecycleManager);
     }
 
     /**
@@ -193,6 +194,7 @@ public class TerminalWindowManager {
     }
 
     public void navigateTo(NavigationContext context) {
+        rebuildDirtyWindows();
         Logger.debug("Navigation to destination: {} with context", context.getDestination());
         navigationManager.navigateToDestination(context.getDestination(), context);
     }
@@ -214,7 +216,6 @@ public class TerminalWindowManager {
     }
 
     public void rebuildSearchPage(Map<Integer, Button> searchResults) {
-        stateManager.markWindowDirty(SearchPage.class);
         lifecycleManager.rebuildWindow(SearchPage.class);
         Logger.debug("Rebuilt search page with {} search results", searchResults.size());
     }
@@ -229,18 +230,17 @@ public class TerminalWindowManager {
 
     public void rebuildDynamicWindows() {
         Logger.debug("rebuildDynamicWindows called - rebuilding all dynamic windows");
-        stateManager.rebuildDirtyWindows();
-        lifecycleManager.rebuildDynamicWindow(SearchPage.class);
-        lifecycleManager.rebuildDynamicWindow(PlaylistPage.class);
-        
-        // lifecycleManager.rebuildDynamicWindow(LikedMusicPage.class);
-        Logger.debug("Rebuilding LikedMusicPage");
-        BasicWindow likedMusicWindow = lifecycleManager.rebuildDynamicWindow(LikedMusicPage.class);
-        if (likedMusicWindow != null) this.likedMusicPageWindow = likedMusicWindow;
-
-        lifecycleManager.rebuildDynamicWindow(RecentlyPlayedPage.class);
-        lifecycleManager.rebuildDynamicWindow(DownloadedMusicPage.class);
+        searchPageWindow = lifecycleManager.rebuildDynamicWindow(SearchPage.class);
+        playlistPageWindow = lifecycleManager.rebuildDynamicWindow(PlaylistPage.class);
+        likedMusicPageWindow = lifecycleManager.rebuildDynamicWindow(LikedMusicPage.class);
+        recentlyPlayedPageWindow = lifecycleManager.rebuildDynamicWindow(RecentlyPlayedPage.class);
+        downloadedPageWindow = lifecycleManager.rebuildDynamicWindow(DownloadedMusicPage.class);
         Logger.debug("Rebuilt all dynamic windows");
+    }
+
+    public void rebuildDirtyWindows() {
+        Logger.debug("Rebuilding dirty windows");
+        stateManager.rebuildDirtyWindows();
     }
 
     public void rebuildAllWindows() {
@@ -307,6 +307,11 @@ public class TerminalWindowManager {
         }
     }
 
+    public void markWindowAsDirty(Class<?> pageClass, AbstractDynamicPage instance) {
+        stateManager.markWindowDirty(pageClass, instance);
+        Logger.debug("Marked window dirty: {}", pageClass.getSimpleName());
+    }
+
     public void refresh() {
         lifecycleManager.refresh();
     }
@@ -333,16 +338,15 @@ public class TerminalWindowManager {
 
     public static TerminalWindowManager getInstance() {
         if (instance == null) {
-            throw new IllegalStateException("NewTerminalWindowManager has not been initialized yet.");
+            throw new IllegalStateException("TerminalWindowManager has not been initialized yet.");
         }
         return instance;
     }
 
     public static TerminalWindowManager createInstance(WindowBasedTextGUI textGUI, TextGUIThread guiThread, Dispatcher backend) throws Exception {
         if (instance == null) {
-            instance = new TerminalWindowManager(textGUI, guiThread, backend);
+            instance = new TerminalWindowManager(guiThread, backend);
         }
         return instance;
     }
-
 }
