@@ -4,25 +4,24 @@ import com.googlecode.lanterna.gui2.BasicWindow;
 import com.googlecode.lanterna.gui2.Button;
 import com.googlecode.lanterna.gui2.WindowBasedTextGUI;
 import com.googlecode.lanterna.gui2.TextGUIThread;
+import com.googlecode.lanterna.gui2.Window;
 import com.streamline.audio.Playlist;
 import com.streamline.audio.Song;
 import com.streamline.backend.Dispatcher;
 import com.streamline.frontend.terminal.page.pages.*;
-import com.streamline.frontend.terminal.page.PageState;
-import com.streamline.frontend.terminal.navigation.NavigationContext;
 import org.tinylog.Logger;
 
 import java.util.Map;
-import java.util.HashMap;
+import java.util.Collection;
+import java.util.Stack;
 
 public class TerminalWindowManager {
 
     private final TextGUIThread guiThread;
     private final Dispatcher backend;
+    private WindowBasedTextGUI textGUI;
 
-    private TerminalWindowStateManager stateManager;
-    private TerminalWindowLifecycleManager lifecycleManager;
-    private TerminalWindowNavigationManager navigationManager;
+    private final Stack<Class<?>> navigationHistory = new Stack<>();
 
     public final MainPage mainPage;
     public final HelpPage helpPage;
@@ -33,10 +32,6 @@ public class TerminalWindowManager {
     public final PlaylistPage playlistPage;
     public final RecentlyPlayedPage recentlyPlayedPage;
     public final DownloadedMusicPage downloadedPage;
-
-    private static final Map<String, AbstractBasePage> pages = new HashMap<>();
-    
-    private final Map<Class<? extends AbstractBasePage>, PageState> pageStates = new HashMap<>();
 
     public BasicWindow mainPageWindow;
     public BasicWindow settingsPageWindow;
@@ -63,67 +58,33 @@ public class TerminalWindowManager {
         this.backend = backend;
 
         this.mainPage = new MainPage(backend, guiThread);
-        pages.put("mainPage", mainPage);
         this.helpPage = new HelpPage(backend, guiThread);
-        pages.put("helpPage", helpPage);
         this.settingsPage = new SettingsPage(backend, guiThread);
-        pages.put("settingsPage", settingsPage);
         this.searchPage = new SearchPage(backend, guiThread);
-        pages.put("searchPage", searchPage);
         this.likedMusicPage = new LikedMusicPage(backend, guiThread);
-        pages.put("likedMusicPage", likedMusicPage);
         this.playlistPage = new PlaylistPage(backend, guiThread);
-        pages.put("playlistPage", playlistPage);
         this.recentlyPlayedPage = new RecentlyPlayedPage(backend, guiThread);
-        pages.put("recentlyPlayedPage", recentlyPlayedPage);
         this.downloadedPage = new DownloadedMusicPage(backend, guiThread);
-        pages.put("downloadedPage", downloadedPage);
         this.languagePage = new LanguagePage(backend, guiThread);
-        pages.put("languagePage", languagePage);
 
-        initializePageStates();
-
-        Logger.debug("Initialized TerminalWindowManager with enhanced navigation and state management");
-    }
-
-    public void setAsWindowManager(WindowBasedTextGUI textGUI) {
-        this.stateManager = new TerminalWindowStateManager();
-        this.lifecycleManager = new TerminalWindowLifecycleManager(textGUI, guiThread);
-        this.navigationManager = new TerminalWindowNavigationManager(lifecycleManager);
+        Logger.debug("Initialized TerminalWindowManager");
     }
 
     /**
-     * Initialize page states for all managed pages.
-     */
-    private void initializePageStates() {
-        pageStates.put(MainPage.class, new PageState());
-        pageStates.put(HelpPage.class, new PageState());
-        pageStates.put(SettingsPage.class, new PageState());
-        pageStates.put(LanguagePage.class, new PageState());
-        pageStates.put(SearchPage.class, new PageState());
-        pageStates.put(LikedMusicPage.class, new PageState());
-        pageStates.put(PlaylistPage.class, new PageState());
-        pageStates.put(RecentlyPlayedPage.class, new PageState());
-        pageStates.put(DownloadedMusicPage.class, new PageState());
-        
-        Logger.debug("Initialized page states for all managed pages");
-    }
-
-    /**
-     * Build all static windows using the lifecycle manager.
+     * Build all static windows.
      */
     public void buildWindows() {
         setWindowManagerForWindows();
 
-        this.mainPageWindow = lifecycleManager.createWindow(MainPage.class, mainPage);
-        this.helpPageWindow = lifecycleManager.createWindow(HelpPage.class, helpPage);
-        this.settingsPageWindow = lifecycleManager.createWindow(SettingsPage.class, settingsPage);
-        this.searchPageWindow = lifecycleManager.createWindow(SearchPage.class, searchPage);
-        this.likedMusicPageWindow = lifecycleManager.createWindow(LikedMusicPage.class, likedMusicPage);
-        this.playlistPageWindow = lifecycleManager.createWindow(PlaylistPage.class, playlistPage);
-        this.recentlyPlayedPageWindow = lifecycleManager.createWindow(RecentlyPlayedPage.class, recentlyPlayedPage);
-        this.downloadedPageWindow = lifecycleManager.createWindow(DownloadedMusicPage.class, downloadedPage);
-        this.languagePageWindow = lifecycleManager.createWindow(LanguagePage.class, languagePage);
+        this.mainPageWindow = mainPage.createWindow();
+        this.helpPageWindow = helpPage.createWindow();
+        this.settingsPageWindow = settingsPage.createWindow();
+        this.searchPageWindow = searchPage.createWindow();
+        this.likedMusicPageWindow = likedMusicPage.createWindow();
+        this.playlistPageWindow = playlistPage.createWindow();
+        this.recentlyPlayedPageWindow = recentlyPlayedPage.createWindow();
+        this.downloadedPageWindow = downloadedPage.createWindow();
+        this.languagePageWindow = languagePage.createWindow();
 
         if (!verifyWindows()) {
             Logger.error("Error while creating windows, please restart the app.");
@@ -133,9 +94,15 @@ public class TerminalWindowManager {
     }
 
     private void setWindowManagerForWindows() {
-        for (AbstractBasePage page : pages.values()) {
-            page.setWindowManager(this);
-        }
+        mainPage.setWindowManager(this);
+        helpPage.setWindowManager(this);
+        settingsPage.setWindowManager(this);
+        searchPage.setWindowManager(this);
+        likedMusicPage.setWindowManager(this);
+        playlistPage.setWindowManager(this);
+        recentlyPlayedPage.setWindowManager(this);
+        downloadedPage.setWindowManager(this);
+        languagePage.setWindowManager(this);
     }
 
     private boolean verifyWindows() {
@@ -193,62 +160,121 @@ public class TerminalWindowManager {
         Logger.debug("Built SongsFromPlaylistPage for playlist: {}", playlist.getName());
     }
 
-    public void navigateTo(NavigationContext context) {
-        rebuildDirtyWindows();
-        Logger.debug("Navigation to destination: {} with context", context.getDestination());
-        navigationManager.navigateToDestination(context.getDestination(), context);
+    public void navigateBack(AbstractBasePage currentPage) {
+        // TODO: Might need to handle navigating to/from dynamic pages
+        navigateBack();
     }
 
-    public void navigateBack(AbstractBasePage currentPage) {
-        navigationManager.navigateBack();
+    public void navigateBack() {
+        Logger.debug("Navigating back");
+        
+        if (!navigationHistory.isEmpty()) {
+            navigationHistory.pop(); // Remove current page
+        }
+        
+        if (!navigationHistory.isEmpty()) {
+            Class<?> previousPage = navigationHistory.peek();
+            Logger.debug("Going back to {}", previousPage.getSimpleName());
+            transitionToPage(previousPage);
+        } else {
+            Logger.debug("No navigation history, returning to main menu");
+            showMainMenu();
+        }
     }
 
     public void navigateToPage(Class<?> pageClass) {
-        navigationManager.navigateTo(pageClass);
+        Logger.debug("Navigating to {}", pageClass.getSimpleName());
+        navigationHistory.push(pageClass);
+        transitionToPage(pageClass);
     }
 
     public void returnToMainMenu() {
-        navigationManager.returnToMainMenu();
+        Logger.debug("Returning to main menu");
+        navigationHistory.clear();
+        showMainMenu();
+    }
+
+    public void returnToMainMenu(BasicWindow currentWindow) {
+        returnToMainMenu();
     }
 
     public boolean canNavigateBack() {
-        return navigationManager.canNavigateBack();
+        return navigationHistory.size() > 1;
     }
 
-    public void rebuildSearchPage(Map<Integer, Button> searchResults) {
-        lifecycleManager.rebuildWindow(SearchPage.class);
-        Logger.debug("Rebuilt search page with {} search results", searchResults.size());
+    public void transitionToPage(Class<?> pageClass) {
+        BasicWindow targetWindow = getWindowForPageClass(pageClass);
+        if (targetWindow != null) {
+            transitionTo(targetWindow);
+        } else {
+            Logger.warn("No window found for page class: {}", pageClass.getSimpleName());
+        }
+    }
+
+    private BasicWindow getWindowForPageClass(Class<?> pageClass) {
+        if (pageClass == MainPage.class) return mainPageWindow;
+        if (pageClass == HelpPage.class) return helpPageWindow;
+        if (pageClass == SettingsPage.class) return settingsPageWindow;
+        if (pageClass == LanguagePage.class) return languagePageWindow;
+        if (pageClass == SearchPage.class) return searchPageWindow;
+        if (pageClass == LikedMusicPage.class) return likedMusicPageWindow;
+        if (pageClass == PlaylistPage.class) return playlistPageWindow;
+        if (pageClass == RecentlyPlayedPage.class) return recentlyPlayedPageWindow;
+        if (pageClass == DownloadedMusicPage.class) return downloadedPageWindow;
+        return null;
+    }
+
+    public void transitionTo(BasicWindow targetWindow) {
+        guiThread.invokeLater(() -> {
+            Collection<Window> openWindows = textGUI.getWindows();
+            for (Window openWindow : openWindows) {
+                if (openWindow != targetWindow) {
+                    textGUI.removeWindow(openWindow);
+                }
+            }
+            if (!openWindows.contains(targetWindow)) {
+                textGUI.addWindowAndWait(targetWindow);
+            }
+        });
     }
 
     public void showMainMenu() {
-        lifecycleManager.showMainMenu();
+        transitionTo(mainPageWindow);
     }
 
     public void transitionToCachedSearchPage() {
-        lifecycleManager.transitionTo(SearchPage.class);
+        transitionTo(searchPageWindow);
+    }
+
+    public void rebuildSearchPage(Map<Integer, Button> searchResults) {
+        this.searchPageWindow = searchPage.createWindow();
+        Logger.debug("Rebuilt search page with {} search results", searchResults.size());
     }
 
     public void rebuildDynamicWindows() {
         Logger.debug("rebuildDynamicWindows called - rebuilding all dynamic windows");
-        searchPageWindow = lifecycleManager.rebuildDynamicWindow(SearchPage.class);
-        playlistPageWindow = lifecycleManager.rebuildDynamicWindow(PlaylistPage.class);
-        likedMusicPageWindow = lifecycleManager.rebuildDynamicWindow(LikedMusicPage.class);
-        recentlyPlayedPageWindow = lifecycleManager.rebuildDynamicWindow(RecentlyPlayedPage.class);
-        downloadedPageWindow = lifecycleManager.rebuildDynamicWindow(DownloadedMusicPage.class);
+        this.searchPageWindow = searchPage.createWindow();
+        this.playlistPageWindow = playlistPage.createWindow();
+        this.likedMusicPageWindow = likedMusicPage.createWindow();
+        this.recentlyPlayedPageWindow = recentlyPlayedPage.createWindow();
+        this.downloadedPageWindow = downloadedPage.createWindow();
         Logger.debug("Rebuilt all dynamic windows");
     }
 
+    public void rebuildDynamicPages() {
+        rebuildDynamicWindows();
+    }
+
     public void rebuildDirtyWindows() {
-        Logger.debug("Rebuilding dirty windows");
-        stateManager.rebuildDirtyWindows();
+        rebuildDynamicWindows();
     }
 
     public void rebuildAllWindows() {
-        this.mainPageWindow = lifecycleManager.createWindow(MainPage.class, mainPage);
-        this.helpPageWindow = lifecycleManager.createWindow(HelpPage.class, helpPage);
-        this.settingsPageWindow = lifecycleManager.createWindow(SettingsPage.class, settingsPage);
-        this.searchPageWindow = lifecycleManager.createWindow(SearchPage.class, searchPage);
-        this.languagePageWindow = lifecycleManager.createWindow(LanguagePage.class, languagePage);
+        this.mainPageWindow = mainPage.createWindow();
+        this.helpPageWindow = helpPage.createWindow();
+        this.settingsPageWindow = settingsPage.createWindow();
+        this.searchPageWindow = searchPage.createWindow();
+        this.languagePageWindow = languagePage.createWindow();
         
         rebuildDynamicWindows();
         
@@ -278,47 +304,35 @@ public class TerminalWindowManager {
     public BasicWindow getCreatePlaylistPageWindow() { return createPlaylistPageWindow; }
     public BasicWindow getSongsFromPlaylistPageWindow() { return songsFromPlaylistPageWindow; }
 
-    public void transitionTo(BasicWindow window) {
-        lifecycleManager.transitionTo(window);
-    }
-
-    public void returnToMainMenu(BasicWindow currentWindow) {
-        Logger.debug("returnToMainMenu called with currentWindow: {}", currentWindow != null ? currentWindow.getClass().getSimpleName() : "null");
-        BasicWindow mainWindow = this.mainPageWindow;
-        if (mainWindow == null) {
-            Logger.debug("mainPageWindow is null, getting from lifecycleManager");
-            mainWindow = lifecycleManager.getWindow(MainPage.class);
-        }
-        
-        if (mainWindow != null) {
-            Logger.debug("Calling lifecycleManager.returnToMainMenu with currentWindow and mainWindow");
-            lifecycleManager.returnToMainMenu(currentWindow, mainWindow);
-        } else {
-            Logger.warn("Main window not available for returnToMainMenu, attempting fallback");
-            guiThread.invokeLater(() -> {
-                if (this.mainPageWindow != null) {
-                    Logger.debug("Fallback: transitioning to mainPageWindow");
-                    lifecycleManager.transitionTo(this.mainPageWindow);
-                } else {
-                    Logger.error("No main window available for transition");
-                    lifecycleManager.showMainMenu();
-                }
-            });
-        }
-    }
-
     public void markWindowAsDirty(Class<?> pageClass, AbstractDynamicPage instance) {
-        stateManager.markWindowDirty(pageClass, instance);
         Logger.debug("Marked window dirty: {}", pageClass.getSimpleName());
+        // TODO: the window needs rebuilding
     }
 
     public void refresh() {
-        lifecycleManager.refresh();
+        guiThread.invokeLater(() -> {
+            try {
+                textGUI.getScreen().refresh();
+            } catch (Exception e) {
+                Logger.error("Error while refreshing screen: {}", e.getMessage());
+            }
+        });
     }
 
     public void closeAllWindows() {
-        lifecycleManager.closeAllWindows();
+        guiThread.invokeLater(() -> {
+            try {
+                Collection<Window> openWindows = textGUI.getWindows();
+                for (Window window : openWindows) {
+                    textGUI.removeWindow(window);
+                }
+                Logger.debug("Closed all windows");
+            } catch (Exception e) {
+                Logger.warn("Exception while closing windows: {}", e.getMessage());
+            }
+        });
         
+        /* Clear all window references */
         this.mainPageWindow = null;
         this.helpPageWindow = null;
         this.settingsPageWindow = null;
@@ -332,8 +346,6 @@ public class TerminalWindowManager {
         this.playlistChoicePageWindow = null;
         this.createPlaylistPageWindow = null;
         this.songsFromPlaylistPageWindow = null;
-        
-        Logger.debug("Closed all windows");
     }
 
     public static TerminalWindowManager getInstance() {

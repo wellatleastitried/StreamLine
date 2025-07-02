@@ -2,8 +2,6 @@ package com.streamline.frontend.terminal.page.pages;
 
 import com.googlecode.lanterna.gui2.*;
 import com.streamline.backend.Dispatcher;
-import com.streamline.frontend.terminal.navigation.NavigationContext;
-import com.streamline.frontend.terminal.navigation.NavigationDestination;
 
 /**
  * Window for application settings.
@@ -45,8 +43,6 @@ public class SettingsPage extends AbstractBasePage {
     }
 
     private void navigateToLanguagePage() {
-        NavigationContext context = createNavigationContext();
-        context.setContextData("desiredPage", NavigationDestination.LANGUAGE);
-        navigateTo(context);
+        navigateTo(LanguagePage.class);
     }
 }

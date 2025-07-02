@@ -10,7 +10,6 @@ import com.googlecode.lanterna.input.KeyType;
 
 import com.streamline.audio.Song;
 import com.streamline.backend.Dispatcher;
-import com.streamline.frontend.terminal.navigation.NavigationContext;
 
 import org.tinylog.Logger;
 
@@ -107,26 +106,6 @@ public class CreatePlaylistPage extends AbstractDynamicPage {
             return false;
         }
         return true;
-    }
-
-    @Override
-    protected AbstractBasePage getPreviousPage() {
-        return previousPage;
-    }
-
-    @Override
-    protected NavigationContext createNavigationContext() {
-        NavigationContext context = super.createNavigationContext();
-        
-        // Add cached data for navigation rules
-        if (cachedSong != null) {
-            context.setContextData("cachedSong", cachedSong);
-        }
-        if (cachedPage != null) {
-            context.setContextData("cachedPage", cachedPage);
-        }
-        
-        return context;
     }
 
     private void addConfirmationButtons() {

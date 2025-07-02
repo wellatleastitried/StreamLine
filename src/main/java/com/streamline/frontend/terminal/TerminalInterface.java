@@ -9,7 +9,6 @@ import com.googlecode.lanterna.terminal.Terminal;
 
 import com.streamline.backend.Dispatcher;
 import com.streamline.frontend.terminal.window.*;
-import com.streamline.frontend.terminal.window.TerminalWindowManager;
 import com.streamline.utilities.LanguagePeer;
 import com.streamline.utilities.internal.LoggerUtils;
 
@@ -76,7 +75,6 @@ public final class TerminalInterface extends com.streamline.frontend.FrontendInt
     private void initializeWindows() {
         try {
             TerminalWindowManager windowManager = TerminalWindowManager.createInstance(textGUI, guiThread, backend);
-            windowManager.setAsWindowManager(textGUI);
             windowManager.buildWindows();
             if (windowManager.mainPageWindow == null) {
                 Logger.debug("[!] Main page is null");

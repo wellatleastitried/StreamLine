@@ -6,8 +6,6 @@ import com.googlecode.lanterna.gui2.TextGUIThread;
 
 import com.streamline.audio.Song;
 import com.streamline.backend.Dispatcher;
-import com.streamline.frontend.terminal.navigation.NavigationContext;
-import com.streamline.frontend.terminal.navigation.NavigationDestination;
 
 import java.util.Map;
 
@@ -58,23 +56,12 @@ public class PlaylistChoicePage extends AbstractDynamicPage {
         mainPanel.addComponent(componentFactory.createButton(
                     getText("button.back"), 
                     () -> {
-                        NavigationContext context = createNavigationContext();
-                        context.setContextData("desiredPage", NavigationDestination.SONG_OPTIONS);
-                        context.setContextData("selectedSong", selectedSong);
-                        if (previousResultsForSearchPage != null) {
-                            context.setContextData("previousResultsForSearchPage", previousResultsForSearchPage);
-                        }
-                        navigateTo(context);
+                        navigateTo(previousPage.getClass());
                     },
                     componentFactory.getButtonWidth() / 3, 
                     componentFactory.getButtonHeight() / 2
                         ));
 
         window.setComponent(mainPanel);
-    }
-
-    @Override
-    protected AbstractBasePage getPreviousPage() {
-        return previousPage;
     }
 }
