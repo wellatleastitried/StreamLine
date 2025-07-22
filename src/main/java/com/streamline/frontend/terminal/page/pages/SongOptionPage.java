@@ -6,6 +6,7 @@ import com.googlecode.lanterna.gui2.TextGUIThread;
 
 import com.streamline.audio.Song;
 import com.streamline.backend.Dispatcher;
+import com.streamline.utilities.internal.StreamLineConstants;
 
 import java.util.Map;
 
@@ -93,7 +94,6 @@ public class SongOptionPage extends AbstractDynamicPage {
             selectedSong.setSongLikeStatus(backend.isSongLiked(selectedSong));
             likeButton = createLikeButton();
             updatePanel();
-            wm.markWindowAsDirty(LikedMusicPage.class, wm.likedMusicPage);
             wm.refresh();
         });
     }
@@ -113,7 +113,6 @@ public class SongOptionPage extends AbstractDynamicPage {
                 } else {
                     wm.buildSongOptionPage(selectedSong, previousPage);
                 }
-                wm.markWindowAsDirty(DownloadedMusicPage.class, wm.downloadedPage);
                 wm.refresh();
             };
         } else if (!songIsDownloaded && isDownloading) {
@@ -126,7 +125,6 @@ public class SongOptionPage extends AbstractDynamicPage {
                 } else {
                     wm.buildSongOptionPage(selectedSong, previousPage);
                 }
-                wm.markWindowAsDirty(DownloadedMusicPage.class, wm.downloadedPage);
                 wm.refresh();
             };
         } else {
@@ -140,7 +138,7 @@ public class SongOptionPage extends AbstractDynamicPage {
                 } else {
                     wm.buildSongOptionPage(selectedSong, previousPage);
                 }
-                wm.markWindowAsDirty(DownloadedMusicPage.class, wm.downloadedPage);
+                wm.rebuildPage(StreamLineConstants.LIKED_SONGS_PAGE);
                 wm.refresh();
             };
         }

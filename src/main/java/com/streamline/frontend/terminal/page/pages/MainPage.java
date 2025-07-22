@@ -64,7 +64,6 @@ public class MainPage extends AbstractBasePage {
         return window;
     }
     
-    // Navigation methods
     private void navigateToSearch() {
         wm.transitionTo(wm.searchPageWindow);
     }

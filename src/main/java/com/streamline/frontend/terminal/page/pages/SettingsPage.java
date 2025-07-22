@@ -26,7 +26,7 @@ public class SettingsPage extends AbstractBasePage {
 
         mainPanel.addComponent(componentFactory.createButton(
                     getText("button.chooseLanguage"),
-                    () -> navigateToLanguagePage()
+                    () -> navigateTo(LanguagePage.class)
         ));
 
         addSpace();
@@ -40,9 +40,5 @@ public class SettingsPage extends AbstractBasePage {
 
         window.setComponent(mainPanel);
         return window;
-    }
-
-    private void navigateToLanguagePage() {
-        navigateTo(LanguagePage.class);
     }
 }
