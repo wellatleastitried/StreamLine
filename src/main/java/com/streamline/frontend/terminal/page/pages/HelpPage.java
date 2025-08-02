@@ -2,6 +2,7 @@ package com.streamline.frontend.terminal.page.pages;
 
 import com.googlecode.lanterna.gui2.*;
 import com.streamline.backend.Dispatcher;
+import com.streamline.utilities.internal.StreamLineConstants;
 
 /**
  * Window for displaying help information.
@@ -33,5 +34,10 @@ public class HelpPage extends AbstractBasePage {
         
         window.setComponent(mainPanel);
         return window;
+    }
+
+    @Override
+    public String getPageName() {
+        return StreamLineConstants.HELP_PAGE;
     }
 }

@@ -10,6 +10,7 @@ import com.googlecode.lanterna.input.KeyType;
 
 import com.streamline.audio.Song;
 import com.streamline.backend.Dispatcher;
+import com.streamline.utilities.internal.StreamLineConstants;
 
 import org.tinylog.Logger;
 
@@ -132,5 +133,10 @@ public class CreatePlaylistPage extends AbstractDynamicPage {
     private void handleCancellation() {
         enableConfirmationButtons = false;
         navigateBack();
+    }
+
+    @Override
+    public String getPageName() {
+        return StreamLineConstants.CREATE_PLAYLIST_PAGE;
     }
 }

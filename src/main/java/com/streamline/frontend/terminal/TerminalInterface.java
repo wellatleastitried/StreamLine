@@ -76,11 +76,11 @@ public final class TerminalInterface extends com.streamline.frontend.FrontendInt
         try {
             TerminalWindowManager windowManager = TerminalWindowManager.createInstance(textGUI, guiThread, backend);
             windowManager.buildWindows();
-            if (windowManager.mainPageWindow == null) {
+            if (windowManager.getMainMenuWindow() == null) {
                 Logger.debug("[!] Main page is null");
                 throw new IllegalStateException("Main page is null");
             } else {
-                mainMenu = windowManager.mainPageWindow;
+                mainMenu = windowManager.getMainMenuWindow();
             }
         } catch (Exception e) {
             LoggerUtils.logErrorMessage(e);

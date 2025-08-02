@@ -10,6 +10,7 @@ import com.googlecode.lanterna.gui2.Panel;
 
 import com.streamline.audio.Playlist;
 import com.streamline.backend.Dispatcher;
+import com.streamline.utilities.internal.StreamLineConstants;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -144,6 +145,11 @@ public class PlaylistPage extends AbstractDynamicPage {
     private void handlePlaylistSelection(Playlist playlist) {
         wm.buildSongsFromPlaylistPage(playlist, this);
         wm.transitionTo(wm.songsFromPlaylistPageWindow);
+    }
+
+    @Override
+    public String getPageName() {
+        return StreamLineConstants.PLAYLISTS_PAGE;
     }
 }
 

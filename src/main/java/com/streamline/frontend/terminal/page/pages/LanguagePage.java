@@ -3,6 +3,7 @@ package com.streamline.frontend.terminal.page.pages;
 import com.googlecode.lanterna.gui2.*;
 import com.streamline.backend.Dispatcher;
 import com.streamline.utilities.LanguagePeer;
+import com.streamline.utilities.internal.StreamLineConstants;
 
 /**
  * Window for language selection.
@@ -22,35 +23,17 @@ public class LanguagePage extends AbstractBasePage {
         /* Language selection buttons */
         mainPanel.addComponent(componentFactory.createButton(
             getText("button.english"),
-            () -> {
-                backend.changeLanguage("en");
-                guiThread.invokeLater(() -> {
-                    wm.rebuildAllWindows();
-                    wm.transitionTo(wm.settingsPageWindow);
-                });
-            }
+            () -> handleLanguageChange("en")
         ));
         
         mainPanel.addComponent(componentFactory.createButton(
             getText("button.spanish"),
-            () -> {
-                LanguagePeer.setLanguage("es");
-                guiThread.invokeLater(() -> {
-                    wm.rebuildAllWindows();
-                    wm.transitionTo(wm.settingsPageWindow);
-                });
-            }
+            () -> handleLanguageChange("es")
         ));
         
         mainPanel.addComponent(componentFactory.createButton(
             getText("button.russian"),
-            () -> {
-                backend.changeLanguage("ru");
-                guiThread.invokeLater(() -> {
-                    wm.rebuildAllWindows();
-                    wm.transitionTo(wm.settingsPageWindow);
-                });
-            }
+            () -> handleLanguageChange("ru")
         ));
         
         addSpace();
@@ -64,5 +47,18 @@ public class LanguagePage extends AbstractBasePage {
         
         window.setComponent(mainPanel);
         return window;
+    }
+
+    private void handleLanguageChange(String languageCode) {
+        backend.changeLanguage(languageCode);
+        guiThread.invokeLater(() -> {
+            wm.rebuildAllWindows();
+            wm.transitionTo(StreamLineConstants.SETTINGS_PAGE);
+        });
+    }
+
+    @Override
+    public String getPageName() {
+        return StreamLineConstants.LANGUAGE_PAGE;
     }
 }

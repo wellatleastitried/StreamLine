@@ -81,10 +81,10 @@ public abstract class AbstractBasePage {
         }
     }
     
-    protected final void navigateTo(Class<? extends AbstractBasePage> pageClass) {
-        Logger.debug("Navigating to {} from {}", pageClass.getSimpleName(), getClass().getSimpleName());
+    protected final void navigateTo(String pageName) {
+        Logger.debug("Navigating to {} from {}", pageName, getClass().getSimpleName());
         if (wm != null) {
-            wm.navigateToPage(pageClass);
+            wm.navigateToPage(pageName);
         }
     }
     
@@ -99,7 +99,13 @@ public abstract class AbstractBasePage {
         this.wm = windowManager;
     }
 
+    public boolean hasWindowManager() {
+        return wm != null;
+    }
+
     public BasicWindow getWindow() {
         return window;
     }
+
+    public abstract String getPageName();
 }

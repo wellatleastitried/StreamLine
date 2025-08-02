@@ -6,6 +6,7 @@ import com.googlecode.lanterna.gui2.*;
 import com.streamline.audio.Song;
 import com.streamline.backend.Dispatcher;
 import com.streamline.utilities.RetrievedStorage;
+import com.streamline.utilities.internal.StreamLineConstants;
 
 import java.io.IOException;
 
@@ -190,5 +191,10 @@ public class DownloadedMusicPage extends AbstractDynamicPage {
     private void handleSongSelection(Song song) {
         wm.buildSongOptionPage(song, this);
         wm.transitionTo(wm.songOptionPageWindow);
+    }
+
+    @Override
+    public String getPageName() {
+        return StreamLineConstants.DOWNLOADED_MUSIC_PAGE;
     }
 }

@@ -138,7 +138,7 @@ public class SongOptionPage extends AbstractDynamicPage {
                 } else {
                     wm.buildSongOptionPage(selectedSong, previousPage);
                 }
-                wm.rebuildPage(StreamLineConstants.LIKED_SONGS_PAGE);
+                wm.rebuildDynamicWindows();
                 wm.refresh();
             };
         }
@@ -156,5 +156,10 @@ public class SongOptionPage extends AbstractDynamicPage {
             mainPanel.removeAllComponents();
             fillPanelComponents();
         });
+    }
+
+    @Override
+    public String getPageName() {
+        return StreamLineConstants.SONG_OPTION_PAGE;
     }
 }

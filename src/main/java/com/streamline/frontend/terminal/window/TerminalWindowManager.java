@@ -9,10 +9,12 @@ import com.streamline.audio.Playlist;
 import com.streamline.audio.Song;
 import com.streamline.backend.Dispatcher;
 import com.streamline.frontend.terminal.page.pages.*;
+import com.streamline.utilities.internal.StreamLineConstants;
 import org.tinylog.Logger;
 
-import java.util.Map;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Stack;
 
 public class TerminalWindowManager {
@@ -21,27 +23,11 @@ public class TerminalWindowManager {
     private final Dispatcher backend;
     private WindowBasedTextGUI textGUI;
 
-    private final Stack<Class<?>> navigationHistory = new Stack<>();
+    private final Stack<String> navigationHistory = new Stack<>();
 
-    public final MainPage mainPage;
-    public final HelpPage helpPage;
-    public final SettingsPage settingsPage;
-    public final LanguagePage languagePage;
-    public final SearchPage searchPage;
-    public final LikedMusicPage likedMusicPage;
-    public final PlaylistPage playlistPage;
-    public final RecentlyPlayedPage recentlyPlayedPage;
-    public final DownloadedMusicPage downloadedPage;
+    private final Map<String, AbstractBasePage> pages;
 
-    public BasicWindow mainPageWindow;
-    public BasicWindow settingsPageWindow;
-    public BasicWindow helpPageWindow;
-    public BasicWindow languagePageWindow;
-    public BasicWindow searchPageWindow;
-    public BasicWindow recentlyPlayedPageWindow;
-    public BasicWindow downloadedPageWindow;
-    public BasicWindow likedMusicPageWindow;
-    public BasicWindow playlistPageWindow;
+    private final Map<AbstractBasePage, BasicWindow> windows;
 
     public BasicWindow songOptionPageWindow;
     public BasicWindow playlistChoicePageWindow;
@@ -56,17 +42,18 @@ public class TerminalWindowManager {
     public TerminalWindowManager(TextGUIThread guiThread, Dispatcher backend) throws Exception {
         this.guiThread = guiThread;
         this.backend = backend;
-
-        this.mainPage = new MainPage(backend, guiThread);
-        this.helpPage = new HelpPage(backend, guiThread);
-        this.settingsPage = new SettingsPage(backend, guiThread);
-        this.searchPage = new SearchPage(backend, guiThread);
-        this.likedMusicPage = new LikedMusicPage(backend, guiThread);
-        this.playlistPage = new PlaylistPage(backend, guiThread);
-        this.recentlyPlayedPage = new RecentlyPlayedPage(backend, guiThread);
-        this.downloadedPage = new DownloadedMusicPage(backend, guiThread);
-        this.languagePage = new LanguagePage(backend, guiThread);
-
+        this.pages = Map.of(
+            StreamLineConstants.MAIN_MENU_PAGE, new MainPage(backend, guiThread),
+            StreamLineConstants.HELP_PAGE, new HelpPage(backend, guiThread),
+            StreamLineConstants.SETTINGS_PAGE, new SettingsPage(backend, guiThread),
+            StreamLineConstants.LANGUAGE_PAGE, new LanguagePage(backend, guiThread),
+            StreamLineConstants.SEARCH_PAGE, new SearchPage(backend, guiThread),
+            StreamLineConstants.LIKED_MUSIC_PAGE, new LikedMusicPage(backend, guiThread),
+            StreamLineConstants.PLAYLISTS_PAGE, new PlaylistPage(backend, guiThread),
+            StreamLineConstants.RECENTLY_PLAYED_PAGE, new RecentlyPlayedPage(backend, guiThread),
+            StreamLineConstants.DOWNLOADED_MUSIC_PAGE, new DownloadedMusicPage(backend, guiThread)
+        );
+        this.windows = new HashMap<>();
         Logger.debug("Initialized TerminalWindowManager");
     }
 
@@ -76,15 +63,10 @@ public class TerminalWindowManager {
     public void buildWindows() {
         setWindowManagerForWindows();
 
-        mainPageWindow = mainPage.createWindow();
-        helpPageWindow = helpPage.createWindow();
-        settingsPageWindow = settingsPage.createWindow();
-        searchPageWindow = searchPage.createWindow();
-        likedMusicPageWindow = likedMusicPage.createWindow();
-        playlistPageWindow = playlistPage.createWindow();
-        recentlyPlayedPageWindow = recentlyPlayedPage.createWindow();
-        downloadedPageWindow = downloadedPage.createWindow();
-        languagePageWindow = languagePage.createWindow();
+        for (AbstractBasePage page : pages.values()) {
+            page.setWindowManager(this);
+            windows.put(page, page.createWindow());
+        }
 
         if (!verifyWindows()) {
             Logger.error("Error while creating windows, please restart the app.");
@@ -94,28 +76,20 @@ public class TerminalWindowManager {
     }
 
     private void setWindowManagerForWindows() {
-        mainPage.setWindowManager(this);
-        helpPage.setWindowManager(this);
-        settingsPage.setWindowManager(this);
-        searchPage.setWindowManager(this);
-        likedMusicPage.setWindowManager(this);
-        playlistPage.setWindowManager(this);
-        recentlyPlayedPage.setWindowManager(this);
-        downloadedPage.setWindowManager(this);
-        languagePage.setWindowManager(this);
     }
 
     private boolean verifyWindows() {
-        try {
-            return mainPageWindow != null && settingsPageWindow != null && 
-                   helpPageWindow != null && searchPageWindow != null && 
-                   likedMusicPageWindow != null && playlistPageWindow != null && 
-                   recentlyPlayedPageWindow != null && downloadedPageWindow != null &&
-                   languagePageWindow != null;
-        } catch (Exception e) {
-            Logger.error("Window verification failed: {}", e.getMessage());
-            return false;
+        for (AbstractBasePage page : pages.values()) {
+            if (!page.hasWindowManager()) {
+                Logger.error("Window manager is not set for page: {}", page.getClass().getSimpleName());
+                return false;
+            }
         }
+        return true;
+    }
+
+    public BasicWindow getMainMenuWindow() {
+        return windows.get(pages.get(StreamLineConstants.MAIN_MENU_PAGE));
     }
 
     public <T extends AbstractBasePage> void buildSongOptionPage(Song song, T previousWindow) {
@@ -169,23 +143,23 @@ public class TerminalWindowManager {
         Logger.debug("Navigating back");
         
         if (!navigationHistory.isEmpty()) {
-            navigationHistory.pop(); // Remove current page
+            navigationHistory.pop();
         }
         
         if (!navigationHistory.isEmpty()) {
-            Class<?> previousPage = navigationHistory.peek();
-            Logger.debug("Going back to {}", previousPage.getSimpleName());
-            transitionToPage(previousPage);
+            String previousPageName = navigationHistory.peek();
+            Logger.debug("Going back to {}", previousPageName);
+            transitionToPage(previousPageName);
         } else {
             Logger.debug("No navigation history, returning to main menu");
             showMainMenu();
         }
     }
 
-    public void navigateToPage(Class<?> pageClass) {
-        Logger.debug("Navigating to {}", pageClass.getSimpleName());
-        navigationHistory.push(pageClass);
-        transitionToPage(pageClass);
+    public void navigateToPage(String pageName) {
+        Logger.debug("Navigating to {}", pageName);
+        navigationHistory.push(pageName);
+        transitionToPage(pageName);
     }
 
     public void returnToMainMenu() {
@@ -202,26 +176,27 @@ public class TerminalWindowManager {
         return navigationHistory.size() > 1;
     }
 
-    public void transitionToPage(Class<?> pageClass) {
-        BasicWindow targetWindow = getWindowForPageClass(pageClass);
+    public void transitionToPage(String pageName) {
+        BasicWindow targetWindow = getWindowForPageName(pageName);
         if (targetWindow != null) {
             transitionTo(targetWindow);
         } else {
-            Logger.warn("No window found for page class: {}", pageClass.getSimpleName());
+            Logger.warn("No window found for page name: {}", pageName);
         }
     }
 
-    private BasicWindow getWindowForPageClass(Class<?> pageClass) {
-        if (pageClass == MainPage.class) return mainPageWindow;
-        if (pageClass == HelpPage.class) return helpPageWindow;
-        if (pageClass == SettingsPage.class) return settingsPageWindow;
-        if (pageClass == LanguagePage.class) return languagePageWindow;
-        if (pageClass == SearchPage.class) return searchPageWindow;
-        if (pageClass == LikedMusicPage.class) return likedMusicPageWindow;
-        if (pageClass == PlaylistPage.class) return playlistPageWindow;
-        if (pageClass == RecentlyPlayedPage.class) return recentlyPlayedPageWindow;
-        if (pageClass == DownloadedMusicPage.class) return downloadedPageWindow;
-        return null;
+    private BasicWindow getWindowForPageName(String pageName) {
+        return windows.get(pages.get(pageName));
+    }
+
+    public void transitionTo(String pageName) {
+        Logger.debug("Transitioning to page: {}", pageName);
+        BasicWindow targetWindow = getWindowForPageName(pageName);
+        if (targetWindow != null) {
+            transitionTo(targetWindow);
+        } else {
+            Logger.warn("No window found for page name: {}", pageName);
+        }
     }
 
     public void transitionTo(BasicWindow targetWindow) {
@@ -243,45 +218,45 @@ public class TerminalWindowManager {
     }
 
     public void showMainMenu() {
-        transitionTo(mainPageWindow);
+        transitionTo(windows.get(pages.get(StreamLineConstants.MAIN_MENU_PAGE)));
     }
 
     public void transitionToCachedSearchPage() {
-        transitionTo(searchPageWindow);
+        transitionTo(windows.get(pages.get(StreamLineConstants.SEARCH_PAGE)));
+    }
+
+    public void rebuildPage(String pageName) {
+        Logger.debug("Rebuilding page: {}", pageName);
+        AbstractBasePage page = pages.get(pageName);
+        if (page != null) {
+            windows.put(page, page.createWindow());
+            Logger.debug("Rebuilt page: {}", pageName);
+        } else {
+            Logger.warn("No page found with name: {}", pageName);
+        }
     }
 
     public void rebuildSearchPage(Map<Integer, Button> searchResults) {
-        searchPageWindow = searchPage.createWindow();
+        windows.put(pages.get(StreamLineConstants.SEARCH_PAGE), pages.get(StreamLineConstants.SEARCH_PAGE).createWindow());
         Logger.debug("Rebuilt search page with {} search results", searchResults.size());
     }
 
     public void rebuildDynamicWindows() {
         Logger.debug("rebuildDynamicWindows called - rebuilding all dynamic windows");
-        searchPageWindow = searchPage.createWindow();
-        playlistPageWindow = playlistPage.createWindow();
-        likedMusicPageWindow = likedMusicPage.createWindow();
-        recentlyPlayedPageWindow = recentlyPlayedPage.createWindow();
-        downloadedPageWindow = downloadedPage.createWindow();
+        for (AbstractBasePage page : pages.values()) {
+            if (page instanceof AbstractDynamicPage) {
+                windows.put(page, page.createWindow());
+            }
+        }
+
         Logger.debug("Rebuilt all dynamic windows");
     }
 
-    public void rebuildDynamicPages() {
-        rebuildDynamicWindows();
-    }
-
-    public void rebuildDirtyWindows() {
-        rebuildDynamicWindows();
-    }
-
     public void rebuildAllWindows() {
-        mainPageWindow = mainPage.createWindow();
-        helpPageWindow = helpPage.createWindow();
-        settingsPageWindow = settingsPage.createWindow();
-        searchPageWindow = searchPage.createWindow();
-        languagePageWindow = languagePage.createWindow();
-        
-        rebuildDynamicWindows();
-        
+        for (AbstractBasePage page : pages.values()) {
+            windows.put(page, page.createWindow());
+        }
+
         Logger.debug("Rebuilt all windows");
     }
 
@@ -294,15 +269,6 @@ public class TerminalWindowManager {
         transitionTo(playlistChoicePageWindow);
     }
 
-    public BasicWindow getMainPageWindow() { return mainPageWindow; }
-    public BasicWindow getSettingsPageWindow() { return settingsPageWindow; }
-    public BasicWindow getHelpPageWindow() { return helpPageWindow; }
-    public BasicWindow getLanguagePageWindow() { return languagePageWindow; }
-    public BasicWindow getSearchPageWindow() { return searchPageWindow; }
-    public BasicWindow getRecentlyPlayedPageWindow() { return recentlyPlayedPageWindow; }
-    public BasicWindow getDownloadedPageWindow() { return downloadedPageWindow; }
-    public BasicWindow getLikedMusicPageWindow() { return likedMusicPageWindow; }
-    public BasicWindow getPlaylistPageWindow() { return playlistPageWindow; }
     public BasicWindow getSongOptionPageWindow() { return songOptionPageWindow; }
     public BasicWindow getPlaylistChoicePageWindow() { return playlistChoicePageWindow; }
     public BasicWindow getCreatePlaylistPageWindow() { return createPlaylistPageWindow; }
@@ -330,21 +296,6 @@ public class TerminalWindowManager {
                 Logger.warn("Exception while closing windows: {}", e.getMessage());
             }
         });
-        
-        /* Clear all window references */
-        mainPageWindow = null;
-        helpPageWindow = null;
-        settingsPageWindow = null;
-        searchPageWindow = null;
-        likedMusicPageWindow = null;
-        playlistPageWindow = null;
-        recentlyPlayedPageWindow = null;
-        downloadedPageWindow = null;
-        languagePageWindow = null;
-        songOptionPageWindow = null;
-        playlistChoicePageWindow = null;
-        createPlaylistPageWindow = null;
-        songsFromPlaylistPageWindow = null;
     }
 
     public static TerminalWindowManager getInstance() {

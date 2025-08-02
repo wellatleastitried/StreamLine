@@ -15,6 +15,7 @@ import com.googlecode.lanterna.input.KeyType;
 import com.streamline.audio.Song;
 import com.streamline.backend.Dispatcher;
 import com.streamline.utilities.RetrievedStorage;
+import com.streamline.utilities.internal.StreamLineConstants;
 
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -139,5 +140,10 @@ public class SearchPage extends AbstractBasePage {
             }
             wm.refresh();
         });
+    }
+
+    @Override
+    public String getPageName() {
+        return StreamLineConstants.SEARCH_PAGE;
     }
 }
