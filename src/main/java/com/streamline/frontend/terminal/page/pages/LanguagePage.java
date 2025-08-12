@@ -2,8 +2,7 @@ package com.streamline.frontend.terminal.page.pages;
 
 import com.googlecode.lanterna.gui2.*;
 import com.streamline.backend.Dispatcher;
-import com.streamline.utilities.LanguagePeer;
-import com.streamline.utilities.internal.StreamLineConstants;
+import com.streamline.frontend.terminal.page.Pages;
 
 /**
  * Window for language selection.
@@ -40,7 +39,7 @@ public class LanguagePage extends AbstractBasePage {
         
         mainPanel.addComponent(componentFactory.createButton(
             getText("button.back"),
-            () -> wm.returnToMainMenu(window),
+            () -> wm.navigateBack(),
             componentFactory.getButtonWidth() / 3,
             componentFactory.getButtonHeight() / 2
         ));
@@ -52,13 +51,13 @@ public class LanguagePage extends AbstractBasePage {
     private void handleLanguageChange(String languageCode) {
         backend.changeLanguage(languageCode);
         guiThread.invokeLater(() -> {
-            wm.rebuildAllWindows();
-            wm.transitionTo(StreamLineConstants.SETTINGS_PAGE);
+            wm.triggerPageRebuild();
+            wm.transitionTo(Pages.MAIN_MENU_PAGE);
         });
     }
 
     @Override
     public String getPageName() {
-        return StreamLineConstants.LANGUAGE_PAGE;
+        return Pages.LANGUAGE_PAGE;
     }
 }

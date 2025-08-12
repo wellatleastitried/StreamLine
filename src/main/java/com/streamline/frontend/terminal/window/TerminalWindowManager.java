@@ -8,8 +8,8 @@ import com.googlecode.lanterna.gui2.Window;
 import com.streamline.audio.Playlist;
 import com.streamline.audio.Song;
 import com.streamline.backend.Dispatcher;
+import com.streamline.frontend.terminal.page.Pages;
 import com.streamline.frontend.terminal.page.pages.*;
-import com.streamline.utilities.internal.StreamLineConstants;
 import org.tinylog.Logger;
 
 import java.util.Collection;
@@ -21,7 +21,7 @@ public class TerminalWindowManager {
 
     private final TextGUIThread guiThread;
     private final Dispatcher backend;
-    private WindowBasedTextGUI textGUI;
+    private final WindowBasedTextGUI textGUI;
 
     private final Stack<String> navigationHistory = new Stack<>();
 
@@ -39,30 +39,36 @@ public class TerminalWindowManager {
 
     private static TerminalWindowManager instance;
 
-    public TerminalWindowManager(TextGUIThread guiThread, Dispatcher backend) throws Exception {
+    public TerminalWindowManager(WindowBasedTextGUI textGUI, TextGUIThread guiThread, Dispatcher backend) throws Exception {
+        this.textGUI = textGUI;
         this.guiThread = guiThread;
         this.backend = backend;
-        this.pages = Map.of(
-            StreamLineConstants.MAIN_MENU_PAGE, new MainPage(backend, guiThread),
-            StreamLineConstants.HELP_PAGE, new HelpPage(backend, guiThread),
-            StreamLineConstants.SETTINGS_PAGE, new SettingsPage(backend, guiThread),
-            StreamLineConstants.LANGUAGE_PAGE, new LanguagePage(backend, guiThread),
-            StreamLineConstants.SEARCH_PAGE, new SearchPage(backend, guiThread),
-            StreamLineConstants.LIKED_MUSIC_PAGE, new LikedMusicPage(backend, guiThread),
-            StreamLineConstants.PLAYLISTS_PAGE, new PlaylistPage(backend, guiThread),
-            StreamLineConstants.RECENTLY_PLAYED_PAGE, new RecentlyPlayedPage(backend, guiThread),
-            StreamLineConstants.DOWNLOADED_MUSIC_PAGE, new DownloadedMusicPage(backend, guiThread)
-        );
+
+        this.pages = new HashMap<>();
+        this.pages.putAll(buildMapOfPages());
+
         this.windows = new HashMap<>();
         Logger.debug("Initialized TerminalWindowManager");
+    }
+
+    private Map<String, AbstractBasePage> buildMapOfPages() {
+        return Map.of(
+            Pages.MAIN_MENU_PAGE, new MainPage(backend, guiThread),
+            Pages.HELP_PAGE, new HelpPage(backend, guiThread),
+            Pages.SETTINGS_PAGE, new SettingsPage(backend, guiThread),
+            Pages.LANGUAGE_PAGE, new LanguagePage(backend, guiThread),
+            Pages.SEARCH_PAGE, new SearchPage(backend, guiThread),
+            Pages.LIKED_MUSIC_PAGE, new LikedMusicPage(backend, guiThread),
+            Pages.PLAYLISTS_PAGE, new PlaylistPage(backend, guiThread),
+            Pages.RECENTLY_PLAYED_PAGE, new RecentlyPlayedPage(backend, guiThread),
+            Pages.DOWNLOADED_MUSIC_PAGE, new DownloadedMusicPage(backend, guiThread)
+        );
     }
 
     /**
      * Build all static windows.
      */
     public void buildWindows() {
-        setWindowManagerForWindows();
-
         for (AbstractBasePage page : pages.values()) {
             page.setWindowManager(this);
             windows.put(page, page.createWindow());
@@ -73,9 +79,6 @@ public class TerminalWindowManager {
             System.exit(1);
         }
         Logger.debug("Successfully built all windows");
-    }
-
-    private void setWindowManagerForWindows() {
     }
 
     private boolean verifyWindows() {
@@ -89,7 +92,7 @@ public class TerminalWindowManager {
     }
 
     public BasicWindow getMainMenuWindow() {
-        return windows.get(pages.get(StreamLineConstants.MAIN_MENU_PAGE));
+        return windows.get(pages.get(Pages.MAIN_MENU_PAGE));
     }
 
     public <T extends AbstractBasePage> void buildSongOptionPage(Song song, T previousWindow) {
@@ -134,20 +137,22 @@ public class TerminalWindowManager {
         Logger.debug("Built SongsFromPlaylistPage for playlist: {}", playlist.getName());
     }
 
+    public void triggerPageRebuild() {
+        Logger.debug("Page rebuild triggered.");
+        pages.clear();
+        pages.putAll(buildMapOfPages());
+        windows.clear();
+        buildWindows();
+    }
+
     public void navigateBack(AbstractBasePage currentPage) {
         // TODO: Might need to handle navigating to/from dynamic pages
         navigateBack();
     }
 
     public void navigateBack() {
-        Logger.debug("Navigating back");
-        
         if (!navigationHistory.isEmpty()) {
-            navigationHistory.pop();
-        }
-        
-        if (!navigationHistory.isEmpty()) {
-            String previousPageName = navigationHistory.peek();
+            String previousPageName = navigationHistory.pop();
             Logger.debug("Going back to {}", previousPageName);
             transitionToPage(previousPageName);
         } else {
@@ -156,10 +161,10 @@ public class TerminalWindowManager {
         }
     }
 
-    public void navigateToPage(String pageName) {
-        Logger.debug("Navigating to {}", pageName);
-        navigationHistory.push(pageName);
-        transitionToPage(pageName);
+    public void navigateToPage(String currentPageName, String targetPageName) {
+        Logger.debug("Navigating to {}", targetPageName);
+        navigationHistory.push(currentPageName);
+        transitionToPage(targetPageName);
     }
 
     public void returnToMainMenu() {
@@ -186,6 +191,9 @@ public class TerminalWindowManager {
     }
 
     private BasicWindow getWindowForPageName(String pageName) {
+        if (pages.get(pageName) instanceof AbstractDynamicPage) {
+            rebuildDynamicWindows();
+        }
         return windows.get(pages.get(pageName));
     }
 
@@ -218,11 +226,11 @@ public class TerminalWindowManager {
     }
 
     public void showMainMenu() {
-        transitionTo(windows.get(pages.get(StreamLineConstants.MAIN_MENU_PAGE)));
+        transitionTo(windows.get(pages.get(Pages.MAIN_MENU_PAGE)));
     }
 
     public void transitionToCachedSearchPage() {
-        transitionTo(windows.get(pages.get(StreamLineConstants.SEARCH_PAGE)));
+        transitionTo(windows.get(pages.get(Pages.SEARCH_PAGE)));
     }
 
     public void rebuildPage(String pageName) {
@@ -237,7 +245,7 @@ public class TerminalWindowManager {
     }
 
     public void rebuildSearchPage(Map<Integer, Button> searchResults) {
-        windows.put(pages.get(StreamLineConstants.SEARCH_PAGE), pages.get(StreamLineConstants.SEARCH_PAGE).createWindow());
+        windows.put(pages.get(Pages.SEARCH_PAGE), pages.get(Pages.SEARCH_PAGE).createWindow());
         Logger.debug("Rebuilt search page with {} search results", searchResults.size());
     }
 
@@ -250,14 +258,6 @@ public class TerminalWindowManager {
         }
 
         Logger.debug("Rebuilt all dynamic windows");
-    }
-
-    public void rebuildAllWindows() {
-        for (AbstractBasePage page : pages.values()) {
-            windows.put(page, page.createWindow());
-        }
-
-        Logger.debug("Rebuilt all windows");
     }
 
     public <T extends AbstractBasePage> void transitionToPlaylistChoicePage(T previousPage, Song song, Map<Integer, Button> previousSearchResults) {
@@ -307,7 +307,7 @@ public class TerminalWindowManager {
 
     public static TerminalWindowManager createInstance(WindowBasedTextGUI textGUI, TextGUIThread guiThread, Dispatcher backend) throws Exception {
         if (instance == null) {
-            instance = new TerminalWindowManager(guiThread, backend);
+            instance = new TerminalWindowManager(textGUI, guiThread, backend);
         }
         return instance;
     }

@@ -2,7 +2,7 @@ package com.streamline.frontend.terminal.page.pages;
 
 import com.googlecode.lanterna.gui2.*;
 import com.streamline.backend.Dispatcher;
-import com.streamline.utilities.internal.StreamLineConstants;
+import com.streamline.frontend.terminal.page.Pages;
 
 /**
  * Window for application settings.
@@ -27,7 +27,7 @@ public class SettingsPage extends AbstractBasePage {
 
         mainPanel.addComponent(componentFactory.createButton(
                     getText("button.chooseLanguage"),
-                    () -> navigateTo(StreamLineConstants.LANGUAGE_PAGE)
+                    () -> navigateTo(Pages.LANGUAGE_PAGE)
         ));
 
         addSpace();
@@ -45,6 +45,6 @@ public class SettingsPage extends AbstractBasePage {
 
     @Override
     public String getPageName() {
-        return StreamLineConstants.SETTINGS_PAGE;
+        return Pages.SETTINGS_PAGE;
     }
 }

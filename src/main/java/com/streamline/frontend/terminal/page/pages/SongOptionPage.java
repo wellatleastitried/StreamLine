@@ -6,7 +6,7 @@ import com.googlecode.lanterna.gui2.TextGUIThread;
 
 import com.streamline.audio.Song;
 import com.streamline.backend.Dispatcher;
-import com.streamline.utilities.internal.StreamLineConstants;
+import com.streamline.frontend.terminal.page.Pages;
 
 import java.util.Map;
 
@@ -160,6 +160,6 @@ public class SongOptionPage extends AbstractDynamicPage {
 
     @Override
     public String getPageName() {
-        return StreamLineConstants.SONG_OPTION_PAGE;
+        return Pages.SONG_OPTION_PAGE;
     }
 }

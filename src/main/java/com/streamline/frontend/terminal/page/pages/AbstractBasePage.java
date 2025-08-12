@@ -75,22 +75,22 @@ public abstract class AbstractBasePage {
     }
 
     protected final void navigateBack() {
-        Logger.debug("Navigating back from {}", getClass().getSimpleName());
-        if (wm != null) {
-            wm.returnToMainMenu();
+        Logger.debug("Navigating back from {}", getPageName());
+        if (hasWindowManager()) {
+            wm.navigateBack();
         }
     }
     
     protected final void navigateTo(String pageName) {
-        Logger.debug("Navigating to {} from {}", pageName, getClass().getSimpleName());
-        if (wm != null) {
-            wm.navigateToPage(pageName);
+        Logger.debug("Navigating to {} from {}", pageName, getPageName());
+        if (hasWindowManager()) {
+            wm.navigateToPage(getPageName(), pageName);
         }
     }
     
     protected final void navigateToMainMenu() {
         Logger.debug("Navigating to main menu from {}", getClass().getSimpleName());
-        if (wm != null) {
+        if (hasWindowManager()) {
             wm.showMainMenu();
         }
     }

@@ -10,7 +10,9 @@ com.streamline.database.utils
 com.streamline.frontend
 com.streamline.frontend.desktop
 com.streamline.frontend.terminal
-com.streamline.frontend.terminal.pages
+com.streamline.frontend.terminal.page
+com.streamline.frontend.terminal.page.pages
 com.streamline.frontend.terminal.themes
+com.streamline.frontend.terminal.window
 com.streamline.utilities
 com.streamline.utilities.internal

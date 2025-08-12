@@ -3,7 +3,7 @@ package com.streamline.frontend.terminal.page.pages;
 import com.googlecode.lanterna.gui2.*;
 import com.streamline.backend.Dispatcher;
 import com.streamline.utilities.RuntimeManager;
-import com.streamline.utilities.internal.StreamLineConstants;
+import com.streamline.frontend.terminal.page.Pages;
 
 public class MainPage extends AbstractBasePage {
     
@@ -66,35 +66,35 @@ public class MainPage extends AbstractBasePage {
     }
     
     private void navigateToSearch() {
-        wm.transitionTo(StreamLineConstants.SEARCH_PAGE);
+        wm.transitionTo(Pages.SEARCH_PAGE);
     }
 
     private void navigateToLikedMusic() {
-        wm.transitionTo(StreamLineConstants.LIKED_MUSIC_PAGE);
+        wm.transitionTo(Pages.LIKED_MUSIC_PAGE);
     }
 
     private void navigateToPlaylists() {
-        wm.transitionTo(StreamLineConstants.PLAYLISTS_PAGE);
+        wm.transitionTo(Pages.PLAYLISTS_PAGE);
     }
 
     private void navigateToRecentlyPlayed() {
-        wm.transitionTo(StreamLineConstants.RECENTLY_PLAYED_PAGE);
+        wm.transitionTo(Pages.RECENTLY_PLAYED_PAGE);
     }
 
     private void navigateToDownloadedMusic() {
-        wm.transitionTo(StreamLineConstants.DOWNLOADED_MUSIC_PAGE);
+        wm.transitionTo(Pages.DOWNLOADED_MUSIC_PAGE);
     }
 
     private void navigateToHelp() {
-        wm.transitionTo(StreamLineConstants.HELP_PAGE);
+        wm.transitionTo(Pages.HELP_PAGE);
     }
 
     private void navigateToSettings() {
-        wm.transitionTo(StreamLineConstants.SETTINGS_PAGE);
+        wm.transitionTo(Pages.SETTINGS_PAGE);
     }
 
     @Override
     public String getPageName() {
-        return StreamLineConstants.MAIN_MENU_PAGE;
+        return Pages.MAIN_MENU_PAGE;
     }
 }
