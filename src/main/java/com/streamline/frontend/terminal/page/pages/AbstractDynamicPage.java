@@ -15,25 +15,25 @@ public abstract class AbstractDynamicPage extends AbstractBasePage {
 
     public final BasicWindow updateWindow() {
         try {
-            Logger.debug("Starting updateWindow() in {}", getClass().getSimpleName());
+            Logger.debug("Starting updateWindow() in {}", getPageName());
             if (!canUpdate()) {
-                Logger.debug("Cannot update window in {}", getClass().getSimpleName());
+                Logger.debug("Cannot update window in {}", getPageName());
                 return window;
             }
-            Logger.debug("Calling preUpdateHook() in {}", getClass().getSimpleName());
+            Logger.debug("Calling preUpdateHook() in {}", getPageName());
             preUpdateHook();
-            Logger.debug("Clearing window content in {}", getClass().getSimpleName());
+            Logger.debug("Clearing window content in {}", getPageName());
             clearWindowContent();
-            Logger.debug("Calling rebuildContent() in {}", getClass().getSimpleName());
+            Logger.debug("Calling rebuildContent() in {}", getPageName());
             rebuildContent();
-            Logger.debug("Finalizing update in {}", getClass().getSimpleName());
+            Logger.debug("Finalizing update in {}", getPageName());
             finalizeUpdate();
-            Logger.debug("Calling postUpdateHook() in {}", getClass().getSimpleName());
+            Logger.debug("Calling postUpdateHook() in {}", getPageName());
             postUpdateHook();
-            Logger.debug("Completed updateWindow() in {}, returning window", getClass().getSimpleName());
+            Logger.debug("Completed updateWindow() in {}, returning window", getPageName());
             return window;
         } catch (Exception e) {
-            Logger.error("Error in updateWindow() for {}: {}", getClass().getSimpleName(), e.getMessage(), e);
+            Logger.error("Error in updateWindow() for {}: {}", getPageName(), e.getMessage(), e);
             handleUpdateError(e);
             return window;
         }
@@ -64,6 +64,6 @@ public abstract class AbstractDynamicPage extends AbstractBasePage {
     }
 
     protected void handleUpdateError(Exception e) {
-        Logger.error("Error updating window for page: " + getClass().getSimpleName(), e);
+        Logger.error("Error updating window for page: " + getPageName(), e);
     }
 }

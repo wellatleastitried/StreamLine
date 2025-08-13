@@ -3,7 +3,7 @@ package com.streamline.frontend.terminal.page.pages;
 import com.googlecode.lanterna.gui2.*;
 import com.streamline.backend.Dispatcher;
 import com.streamline.utilities.RuntimeManager;
-import com.streamline.frontend.terminal.page.Pages;
+import com.streamline.frontend.terminal.page.Page;
 
 public class MainPage extends AbstractBasePage {
     
@@ -66,35 +66,35 @@ public class MainPage extends AbstractBasePage {
     }
     
     private void navigateToSearch() {
-        wm.transitionTo(Pages.SEARCH_PAGE);
+        wm.transitionTo(Page.SEARCH);
     }
 
     private void navigateToLikedMusic() {
-        wm.transitionTo(Pages.LIKED_MUSIC_PAGE);
+        wm.transitionTo(Page.LIKED_MUSIC);
     }
 
     private void navigateToPlaylists() {
-        wm.transitionTo(Pages.PLAYLISTS_PAGE);
+        wm.transitionTo(Page.PLAYLISTS);
     }
 
     private void navigateToRecentlyPlayed() {
-        wm.transitionTo(Pages.RECENTLY_PLAYED_PAGE);
+        wm.transitionTo(Page.RECENTLY_PLAYED);
     }
 
     private void navigateToDownloadedMusic() {
-        wm.transitionTo(Pages.DOWNLOADED_MUSIC_PAGE);
+        wm.transitionTo(Page.DOWNLOADED_MUSIC);
     }
 
     private void navigateToHelp() {
-        wm.transitionTo(Pages.HELP_PAGE);
+        wm.transitionTo(Page.HELP);
     }
 
     private void navigateToSettings() {
-        wm.transitionTo(Pages.SETTINGS_PAGE);
+        wm.transitionTo(Page.SETTINGS);
     }
 
     @Override
     public String getPageName() {
-        return Pages.MAIN_MENU_PAGE;
+        return Page.MAIN_MENU;
     }
 }

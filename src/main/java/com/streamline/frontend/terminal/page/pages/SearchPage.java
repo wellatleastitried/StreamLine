@@ -14,7 +14,7 @@ import com.googlecode.lanterna.input.KeyType;
 
 import com.streamline.audio.Song;
 import com.streamline.backend.Dispatcher;
-import com.streamline.frontend.terminal.page.Pages;
+import com.streamline.frontend.terminal.page.Page;
 import com.streamline.utilities.RetrievedStorage;
 
 import java.util.HashMap;
@@ -144,6 +144,6 @@ public class SearchPage extends AbstractBasePage {
 
     @Override
     public String getPageName() {
-        return Pages.SEARCH_PAGE;
+        return Page.SEARCH;
     }
 }

@@ -6,7 +6,7 @@ import com.googlecode.lanterna.gui2.*;
 import com.streamline.audio.Song;
 import com.streamline.backend.Dispatcher;
 import com.streamline.utilities.RetrievedStorage;
-import com.streamline.frontend.terminal.page.Pages;
+import com.streamline.frontend.terminal.page.Page;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -145,6 +145,6 @@ public class RecentlyPlayedPage extends AbstractDynamicPage {
 
     @Override
     public String getPageName() {
-        return Pages.RECENTLY_PLAYED_PAGE;
+        return Page.RECENTLY_PLAYED;
     }
 }

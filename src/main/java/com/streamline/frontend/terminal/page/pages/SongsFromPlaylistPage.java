@@ -5,7 +5,7 @@ import com.googlecode.lanterna.TextColor;
 import com.googlecode.lanterna.gui2.*;
 import com.streamline.audio.Song;
 import com.streamline.backend.Dispatcher;
-import com.streamline.frontend.terminal.page.Pages;
+import com.streamline.frontend.terminal.page.Page;
 import com.streamline.utilities.RetrievedStorage;
 
 import java.util.ArrayList;
@@ -193,6 +193,6 @@ public class SongsFromPlaylistPage extends AbstractDynamicPage {
 
     @Override
     public String getPageName() {
-        return Pages.SONGS_FROM_PLAYLIST_PAGE;
+        return Page.SONGS_FROM_PLAYLIST;
     }
 }

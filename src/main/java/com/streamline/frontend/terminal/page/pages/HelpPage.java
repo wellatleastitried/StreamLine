@@ -2,7 +2,7 @@ package com.streamline.frontend.terminal.page.pages;
 
 import com.googlecode.lanterna.gui2.*;
 import com.streamline.backend.Dispatcher;
-import com.streamline.frontend.terminal.page.Pages;
+import com.streamline.frontend.terminal.page.Page;
 
 /**
  * Window for displaying help information.
@@ -38,6 +38,6 @@ public class HelpPage extends AbstractBasePage {
 
     @Override
     public String getPageName() {
-        return Pages.HELP_PAGE;
+        return Page.HELP;
     }
 }

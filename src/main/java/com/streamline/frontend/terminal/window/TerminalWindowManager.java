@@ -8,7 +8,7 @@ import com.googlecode.lanterna.gui2.Window;
 import com.streamline.audio.Playlist;
 import com.streamline.audio.Song;
 import com.streamline.backend.Dispatcher;
-import com.streamline.frontend.terminal.page.Pages;
+import com.streamline.frontend.terminal.page.Page;
 import com.streamline.frontend.terminal.page.pages.*;
 import org.tinylog.Logger;
 
@@ -45,23 +45,23 @@ public class TerminalWindowManager {
         this.backend = backend;
 
         this.pages = new HashMap<>();
-        this.pages.putAll(buildMapOfPages());
+        this.pages.putAll(buildMapOfPage());
 
         this.windows = new HashMap<>();
         Logger.debug("Initialized TerminalWindowManager");
     }
 
-    private Map<String, AbstractBasePage> buildMapOfPages() {
+    private Map<String, AbstractBasePage> buildMapOfPage() {
         return Map.of(
-            Pages.MAIN_MENU_PAGE, new MainPage(backend, guiThread),
-            Pages.HELP_PAGE, new HelpPage(backend, guiThread),
-            Pages.SETTINGS_PAGE, new SettingsPage(backend, guiThread),
-            Pages.LANGUAGE_PAGE, new LanguagePage(backend, guiThread),
-            Pages.SEARCH_PAGE, new SearchPage(backend, guiThread),
-            Pages.LIKED_MUSIC_PAGE, new LikedMusicPage(backend, guiThread),
-            Pages.PLAYLISTS_PAGE, new PlaylistPage(backend, guiThread),
-            Pages.RECENTLY_PLAYED_PAGE, new RecentlyPlayedPage(backend, guiThread),
-            Pages.DOWNLOADED_MUSIC_PAGE, new DownloadedMusicPage(backend, guiThread)
+            Page.MAIN_MENU, new MainPage(backend, guiThread),
+            Page.HELP, new HelpPage(backend, guiThread),
+            Page.SETTINGS, new SettingsPage(backend, guiThread),
+            Page.LANGUAGE, new LanguagePage(backend, guiThread),
+            Page.SEARCH, new SearchPage(backend, guiThread),
+            Page.LIKED_MUSIC, new LikedMusicPage(backend, guiThread),
+            Page.PLAYLISTS, new PlaylistPage(backend, guiThread),
+            Page.RECENTLY_PLAYED, new RecentlyPlayedPage(backend, guiThread),
+            Page.DOWNLOADED_MUSIC, new DownloadedMusicPage(backend, guiThread)
         );
     }
 
@@ -92,7 +92,7 @@ public class TerminalWindowManager {
     }
 
     public BasicWindow getMainMenuWindow() {
-        return windows.get(pages.get(Pages.MAIN_MENU_PAGE));
+        return windows.get(pages.get(Page.MAIN_MENU));
     }
 
     public <T extends AbstractBasePage> void buildSongOptionPage(Song song, T previousWindow) {
@@ -140,7 +140,7 @@ public class TerminalWindowManager {
     public void triggerPageRebuild() {
         Logger.debug("Page rebuild triggered.");
         pages.clear();
-        pages.putAll(buildMapOfPages());
+        pages.putAll(buildMapOfPage());
         windows.clear();
         buildWindows();
     }
@@ -226,11 +226,11 @@ public class TerminalWindowManager {
     }
 
     public void showMainMenu() {
-        transitionTo(windows.get(pages.get(Pages.MAIN_MENU_PAGE)));
+        transitionTo(windows.get(pages.get(Page.MAIN_MENU)));
     }
 
     public void transitionToCachedSearchPage() {
-        transitionTo(windows.get(pages.get(Pages.SEARCH_PAGE)));
+        transitionTo(windows.get(pages.get(Page.SEARCH)));
     }
 
     public void rebuildPage(String pageName) {
@@ -245,7 +245,7 @@ public class TerminalWindowManager {
     }
 
     public void rebuildSearchPage(Map<Integer, Button> searchResults) {
-        windows.put(pages.get(Pages.SEARCH_PAGE), pages.get(Pages.SEARCH_PAGE).createWindow());
+        windows.put(pages.get(Page.SEARCH), pages.get(Page.SEARCH).createWindow());
         Logger.debug("Rebuilt search page with {} search results", searchResults.size());
     }
 

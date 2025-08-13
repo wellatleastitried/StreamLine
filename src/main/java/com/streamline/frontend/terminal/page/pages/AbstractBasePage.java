@@ -8,6 +8,7 @@ import com.googlecode.lanterna.gui2.TextGUIThread;
 import com.googlecode.lanterna.gui2.Window;
 
 import com.streamline.backend.Dispatcher;
+import com.streamline.frontend.terminal.page.Page;
 import com.streamline.frontend.terminal.window.TerminalComponentFactory;
 import com.streamline.frontend.terminal.window.TerminalWindowManager;
 import com.streamline.utilities.LanguagePeer;
@@ -89,7 +90,7 @@ public abstract class AbstractBasePage {
     }
     
     protected final void navigateToMainMenu() {
-        Logger.debug("Navigating to main menu from {}", getClass().getSimpleName());
+        Logger.debug("Navigating to main menu from {}", getPageName());
         if (hasWindowManager()) {
             wm.showMainMenu();
         }

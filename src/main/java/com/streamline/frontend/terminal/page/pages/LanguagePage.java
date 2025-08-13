@@ -2,7 +2,7 @@ package com.streamline.frontend.terminal.page.pages;
 
 import com.googlecode.lanterna.gui2.*;
 import com.streamline.backend.Dispatcher;
-import com.streamline.frontend.terminal.page.Pages;
+import com.streamline.frontend.terminal.page.Page;
 
 /**
  * Window for language selection.
@@ -52,12 +52,12 @@ public class LanguagePage extends AbstractBasePage {
         backend.changeLanguage(languageCode);
         guiThread.invokeLater(() -> {
             wm.triggerPageRebuild();
-            wm.transitionTo(Pages.MAIN_MENU_PAGE);
+            wm.navigateBack();
         });
     }
 
     @Override
     public String getPageName() {
-        return Pages.LANGUAGE_PAGE;
+        return Page.LANGUAGE;
     }
 }
