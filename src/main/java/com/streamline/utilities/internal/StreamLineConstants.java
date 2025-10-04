@@ -19,9 +19,9 @@ public class StreamLineConstants {
     public static final String  INVIDIOUS_LOCAL_MAC_REPO_ADDRESS        = System.getProperty("user.home") + "/Library/Application Support/StreamLine/invidious";
     public static final int     INVIDIOUS_PORT                          = 3000;
 
-    public static final int DOCKER_CONTAINER_KILLED                 = 0;
-    public static final int DOCKER_CONTAINER_DOES_NOT_EXIST         = 1;
-    public static final int DOCKER_CONTAINER_NOT_KILLED             = 2;
+    public static final int     DOCKER_CONTAINER_KILLED                 = 0;
+    public static final int     DOCKER_CONTAINER_DOES_NOT_EXIST         = 1;
+    public static final int     DOCKER_CONTAINER_NOT_KILLED             = 2;
 
     public static final boolean REQUEST_INSTANCE_START              = true;
 

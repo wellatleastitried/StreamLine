@@ -10,6 +10,7 @@ import com.streamline.database.utils.QueryLoader;
 import com.streamline.utilities.CacheManager;
 import com.streamline.utilities.RetrievedStorage;
 import com.streamline.utilities.internal.Config;
+import com.streamline.utilities.internal.StreamLineConstants;
 
 import java.util.List;
 import java.util.Map;
@@ -100,17 +101,17 @@ public final class Dispatcher {
     }
 
     public void downloadSong(Song song) {
-        DownloadJob downloadJob = new DownloadJob(config, song, dbRunner, 0);
+        DownloadJob downloadJob = new DownloadJob(config, song, dbRunner, StreamLineConstants.DOWNLOAD_SONG_ACTION);
         submitJob(downloadJob);
     }
 
     public void cancelSongDownload(Song song) {
-        DownloadJob downloadJob = new DownloadJob(config, song, dbRunner, 1);
+        DownloadJob downloadJob = new DownloadJob(config, song, dbRunner, StreamLineConstants.CANCEL_DOWNLOAD_ACTION);
         submitJob(downloadJob);
     }
 
     public void removeDownloadedSong(Song song) {
-        DownloadJob downloadJob = new DownloadJob(config, song, dbRunner, 2);
+        DownloadJob downloadJob = new DownloadJob(config, song, dbRunner, StreamLineConstants.REMOVE_DOWNLOADED_SONG_ACTION);
         submitJob(downloadJob);
     }
 

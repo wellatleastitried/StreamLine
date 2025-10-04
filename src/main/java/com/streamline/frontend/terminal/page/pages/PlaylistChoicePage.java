@@ -61,7 +61,7 @@ public class PlaylistChoicePage extends AbstractDynamicPage {
                     },
                     componentFactory.getButtonWidth() / 3, 
                     componentFactory.getButtonHeight() / 2
-                        ));
+        ));
 
         window.setComponent(mainPanel);
     }
