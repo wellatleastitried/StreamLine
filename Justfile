@@ -8,7 +8,6 @@ build:
         rm /tmp/Streamline/streamline.log; \
     fi
     mvn clean install
-    java -jar target/streamline.jar
 
 test:
     mkdir logs || true
