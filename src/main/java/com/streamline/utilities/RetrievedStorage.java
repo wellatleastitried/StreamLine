@@ -104,6 +104,7 @@ public class RetrievedStorage implements Iterable<Song>{
             @Override
             public Song next() {
                 Map.Entry<Integer, Song> entry = entryIterator.next();
+                // TODO: I wonder if this is resulting in the songs not showing?
                 entryIterator.remove();
                 songToIndex.remove(entry.getValue());
                 return entry.getValue();
