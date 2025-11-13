@@ -77,6 +77,7 @@ public abstract class AbstractBasePage {
 
     protected final void navigateBack() {
         Logger.debug("Navigating back from {}", getPageName());
+        // TODO: Having a window manager should be a guarantee here, consider throwing an exception if not present
         if (hasWindowManager()) {
             wm.navigateBack();
         }

@@ -1,8 +1,8 @@
 package com.streamline.frontend.terminal.page.pages;
 
-import com.googlecode.lanterna.gui2.*;
 import com.streamline.backend.Dispatcher;
 import com.streamline.frontend.terminal.page.Page;
+import com.googlecode.lanterna.gui2.*;
 
 /**
  * Window for displaying help information.
@@ -27,7 +27,7 @@ public class HelpPage extends AbstractBasePage {
         
         mainPanel.addComponent(componentFactory.createButton(
             getText("button.back"),
-            () -> wm.returnToMainMenu(window),
+            () -> wm.returnToMainMenu(),
             componentFactory.getButtonWidth() / 3,
             componentFactory.getButtonHeight() / 2
         ));

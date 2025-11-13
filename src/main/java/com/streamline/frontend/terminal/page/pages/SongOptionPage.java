@@ -15,6 +15,8 @@ public class SongOptionPage extends AbstractDynamicPage {
     private final Song selectedSong;
     private final Map<Integer, Button> previousResultsForSearchPage;
 
+    private Button playButton;
+
     private Button likeButton;
 
     private Button downloadButton;
@@ -62,9 +64,12 @@ public class SongOptionPage extends AbstractDynamicPage {
         mainPanel.addComponent(componentFactory.createLabel(getText("label.songOptionPageTitle")));
 
         addSpace();
-        mainPanel.addComponent(componentFactory.createButton(getText("button.playSong"), () -> {
+        playButton = componentFactory.createButton(getText("button.playSong"), () -> {
             backend.playSong(selectedSong);
-        }));
+        });
+        // TODO: Figure out why this focus isn't showing after using the like button and the page is rebuilt
+        playButton.takeFocus();
+        mainPanel.addComponent(playButton);
 
 
         likeButton = createLikeButton();
@@ -93,6 +98,7 @@ public class SongOptionPage extends AbstractDynamicPage {
             }
             selectedSong.setSongLikeStatus(backend.isSongLiked(selectedSong));
             likeButton = createLikeButton();
+            wm.buildSongOptionPage(selectedSong, previousPage, previousResultsForSearchPage);
             updatePanel();
             wm.refresh();
         });

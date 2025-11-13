@@ -2,20 +2,20 @@ package com.streamline.frontend.terminal.window;
 
 import com.googlecode.lanterna.gui2.BasicWindow;
 import com.googlecode.lanterna.gui2.Button;
-import com.googlecode.lanterna.gui2.WindowBasedTextGUI;
 import com.googlecode.lanterna.gui2.TextGUIThread;
 import com.googlecode.lanterna.gui2.Window;
+import com.googlecode.lanterna.gui2.WindowBasedTextGUI;
 import com.streamline.audio.Playlist;
 import com.streamline.audio.Song;
 import com.streamline.backend.Dispatcher;
 import com.streamline.frontend.terminal.page.Page;
 import com.streamline.frontend.terminal.page.pages.*;
-import org.tinylog.Logger;
-
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
+import org.tinylog.Logger;
+
 
 public class TerminalWindowManager {
 
@@ -39,7 +39,7 @@ public class TerminalWindowManager {
 
     private static TerminalWindowManager instance;
 
-    public TerminalWindowManager(WindowBasedTextGUI textGUI, TextGUIThread guiThread, Dispatcher backend) throws Exception {
+    public TerminalWindowManager(WindowBasedTextGUI textGUI, TextGUIThread guiThread, Dispatcher backend) {
         this.textGUI = textGUI;
         this.guiThread = guiThread;
         this.backend = backend;
@@ -146,7 +146,9 @@ public class TerminalWindowManager {
     }
 
     public void navigateBack(AbstractBasePage currentPage) {
-        // TODO: Might need to handle navigating to/from dynamic pages
+        if (currentPage instanceof AbstractDynamicPage) {
+            rebuildDynamicWindows();
+        }
         navigateBack();
     }
 
@@ -171,10 +173,6 @@ public class TerminalWindowManager {
         Logger.debug("Returning to main menu");
         navigationHistory.clear();
         showMainMenu();
-    }
-
-    public void returnToMainMenu(BasicWindow currentWindow) {
-        returnToMainMenu();
     }
 
     public boolean canNavigateBack() {
