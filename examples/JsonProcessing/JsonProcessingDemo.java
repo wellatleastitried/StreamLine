@@ -115,7 +115,7 @@ public class JsonProcessingDemo {
             System.out.println("Processing " + songs.size() + " songs to retrieve audio URLs...");
             
             // In a real application, you would make an API call for each video ID
-            // Here we'll simulate it with our sample video response
+            // Here it is simulated with our sample video response
             for (Song song : songs) {
                 // In real code, this would be a new API call using the video ID
                 String url = ResponseParser.urlFromInvidividualVideoResponse(videoResponseJson);

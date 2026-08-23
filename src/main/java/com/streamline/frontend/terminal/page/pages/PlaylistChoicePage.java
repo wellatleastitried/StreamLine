@@ -54,6 +54,8 @@ public class PlaylistChoicePage extends AbstractDynamicPage {
 
         addSpace();
 
+        // TODO: Add logic to pull in existing playlists (just need name for display, id for backend)
+
         mainPanel.addComponent(componentFactory.createButton(
                     getText("button.back"), 
                     () -> {
