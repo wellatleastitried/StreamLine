@@ -34,17 +34,7 @@ public class SetupManager {
         Logger.debug("[*] Path to jar: " + Paths.get(SetupManager.class.getProtectionDomain().getCodeSource().getLocation().getPath()));
         System.out.println("[*] Installing StreamLine to your system's PATH for global access...");
         os = ConfigManager.getOSOfUser();
-        if (os == OS.WINDOWS) {
-            if (isRunningAsAdministrator()) {
-                if (installForWindows()) {
-                    success = true;
-                } else {
-                    success = false;
-                }
-            } else {
-                System.out.println("[!] You need to run this command with elevated privileges (e.g., `Administrator`) to install StreamLine globally.");
-            }
-        } else if (os == OS.MAC) {
+        if (os == OS.MAC) {
             if (isRunningAsRoot()) {
                 if (installForMac()) {
                     success = true;
@@ -78,17 +68,7 @@ public class SetupManager {
         boolean success = true;
         System.out.println("[*] Uninstalling StreamLine from your system's PATH...");
         os = ConfigManager.getOSOfUser();
-        if (os == OS.WINDOWS) {
-            if (isRunningAsAdministrator()) {
-                if (uninstallForWindows()) {
-                    success = true;
-                } else {
-                    success = false;
-                }
-            } else {
-                System.out.println("[!] You need to run this command with elevated privileges (e.g., `Administrator`) to uninstall StreamLine globally.");
-            }
-        } else if (os == OS.MAC) {
+        if (os == OS.MAC) {
             if (isRunningAsRoot()) {
                 if (uninstallForMac()) {
                     success = true;
@@ -140,20 +120,6 @@ public class SetupManager {
         }
         if (new File(StreamLineConstants.MAC_JAR_INSTALLATION_PATH + "streamline.jar").exists()) {
             Logger.warn("[!] The jar file at " + StreamLineConstants.MAC_JAR_INSTALLATION_PATH + "streamline.jar" + " could not be deleted.");
-            return false;
-        }
-        return true;
-    }
-
-    private static boolean uninstallForWindows() {
-        new File(StreamLineConstants.WINDOWS_LAUNCHER_INSTALLATION_PATH + "streamline.bat").delete();
-        new File(StreamLineConstants.WINDOWS_JAR_INSTALLATION_PATH + "streamline.jar").delete();
-        if (new File(StreamLineConstants.WINDOWS_LAUNCHER_INSTALLATION_PATH + "streamline.bat").exists()) {
-            Logger.warn("[!] The binary file at " + StreamLineConstants.WINDOWS_LAUNCHER_INSTALLATION_PATH + "streamline.bat" + " could not be deleted.");
-            return false;
-        }
-        if (new File(StreamLineConstants.WINDOWS_JAR_INSTALLATION_PATH + "streamline.jar").exists()) {
-            Logger.warn("[!] The jar file at " + StreamLineConstants.WINDOWS_JAR_INSTALLATION_PATH + "streamline.jar" + " could not be deleted.");
             return false;
         }
         return true;
@@ -251,49 +217,6 @@ public class SetupManager {
         return true;
     }
 
-    private static boolean installForWindows() {
-        File jarFile = new File(SetupManager.class.getProtectionDomain().getCodeSource().getLocation().getPath());
-        String appData = StreamLineConstants.WINDOWS_JAR_INSTALLATION_PATH;
-        String appDataBin = StreamLineConstants.WINDOWS_LAUNCHER_INSTALLATION_PATH;
-        if (! new File(appData).exists()) {
-            new File(appData).mkdirs();
-        }
-        if (! new File(appDataBin).exists()) {
-            new File(appDataBin).mkdirs();
-        }
-
-        File appDataBinFile = new File(appDataBin + "streamline.bat");
-        File appDataFile = new File(appData + "streamline.jar");
-
-        if (appDataBinFile.exists()) {
-            System.out.println("[!] A file already exists at " + appDataBinFile.getAbsolutePath() + ", please resolve this conflict and try again.");
-            return false;
-        } else {
-            try (BufferedWriter writer = new BufferedWriter(new FileWriter(appDataBinFile))) {
-                /* Create the bash script for %LOCALAPPDATA%\StreamLine\bin\ */
-                appDataBinFile.createNewFile();
-                Logger.debug("[*] Binary file has been created at: " + appDataBinFile.getAbsolutePath());
-                String streamlineBinContents = "@echo off\njava -jar " + appDataFile.getAbsolutePath() + " %*";
-                writer.write(streamlineBinContents);
-                writer.flush();
-                Logger.debug("[*] Binary file has been written to.");
-
-                /* Copy the StreamLine jar file to %LOCALAPPDATA%\StreamLine\streamline.jar */
-                Files.copy(jarFile.toPath(), appDataFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-            } catch (IOException e) {
-                if (appDataBinFile.exists()) {
-                    appDataBinFile.delete();
-                }
-                if (appDataFile.exists()) {
-                    appDataFile.delete();
-                }
-                System.out.println("[!] An error occurred while writing to the file: " + e.getMessage());
-                return false;
-            }
-        }
-        return true;
-    }
-
     private static boolean isRunningAsRoot() {
         try {
             Process process = new ProcessBuilder("id", "-u").start();
@@ -302,23 +225,6 @@ public class SetupManager {
             return "0".equals(uid);
         } catch (Exception e) {
             Logger.debug("[!] An error occurred while checking if the process is running as root: " + e.getMessage());
-        }
-        return false;
-    }
-
-    private static boolean isRunningAsAdministrator() {
-        try {
-            ProcessBuilder builder = new ProcessBuilder(
-                    "powershell",
-                    "-Command",
-                    "([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)"
-                    );
-            Process process = builder.start();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            String result = reader.readLine();
-            return Boolean.parseBoolean(result);
-        } catch (Exception e) {
-            Logger.debug("[!] An error occurred while checking if the process is running as Administrator: " + e.getMessage());
         }
         return false;
     }

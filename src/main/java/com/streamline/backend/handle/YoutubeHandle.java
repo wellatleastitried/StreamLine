@@ -128,8 +128,6 @@ public final class YoutubeHandle implements ConnectionHandle {
         String downloadLocation;
         if (config.getOS() == OS.MAC) {
             downloadLocation = StreamLineConstants.MAC_SONG_DOWNLOAD_LOCATION;
-        } else if (config.getOS() == OS.WINDOWS) {
-            downloadLocation = StreamLineConstants.WINDOWS_SONG_DOWNLOAD_LOCATION;
         } else {
             downloadLocation = StreamLineConstants.LINUX_SONG_DOWNLOAD_LOCATION;
         }
@@ -359,8 +357,6 @@ public final class YoutubeHandle implements ConnectionHandle {
         File binary;
         if (config.getOS() == OS.MAC) {
             binary = new File(StreamLineConstants.YT_DLP_BIN_LOCATION_MAC + "yt-dlp");
-        } else if (config.getOS() == OS.WINDOWS) {
-            binary = new File(StreamLineConstants.YT_DLP_BIN_LOCATION_WINDOWS + "yt-dlp.exe");
         } else {
             binary = new File(StreamLineConstants.YT_DLP_BIN_LOCATION_LINUX + "yt-dlp");
         }
@@ -398,9 +394,6 @@ public final class YoutubeHandle implements ConnectionHandle {
         if (config.getOS() == OS.MAC) {
             ytDlpUrl = "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp";
             ytDlpTargetLocation = StreamLineConstants.YT_DLP_BIN_LOCATION_MAC + "yt-dlp";
-        } else if (config.getOS() == OS.WINDOWS) {
-            ytDlpUrl = "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe";
-            ytDlpTargetLocation = StreamLineConstants.YT_DLP_BIN_LOCATION_WINDOWS + "yt-dlp.exe";
         } else {
             ytDlpUrl = "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp";
             ytDlpTargetLocation = StreamLineConstants.YT_DLP_BIN_LOCATION_LINUX + "yt-dlp";

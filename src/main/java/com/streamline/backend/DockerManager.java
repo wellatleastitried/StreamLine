@@ -45,12 +45,7 @@ public class DockerManager {
 
     static {
         os = ConfigManager.getOSOfUser();
-        if (os == OS.WINDOWS) {
-            invidiousDirectoryPath = StreamLineConstants.INVIDIOUS_LOCAL_WINDOWS_REPO_ADDRESS;
-            dockerComposeUp = String.format("docker compose -f %s\\docker-compose.yml up", StreamLineConstants.INVIDIOUS_LOCAL_WINDOWS_REPO_ADDRESS);
-            dockerComposeStop = String.format("docker compose -f %s\\docker-compose.yml stop", StreamLineConstants.INVIDIOUS_LOCAL_WINDOWS_REPO_ADDRESS);
-            dockerComposeBuild = String.format("docker compose -f %s\\docker-compose.yml build", StreamLineConstants.INVIDIOUS_LOCAL_WINDOWS_REPO_ADDRESS);
-        } else if (os == OS.MAC) {
+        if (os == OS.MAC) {
             invidiousDirectoryPath = StreamLineConstants.INVIDIOUS_LOCAL_MAC_REPO_ADDRESS;
             dockerComposeUp = String.format("docker compose -f %s/docker-compose.yml up", StreamLineConstants.INVIDIOUS_LOCAL_MAC_REPO_ADDRESS);
             dockerComposeStop = String.format("docker compose -f %s/docker-compose.yml stop", StreamLineConstants.INVIDIOUS_LOCAL_MAC_REPO_ADDRESS);

@@ -5,7 +5,6 @@ package com.streamline.utilities.internal;
  * @author wellatleastitried
  */
 public enum OS {
-    WINDOWS,
     LINUX,
     MAC,
     TESTING,

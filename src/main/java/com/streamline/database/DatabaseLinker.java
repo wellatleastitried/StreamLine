@@ -83,9 +83,7 @@ public final class DatabaseLinker {
     }
 
     private String setupPath(OS os) {
-        if (os == OS.WINDOWS) {
-            return StreamLineConstants.WINDOWS_DB_ADDRESS;          
-        } else if (os == OS.MAC) {
+        if (os == OS.MAC) {
             return StreamLineConstants.MAC_DB_ADDRESS;
         } else if (os == OS.TESTING) {
             return StreamLineConstants.LINUX_TESTING_DB_ADDRESS;

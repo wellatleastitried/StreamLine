@@ -40,7 +40,6 @@ public final class LanguagePeer {
         try {
             Properties config = new Properties();
             switch (ConfigManager.getOSOfUser()) {
-                case WINDOWS -> config.load(new FileInputStream(StreamLineConstants.STREAMLINE_CONFIG_PATH_WINDOWS));
                 case MAC -> config.load(new FileInputStream(StreamLineConstants.STREAMLINE_CONFIG_PATH_MAC));
                 default -> config.load(new FileInputStream(StreamLineConstants.STREAMLINE_CONFIG_PATH_LINUX));
             }

@@ -68,7 +68,6 @@ public class ConfigManager {
 
     private static void checkExistenceOfConfiguration() {
         String path = switch (os) {
-            case WINDOWS -> StreamLineConstants.STREAMLINE_CONFIG_PATH_WINDOWS;
             case MAC -> StreamLineConstants.STREAMLINE_CONFIG_PATH_MAC;
             default -> StreamLineConstants.STREAMLINE_CONFIG_PATH_LINUX;
         };
@@ -97,9 +96,7 @@ public class ConfigManager {
 
     public static OS getOSOfUser() {
         String osString = System.getProperty("os.name").toLowerCase();
-        if (osString.contains("win")) {
-            return OS.WINDOWS;
-        } else if (osString.contains("nix") || osString.contains("nux")) {
+        if (osString.contains("nix") || osString.contains("nux")) {
             return OS.LINUX;
         } else if (osString.contains("mac")) {
             return OS.MAC;
@@ -112,10 +109,6 @@ public class ConfigManager {
         String configurationPath;
         String configurationFileContents;
         switch (os) {
-            case WINDOWS -> {
-                configurationPath = StreamLineConstants.WINDOWS_LOG_CONFIG_DIR_PATH;
-                configurationFileContents = StreamLineConstants.WINDOWS_LOG_CONFIG_CONTENTS;
-            }
             case MAC -> {
                 configurationPath = StreamLineConstants.MAC_LOG_CONFIG_DIR_PATH;
                 configurationFileContents = StreamLineConstants.UNIX_LOG_CONFIG_CONTENTS;
@@ -149,9 +142,7 @@ public class ConfigManager {
     }
 
     private static String getBinaryPath() {
-        if (os == OS.WINDOWS) {
-            return StreamLineConstants.YT_DLP_BIN_LOCATION_WINDOWS + "yt-dlp.exe";
-        } else if (config.getOS() == OS.MAC) {
+        if (config.getOS() == OS.MAC) {
             return StreamLineConstants.YT_DLP_BIN_LOCATION_MAC + "yt-dlp";
         }
         return StreamLineConstants.YT_DLP_BIN_LOCATION_LINUX + "yt-dlp";
@@ -161,7 +152,6 @@ public class ConfigManager {
         try {
             Properties config = new Properties();
             switch (os) {
-                case WINDOWS -> config.load(new FileInputStream(StreamLineConstants.STREAMLINE_CONFIG_PATH_WINDOWS));
                 case MAC -> config.load(new FileInputStream(StreamLineConstants.STREAMLINE_CONFIG_PATH_MAC));
                 default -> config.load(new FileInputStream(StreamLineConstants.STREAMLINE_CONFIG_PATH_LINUX));
             }
