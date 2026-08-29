@@ -1,6 +1,7 @@
 target/**
 invidious/**
 logs/**
+.note.xnote
 
 # IntelliJ IDEA
 .idea/
@@ -20,3 +21,4 @@ nbproject/private/
 build/
 nbbuild/
 nbdist/
+.note.xnote

@@ -57,8 +57,6 @@ public final class CacheManager {
 
     public static String getCacheDirectory(OS os) {
         switch (os) {
-            case WINDOWS:
-                return StreamLineConstants.WINDOWS_CACHE_ADDRESS;
             case MAC:
                 return StreamLineConstants.MAC_CACHE_ADDRESS;
             case LINUX:

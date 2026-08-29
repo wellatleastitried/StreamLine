@@ -2,7 +2,9 @@ package com.streamline.database.utils;
 
 import java.io.IOException;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.tinylog.Logger;
 
@@ -20,8 +22,8 @@ public final class QueryLoader {
      * Reaches out to the SQL files in the resources folder that house the queries needed at runtime.
      * @return Map containing the full queries with a key for easy access
      */
-    public static HashMap<String, String> getMapOfQueries() {
-        HashMap<String, String> map = new HashMap<>();
+    public static Map<String, String> getMapOfQueries() {
+        Map<String, String> map = new HashMap<>();
         try {
             map.put("INITIALIZE_TABLES", StatementReader.readQueryFromFile("/sql/init/DatabaseInitialization.sql"));
             map.put("CLEAR_CACHE", StatementReader.readQueryFromFile("/sql/updates/ClearCachedSongs.sql"));
@@ -31,6 +33,8 @@ public final class QueryLoader {
             map.put("GET_DOWNLOADED_SONGS", StatementReader.readQueryFromFile("/sql/queries/GetSongForDownloadedScreen.sql"));
             map.put("GET_RECENTLY_PLAYED_SONGS", StatementReader.readQueryFromFile("/sql/queries/GetSongForRecPlayedScreen.sql"));
             map.put("ENSURE_RECENTLY_PLAYED_SONG_COUNT", StatementReader.readQueryFromFile("/sql/updates/UpdateRecentlyPlayed.sql"));
+            map.put("GET_PLAYLISTS", StatementReader.readQueryFromFile("/sql/queries/GetPlaylists.sql"));
+            map = Collections.unmodifiableMap(map);
         } catch (IOException iE) {
             System.err.println("[!] A fatal error has occured while reading premade SQL queries from configuration files.");
             System.exit(1);

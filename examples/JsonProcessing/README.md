@@ -19,7 +19,7 @@ To compile the example while referencing the main application classes, you'll us
 cd examples/JsonProcessingDemo
 
 # Compile the example using the JAR file from the main project's dist/
-javac -cp ../../dist/streamline-0.1.0.jar JsonProcessingDemo.java
+javac -cp ../../dist/streamline.jar JsonProcessingDemo.java
 ```
 
 ### On Windows:
@@ -39,13 +39,13 @@ After compilation, run the example with the JAR file in the classpath:
 ### On Linux/macOS:
 
 ```bash
-java -cp .:../../dist/streamline-0.1.0.jar JsonProcessingDemo
+java -cp .:../../dist/streamline.jar JsonProcessingDemo
 ```
 
 ### On Windows:
 
 ```batch
-java -cp .:../../dist/streamline-0.1.0.jar JsonProcessingDemo
+java -cp .:../../dist/streamline.jar JsonProcessingDemo
 ```
 
 ## Example Output

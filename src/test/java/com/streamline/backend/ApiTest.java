@@ -7,6 +7,7 @@ import org.hamcrest.MatcherAssert;
 
 import static org.hamcrest.CoreMatchers.*;
 
+import com.streamline.backend.handle.InvidiousHandle;
 import com.streamline.utilities.internal.Config;
 
 public class ApiTest {

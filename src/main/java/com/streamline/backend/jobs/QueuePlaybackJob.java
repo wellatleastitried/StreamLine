@@ -4,7 +4,7 @@ import com.streamline.audio.AudioPlayer;
 import com.streamline.utilities.RetrievedStorage;
 import com.streamline.utilities.internal.Config;
 
-public class QueuePlaybackJob extends StreamLineJob {
+public class QueuePlaybackJob extends AbstractStreamLineJob {
 
     private final RetrievedStorage queue;
 
@@ -13,6 +13,7 @@ public class QueuePlaybackJob extends StreamLineJob {
         this.queue = queue;
     }
 
+    @Override
     public void execute() {
         AudioPlayer audioPlayer = new AudioPlayer(queue);
         audioPlayer.run();

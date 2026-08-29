@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.streamline.Driver;
+import com.streamline.utilities.ConfigManager;
 import com.streamline.utilities.internal.Config;
 import com.streamline.utilities.internal.OS;
 import com.streamline.utilities.internal.StreamLineConstants;
@@ -44,13 +44,8 @@ public class DockerManager {
     private static Thread containerRuntime;
 
     static {
-        os = Driver.getOSOfUser();
-        if (os == OS.WINDOWS) {
-            invidiousDirectoryPath = StreamLineConstants.INVIDIOUS_LOCAL_WINDOWS_REPO_ADDRESS;
-            dockerComposeUp = String.format("docker compose -f %s\\docker-compose.yml up", StreamLineConstants.INVIDIOUS_LOCAL_WINDOWS_REPO_ADDRESS);
-            dockerComposeStop = String.format("docker compose -f %s\\docker-compose.yml stop", StreamLineConstants.INVIDIOUS_LOCAL_WINDOWS_REPO_ADDRESS);
-            dockerComposeBuild = String.format("docker compose -f %s\\docker-compose.yml build", StreamLineConstants.INVIDIOUS_LOCAL_WINDOWS_REPO_ADDRESS);
-        } else if (os == OS.MAC) {
+        os = ConfigManager.getOSOfUser();
+        if (os == OS.MAC) {
             invidiousDirectoryPath = StreamLineConstants.INVIDIOUS_LOCAL_MAC_REPO_ADDRESS;
             dockerComposeUp = String.format("docker compose -f %s/docker-compose.yml up", StreamLineConstants.INVIDIOUS_LOCAL_MAC_REPO_ADDRESS);
             dockerComposeStop = String.format("docker compose -f %s/docker-compose.yml stop", StreamLineConstants.INVIDIOUS_LOCAL_MAC_REPO_ADDRESS);

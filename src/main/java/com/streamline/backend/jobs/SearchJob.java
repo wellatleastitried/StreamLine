@@ -5,7 +5,7 @@ import com.streamline.utilities.internal.Config;
 
 import org.tinylog.Logger;
 
-public class SearchJob extends StreamLineJob {
+public class SearchJob extends AbstractStreamLineJob {
 
     private final String searchTerm;
 
@@ -18,6 +18,7 @@ public class SearchJob extends StreamLineJob {
         this.searchTerm = searchTerm;
     }
 
+    @Override
     public void execute() {
         final RetrievedStorage finalResults = new RetrievedStorage();
         try {

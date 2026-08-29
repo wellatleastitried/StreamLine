@@ -22,9 +22,6 @@ public class Song {
      * Constructor for songs that are being fetched quickly.
      */
     public Song(int songId, String title, String artist, String url, String videoId) {
-        if (songId == -1) {
-            // TODO: handle this
-        }
         this.songId = songId;
         this.title = title;
         this.artist = artist;
@@ -37,16 +34,13 @@ public class Song {
         this.fileHash = null;
     }
 
-    public Song(int songId, String title, String artist, String url, String duration, String videoId) {
-        if (songId == -1) {
-            // TODO: handle this
-        }
+    public Song(int songId, String title, String artist, String url, String videoId, String duration) {
         this.songId = songId;
         this.title = title;
         this.artist = artist;
         this.url = url;
-        this.duration = duration;
         this.videoId = videoId;
+        this.duration = duration;
         this.isLiked = false;
         this.isDownloaded = false;
         this.isRecentlyPlayed = false;
@@ -57,11 +51,13 @@ public class Song {
     /**
      * Constructor for songs that need more context, such as their respective file path and hash.
      */
-    public Song(int songId, String title, String artist, String url, String videoId, boolean isLiked, boolean isDownloaded, boolean isRecentlyPlayed, String downloadPath, String fileHash) {
+    public Song(int songId, String title, String artist, String url, String videoId, String duration, boolean isLiked, boolean isDownloaded, boolean isRecentlyPlayed, String downloadPath, String fileHash) {
         this.songId = songId;
         this.title = title;
         this.artist = artist;
         this.url = url;
+        this.videoId = videoId;
+        this.duration = duration;
         this.isLiked = isLiked;
         this.isDownloaded = isDownloaded;
         this.isRecentlyPlayed = isRecentlyPlayed;
@@ -141,8 +137,16 @@ public class Song {
         return downloadPath;
     }
 
+    public void setDownloadPath(String downloadPath) {
+        this.downloadPath = downloadPath;
+    }
+
     public String getFileHash() {
         return fileHash;
+    }
+
+    public void setFileHash(String fileHash) {
+        this.fileHash = fileHash;
     }
 
     public String getDuration() {
